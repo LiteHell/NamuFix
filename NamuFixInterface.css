@@ -1,0 +1,38 @@
+@import url(http://fonts.googleapis.com/earlyaccess/nanumgothic.css);
+
+button.BetterNamuButton {
+border:none;
+background:#373A45;
+color:#FFF;
+font-size:12pt;
+font-family:"Nanum Gothic";
+margin:0;
+padding:8px;
+}
+
+button.BetterNamuButton:hover {
+background:#6F7179;
+}
+
+div#EditInterfaceButtons {
+color:#FFF;
+background:#373A45;
+height:auto;
+width:100%;
+margin:0;
+padding:0;
+}
+
+vr {
+height:100%;
+width:.1mm;
+max-width:.1mm;
+margin:0 5px;
+padding:0;
+}
+
+div#EditInterfaceStatus {
+color:#000;
+background:#7D7F86;
+height:20px;
+}
