@@ -4,7 +4,7 @@
 // @description 나무위키 편집 인터페이스 등을 개선합니다.
 // @include     http://namu.wiki/*
 // @include     https://namu.wiki/*
-// @version     2.5
+// @version     2.6
 // @namespace   http://litehell.info/
 // @downloadURL https://raw.githubusercontent.com/LiteHell/NamuFix/master/NamuFix.user.js
 // @grant       GM_addStyle
@@ -191,6 +191,20 @@ if(document.querySelector("textarea[name=content]")!=null&&(/https?:\/\/[^\.]*\.
       GM_setValue("AutoSavedDocuments",JSON.stringify(obj));
     }
   }
+  var YouTubeMarkUp=function(){
+	var ExtractYouTubeID=function(){ 
+	// from Lasnv's answer from http://stackoverflow.com/questions/3452546/javascript-regex-how-to-get-youtube-video-id-from-url
+	var regExp = /^.*((youtu.be\/)|(v\/)|(\/u\/\w\/)|(embed\/)|(watch\?))\??v?=?([^#\&\?]*).*/;
+	var match = url.match(regExp);
+    if (match&&match[7].length==11)
+        return match[7];
+	else
+		return null;
+	}
+	var url=prompt("YouTube 동영상 ID를 입력해주세요.");
+	var extracted=ExtractYouTubeID(url);
+	insertText(extracted!=null?'[[youtube('+extracted+')]]':'\n## YouTube 동영상 ID 추출에 실패하였습니다. 주소를 확인해주세요.');
+  }
   buttons.id="EditInterfaceButtons";
   editstatus.id="EditInterfaceStatus";
   // 서식 버튼
@@ -205,6 +219,7 @@ if(document.querySelector("textarea[name=content]")!=null&&(/https?:\/\/[^\.]*\.
 
   addline();
   addbutton(produceIcoSpan("ion-ios-camera-outline"),"사진 업로드",uploadImage);
+  addbutton(produceIcoSpan("ion-social-youtube-outline"),"유튜브 동영상 삽입",YouTubeMarkUp)
   addbutton(produceIcoSpan("ion-ios-pricetag-outline"),"임시저장",makeAutoSave);
   addbutton(produceIcoSpan("ion-ios-pricetags-outline"),"임시저장 불러오기",checkAutoSaves);
   addbutton(produceIcoSpan("ion-ios-filing-outline"),"임시저장 삭제",clearAutoSaves)
