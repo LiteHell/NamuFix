@@ -4,27 +4,31 @@
 // @description 나무위키 편집 인터페이스 등을 개선합니다.
 // @include     http://namu.wiki/*
 // @include     https://namu.wiki/*
-// @version     2.4
+// @version     2.5
 // @namespace   http://litehell.info/
 // @downloadURL https://raw.githubusercontent.com/LiteHell/NamuFix/master/NamuFix.user.js
-// @resource    ColorPickerLib https://raw.githubusercontent.com/LiteHell/NamuFix/master/FlexiColorPicker.js
 // @grant       GM_addStyle
 // @grant       GM_xmlhttpRequest
 // @grant       GM_getResourceText
+// @grant       GM_getValue
+// @grant       GM_setValue
+// @run-at      document-end
 // ==/UserScript==
 
 // 나무마크 도움말 : https://namu.wiki/w/HelpOnEditing?from=%ED%8E%B8%EC%A7%91%20%EB%8F%84%EC%9B%80%EB%A7%90
 
 GM_addStyle('em{font-style: italic;}');
 if(document.querySelector("textarea[name=content]")!=null&&(/https?:\/\/[^\.]*\.?namu\.wiki\/edit.*/).test(location.href)){
+// if(document.querySelector("textarea[name=content]")){
   // 수정 인터페이스 개선
   GM_addStyle(GM_xmlhttpRequest({method:"GET",url:"https://raw.githubusercontent.com/LiteHell/NamuFix/master/NamuFixInterface.css",synchronous:true}).responseText); // http://jsfiddle.net/Vestride/dkr9b/ 참고함
-  
-  // // 색 선택 라이브러리 삽입
-  // var elm=document.createElement("script");
-  // elm.innerHTML=GM_getResourceText('ColorPickerLib');
-  // document.head.appendChild(elm);
-  
+
+  // 문서 제목
+  var doctitle=document.querySelector('h1.title > a').innerHTML;
+  if(document.querySelector("h1.title > small")){
+   var sectionno=location.search.replace(/section=([0-9]+)/,'$1')
+  }
+  var autosavename=doctitle+'###sec-'+sectionno;
   // 숨겨진 파일 input태그 추가 (이미지 업로드에 쓰임)
   var elm=document.createElement("input");
   elm.setAttribute("type","file");
@@ -36,11 +40,11 @@ if(document.querySelector("textarea[name=content]")!=null&&(/https?:\/\/[^\.]*\.
     if(v==null) return true;
     if(v=='') return true;
     return false;
-  }
+  };
   var txtarea=document.querySelector("textarea[name=content]");
   var buttons=document.createElement("div");
   var editstatus=document.createElement("div");
-  var isSomethingSelected=function(){return txtarea.selectionStart!=txtarea.selectionEnd;}
+  var isSomethingSelected=function(){return txtarea.selectionStart!=txtarea.selectionEnd;};
   var addbutton=function(labelhtml, alt, func){
     var button=document.createElement("button");
     button.setAttribute("type","button");
@@ -73,7 +77,7 @@ if(document.querySelector("textarea[name=content]")!=null&&(/https?:\/\/[^\.]*\.
     txt+=text;
     txt+=txtarea.value.substring(txtarea.selectionStart);
     txtarea.value=txt;
-  }
+  };
   var produceIcoSpan=function(icotxt){ // http://ionicons.com/
     return '<span class="icon '+icotxt+'"></span>'
   };
@@ -90,6 +94,9 @@ if(document.querySelector("textarea[name=content]")!=null&&(/https?:\/\/[^\.]*\.
         txtarea.selectionEnd=s+mk.length+2;
       }
     };
+  };
+  var setStatus=function(txt){
+    editstatus.innerHTML=txt;
   }
   var uploadImage=function(){
       // http://jsfiddle.net/eliseosoto/JHQnk/ 이용
@@ -111,11 +118,11 @@ if(document.querySelector("textarea[name=content]")!=null&&(/https?:\/\/[^\.]*\.
               data:'type=base64&image='+encodeURIComponent(reader.result.replace(/.*,/,''))
             }).responseText);
             if(!res["success"]){
-              editstatus.innerHTML="죄송하지만 이미지 업로드에 실패하였습니다."
+              setStatus("죄송하지만 이미지 업로드에 실패하였습니다.");
             }else{
               insertText(res["data"]["link"]);
               //insertText('\n##삭제는 http://imgur.com/delete/'+res["data"]["deletehash"]+'에 접속하여 할 수 있습니다.\n##삭제 링크 외에 기술적으로 자세한 내용은 API 응답을 참고하세요.\n##\n##주석은 지우셔도 되고 삭제 링크 메모후 주석을 지우시는 것을 권장합니다.\n##\n## API 응답 : '+JSON.stringify(res));
-              editstatus.innerHTML='삭제는 <a href="http://imgur.com/delete/'+res["data"]["deletehash"]+'">http://imgur.com/delete/'+res["data"]["deletehash"]+'</a> 에 접속하시여 하실 수 있습니다. 업로드후 한번만 표시되니 지금 메모해두세요.'
+              setStatus('삭제는 <a href="http://imgur.com/delete/'+res["data"]["deletehash"]+'">http://imgur.com/delete/'+res["data"]["deletehash"]+'</a> 에 접속하시여 하실 수 있습니다. 업로드후 한번만 표시되니 지금 메모해주세요.');
             }
           };
           reader.readAsDataURL(file);
@@ -128,7 +135,7 @@ if(document.querySelector("textarea[name=content]")!=null&&(/https?:\/\/[^\.]*\.
     if(max<val)return max;
     if(val<min)return min;
     return val;
-  }
+  };
   var fontsizeMarkUp=function(add){
     return function(){
       var pattern=/{{{\+([0-9]+) (.+?)}}}/;
@@ -143,9 +150,46 @@ if(document.querySelector("textarea[name=content]")!=null&&(/https?:\/\/[^\.]*\.
         }
       });
     };
+  };
+  var formatDate=function(t){
+    return t.getFullYear()+'년 '+(t.getMonth()+1)+'월 '+t.getDate()+'일 '+t.getHours()+':'+t.getMinutes()+':'+t.getSeconds();
   }
-  var colorMarkUp=function(){
-    
+  var checkAutoSaves=function(){
+    var obj=JSON.parse(GM_getValue("AutoSavedDocuments","{}"));
+    if(obj[autosavename]==null){
+      alert('임시저장이 없습니다.');
+      return;
+    }
+    var promptMsg="번호를 입력해주세요.\n\n";
+    var timestamps=[];
+    var lastno=0;
+    for(var i in obj[autosavename]){
+      var savedDate=new Date(Number(i));
+      var no=lastno++;
+      timestamps.push(i);
+      promptMsg+=no+". "+formatDate(savedDate)+"\n";
+    }
+    var result=prompt(promptMsg);
+    if(obj[autosavename][timestamps[result]]==null){
+      alert('잘못된 입력입니다.');
+      return;
+    }
+    txtarea.value=obj[autosavename][timestamps[result]];
+  };
+  var makeAutoSave=function(){
+    var obj=JSON.parse(GM_getValue("AutoSavedDocuments","{}"));
+    if(obj[autosavename]==null)
+      obj[autosavename]={};
+    obj[autosavename][Date.now()]=txtarea.value;
+    GM_setValue("AutoSavedDocuments",JSON.stringify(obj));
+    setStatus("임시저장을 완료하였습니다. ("+formatDate(Date.now())+")");
+  };
+  var clearAutoSaves=function(){
+    if(confirm("해당 문서에 대한 임시저장을 모두 삭제합니다.\n정말 괜찮으십니까?")){
+      var obj=JSON.parse(GM_getValue("AutoSavedDocuments","{}"));
+      obj[autosavename]=null;
+      GM_setValue("AutoSavedDocuments",JSON.stringify(obj));
+    }
   }
   buttons.id="EditInterfaceButtons";
   editstatus.id="EditInterfaceStatus";
@@ -158,11 +202,12 @@ if(document.querySelector("textarea[name=content]")!=null&&(/https?:\/\/[^\.]*\.
   addbutton("가<sup>ga</sup>","윗첨자",WrapWithMarkUp("^^"));
   addbutton('<span style="font-size:75%">가</span>',"글씨 작게",fontsizeMarkUp(-1));
   addbutton('<span style="font-size:125%">가</span>',"글씨 크게",fontsizeMarkUp(1));
-  // addbutton(produceIcoSpan('ion-ios-color-filter-outline'),"색 지정",colorMarkUp)
-  // addbutton('')
+
   addline();
   addbutton(produceIcoSpan("ion-ios-camera-outline"),"사진 업로드",uploadImage);
-  
+  addbutton(produceIcoSpan("ion-ios-pricetag-outline"),"임시저장",makeAutoSave);
+  addbutton(produceIcoSpan("ion-ios-pricetags-outline"),"임시저장 불러오기",checkAutoSaves);
+  addbutton(produceIcoSpan("ion-ios-filing-outline"),"임시저장 삭제",clearAutoSaves)
   txtarea.parentNode.insertBefore(buttons,txtarea);
   txtarea.parentNode.insertBefore(editstatus,txtarea);
 }
