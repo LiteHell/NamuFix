@@ -4,7 +4,7 @@
 // @description 나무위키 편집 인터페이스 등을 개선합니다.
 // @include     http://namu.wiki/*
 // @include     https://namu.wiki/*
-// @version     2.6
+// @version     2.61
 // @namespace   http://litehell.info/
 // @downloadURL https://raw.githubusercontent.com/LiteHell/NamuFix/master/NamuFix.user.js
 // @grant       GM_addStyle
@@ -160,7 +160,7 @@ if(document.querySelector("textarea[name=content]")!=null&&(/https?:\/\/[^\.]*\.
       alert('임시저장이 없습니다.');
       return;
     }
-    var promptMsg="번호를 입력해주세요.\n\n";
+    var promptMsg="번호를 숫자만 입력해주세요.\n\n";
     var timestamps=[];
     var lastno=0;
     for(var i in obj[autosavename]){
