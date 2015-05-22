@@ -154,10 +154,10 @@ if(document.querySelector("textarea[name=content]")!=null&&(/https?:\/\/[^\.]*\.
   addbutton("<i>가</i>","기울게",WrapWithMarkUp("''"));
   addbutton("<del>가</del>","취소선",WrapWithMarkUp("--"));
   addbutton("<u>가</u>","밑줄",WrapWithMarkUp("__"));
-  addbutton("아<sub>Ah</sub>","아랫첨자",WrapWithMarkUp(",,"));
-  addbutton("아<sup>Ah</sup>","윗첨자",WrapWithMarkUp("^^"));
-  addbutton('<span style="font-size:75%">아</span>',"글씨 작게",fontsizeMarkUp(-1));
-  addbutton('<span style="font-size:125%">아</span>',"글씨 크게",fontsizeMarkUp(1));
+  addbutton("가<sub>ga</sub>","아랫첨자",WrapWithMarkUp(",,"));
+  addbutton("가<sup>ga</sup>","윗첨자",WrapWithMarkUp("^^"));
+  addbutton('<span style="font-size:75%">가</span>',"글씨 작게",fontsizeMarkUp(-1));
+  addbutton('<span style="font-size:125%">가</span>',"글씨 크게",fontsizeMarkUp(1));
   // addbutton(produceIcoSpan('ion-ios-color-filter-outline'),"색 지정",colorMarkUp)
   // addbutton('')
   addline();
