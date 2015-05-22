@@ -29,9 +29,9 @@ padding:0 0 0 0;
 
 vr {
 height:100%;
-width:.1mm;
-max-width:.1mm;
-margin:0 5px;
+width:0;
+max-width:0;
+margin:0 4px 0 4px;
 padding:0;
 }
 
