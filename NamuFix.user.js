@@ -6,7 +6,7 @@
 // @include     https://namu.wiki/*
 // @version     2.3
 // @namespace   http://litehell.info/
-// @downloadURL https://gist.github.com/LiteHell/ceccb1ed9d3966b803f6/raw/NamuFix.user.js
+// @downloadURL https://raw.githubusercontent.com/LiteHell/NamuFix/master/NamuFix.user.js
 // @grant       GM_addStyle
 // @grant       GM_xmlhttpRequest
 // ==/UserScript==
@@ -16,7 +16,7 @@
 GM_addStyle('em{font-style: italic;}');
 if(document.querySelector("textarea[name=content]")!=null&&(/https?:\/\/[^\.]*\.?namu\.wiki\/edit.*/).test(location.href)){
   // 수정 인터페이스 개선
-  GM_addStyle(GM_xmlhttpRequest({method:"GET",url:"https://gist.github.com/LiteHell/ceccb1ed9d3966b803f6/raw/NamuFixInterface.css",synchronous:true}).responseText); // http://jsfiddle.net/Vestride/dkr9b/ 참고함
+  GM_addStyle(GM_xmlhttpRequest({method:"GET",url:"https://raw.githubusercontent.com/LiteHell/NamuFix/master/NamuFixInterface.css",synchronous:true}).responseText); // http://jsfiddle.net/Vestride/dkr9b/ 참고함
   
   var elm=document.createElement("input");
   elm.setAttribute("type","file");
