@@ -7,7 +7,7 @@ color:#FFF;
 font-size:12pt;
 font-family:"Nanum Gothic";
 margin:0;
-padding:8px;
+padding:8px 4px 8px 4px;
 }
 
 button.BetterNamuButton:hover {
@@ -19,8 +19,8 @@ color:#FFF;
 background:#373A45;
 height:auto;
 width:100%;
-margin:0;
-padding:0;
+margin:0 0 0 0;
+padding:0 0 0 0;
 }
 
 vr {
