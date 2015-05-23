@@ -247,7 +247,7 @@ if(document.querySelector("textarea[name=content]")!=null&&(/https?:\/\/[^\.]*\.
 
   addline();
   addbutton(produceIcoSpan("ion-link"),"하이퍼링크/문서링크",HyperLinkMarkUp)
-  addbutton(produceIcoSpan("ion-ios-camera-outline"),"사진 업로드",uploadImage);
+  addbutton(produceIcoSpan("ion-android-image"),"사진 업로드",uploadImage);
   addbutton(produceIcoSpan("ion-social-youtube-outline","red"),"유튜브 동영상 삽입",YouTubeMarkUp)
   addline();
   addbutton(produceIcoSpan("ion-ios-pricetag-outline"),"임시저장",makeAutoSave);
