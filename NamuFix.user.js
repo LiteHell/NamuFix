@@ -4,7 +4,7 @@
 // @description 나무위키 편집 인터페이스 등을 개선합니다.
 // @include     http://namu.wiki/*
 // @include     https://namu.wiki/*
-// @version     2.7
+// @version     2.8
 // @namespace   http://litehell.info/
 // @downloadURL https://raw.githubusercontent.com/LiteHell/NamuFix/master/NamuFix.user.js
 // @grant       GM_addStyle
@@ -21,7 +21,7 @@ GM_addStyle('em{font-style: italic;}');
 if(document.querySelector("textarea[name=content]")!=null&&(/https?:\/\/[^\.]*\.?namu\.wiki\/edit.*/).test(location.href)){
 // if(document.querySelector("textarea[name=content]")){
   // 수정 인터페이스 개선
-  GM_addStyle(GM_xmlhttpRequest({method:"GET",url:"https://raw.githubusercontent.com/LiteHell/NamuFix/master/NamuFixInterface.css",synchronous:true}).responseText); // http://jsfiddle.net/Vestride/dkr9b/ 참고함
+  GM_xmlhttpRequest({method:"GET",url:"https://raw.githubusercontent.com/LiteHell/NamuFix/master/NamuFixInterface.css",onload:function(response){GM_addStyle(response.responseText);}}); // http://jsfiddle.net/Vestride/dkr9b/ 참고함
 
   // 문서 제목
   var doctitle=document.querySelector('h1.title > a').innerHTML;
@@ -109,24 +109,27 @@ if(document.querySelector("textarea[name=content]")!=null&&(/https?:\/\/[^\.]*\.
         if(file){
           var reader = new FileReader();
           reader.onload=function(evt){
-            var res=JSON.parse(GM_xmlhttpRequest({
+            var res;
+            GM_xmlhttpRequest({
               method: "POST",
               headers:{
                 Authorization: "Client-ID 60a43baebed658a",
                 Accept: "application/json",
                 "Content-Type":"application/x-www-form-urlencoded"
               },
-              synchronous:true,
               url:"https://api.imgur.com/3/image",
-              data:'type=base64&image='+encodeURIComponent(reader.result.replace(/.*,/,''))
-            }).responseText);
-            if(!res["success"]){
-              setStatus("죄송하지만 이미지 업로드에 실패하였습니다.");
-            }else{
-              insertText(res["data"]["link"]);
-              //insertText('\n##삭제는 http://imgur.com/delete/'+res["data"]["deletehash"]+'에 접속하여 할 수 있습니다.\n##삭제 링크 외에 기술적으로 자세한 내용은 API 응답을 참고하세요.\n##\n##주석은 지우셔도 되고 삭제 링크 메모후 주석을 지우시는 것을 권장합니다.\n##\n## API 응답 : '+JSON.stringify(res));
-              setStatus('삭제는 <a href="http://imgur.com/delete/'+res["data"]["deletehash"]+'">http://imgur.com/delete/'+res["data"]["deletehash"]+'</a> 에 접속하시여 하실 수 있습니다. 업로드후 한번만 표시되니 지금 메모해주세요.');
-            }
+              data:'type=base64&image='+encodeURIComponent(reader.result.replace(/.*,/,'')),
+              onload:function(response){
+                res=JSON.parse(response.responseText)
+                if(!res["success"]){
+                  setStatus("죄송하지만 이미지 업로드에 실패하였습니다.");
+                }else{
+                  insertText(res["data"]["link"]);
+                  //insertText('\n##삭제는 http://imgur.com/delete/'+res["data"]["deletehash"]+'에 접속하여 할 수 있습니다.\n##삭제 링크 외에 기술적으로 자세한 내용은 API 응답을 참고하세요.\n##\n##주석은 지우셔도 되고 삭제 링크 메모후 주석을 지우시는 것을 권장합니다.\n##\n## API 응답 : '+JSON.stringify(res));
+                  setStatus('삭제는 <a href="http://imgur.com/delete/'+res["data"]["deletehash"]+'">http://imgur.com/delete/'+res["data"]["deletehash"]+'</a> 에 접속하시여 하실 수 있습니다. 업로드후 한번만 표시되니 지금 메모해주세요.');
+                }
+              }
+            });
           };
           reader.readAsDataURL(file);
         }
@@ -204,7 +207,7 @@ if(document.querySelector("textarea[name=content]")!=null&&(/https?:\/\/[^\.]*\.
 	else
 		return null;
 	}
-	var url=prompt("YouTube 동영상 ID를 입력해주세요.");
+	var url=prompt("YouTube 동영상 주소를 입력해주세요.");
 	var extracted=ExtractYouTubeID(url);
 	insertText(extracted!=null?'[[youtube('+extracted+')]]':'\n## YouTube 동영상 ID 추출에 실패하였습니다. 주소를 확인해주세요.');
   }
