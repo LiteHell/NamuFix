@@ -6,6 +6,7 @@
 
 button.BetterNamuButton {
 border:none;
+height:100%;
 background:#373A45;
 color:#FFF;
 font-size:12pt;
@@ -21,7 +22,7 @@ background:#7D7F86;
 div#EditInterfaceButtons {
 color:#FFF;
 background:#373A45;
-height:auto;
+height:50px;
 width:100%;
 margin:0 0 0 0;
 padding:0 0 0 0;
