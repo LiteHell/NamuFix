@@ -4,7 +4,7 @@
 // @description 나무위키 편집 인터페이스 등을 개선합니다.
 // @include     http://namu.wiki/*
 // @include     https://namu.wiki/*
-// @version     2.61
+// @version     2.7
 // @namespace   http://litehell.info/
 // @downloadURL https://raw.githubusercontent.com/LiteHell/NamuFix/master/NamuFix.user.js
 // @grant       GM_addStyle
@@ -25,8 +25,8 @@ if(document.querySelector("textarea[name=content]")!=null&&(/https?:\/\/[^\.]*\.
 
   // 문서 제목
   var doctitle=document.querySelector('h1.title > a').innerHTML;
-  if(document.querySelector("h1.title > small")){
-   var sectionno=location.search.replace(/section=([0-9]+)/,'$1')
+  if(document.querySelector("#editForm > input[name=section]")){
+   var sectionno=document.querySelector("#editForm > input[name=section]").value;
   }
   var autosavename=doctitle+'###sec-'+sectionno;
   // 숨겨진 파일 input태그 추가 (이미지 업로드에 쓰임)
@@ -59,6 +59,9 @@ if(document.querySelector("textarea[name=content]")!=null&&(/https?:\/\/[^\.]*\.
    var vline=document.createElement("vr");
     buttons.appendChild(vline);
   };
+  var getSelected=function(){
+    return txtarea.value.substring(txtarea.selectionStart,txtarea.selectionEnd);
+  }
   var processSelected=function(func){
     var txt='';
     var s=txtarea.selectionStart, e=txtarea.selectionEnd;
@@ -78,8 +81,8 @@ if(document.querySelector("textarea[name=content]")!=null&&(/https?:\/\/[^\.]*\.
     txt+=txtarea.value.substring(txtarea.selectionStart);
     txtarea.value=txt;
   };
-  var produceIcoSpan=function(icotxt){ // http://ionicons.com/
-    return '<span class="icon '+icotxt+'"></span>'
+  var produceIcoSpan=function(icotxt, color){ // http://ionicons.com/
+    return '<span class="icon '+icotxt+'" '+ ((typeof color !== 'undefined')?'style="color: '+color+'"':'') +'></span>'
   };
   var WrapWithMarkUp=function(mk){
     return function(){
@@ -160,7 +163,7 @@ if(document.querySelector("textarea[name=content]")!=null&&(/https?:\/\/[^\.]*\.
       alert('임시저장이 없습니다.');
       return;
     }
-    var promptMsg="번호를 숫자만 입력해주세요.\n\n";
+    var promptMsg="번호를 입력해주세요.\n\n";
     var timestamps=[];
     var lastno=0;
     for(var i in obj[autosavename]){
@@ -205,6 +208,31 @@ if(document.querySelector("textarea[name=content]")!=null&&(/https?:\/\/[^\.]*\.
 	var extracted=ExtractYouTubeID(url);
 	insertText(extracted!=null?'[[youtube('+extracted+')]]':'\n## YouTube 동영상 ID 추출에 실패하였습니다. 주소를 확인해주세요.');
   }
+  var HyperLinkMarkUp=function(){
+    // if(/\[\[.+?\]\]/.test(getSelected())){
+    //   var linkto=prompt("어디로 링크할까요?",getSelected().replace(/\[\[(.+?)\|.+\]\]|\[\[(.+?)\]\]/,'$1'));
+    //   processSeleted(function(txt){
+    //     var newlink='';
+    //     if(txt.indexOf('|')!=-1){
+    //       newlink='[['+linkto+'|'+txt.replace(/\[\[.+\|(.+?)\]\]/,'$1')+']]';
+    //     }else{
+    //       newlink='[['+linkto+'|'+txt.replace(/\[\[(.+?)\]\]/,'$1')+']]';
+    //     }
+    //     return newlink;
+    //   });
+    //   
+    // }else{
+    if(!/\[\[.+?\]\]/.test(getSelected())){
+    var linkto=prompt("어디로 링크를 걸까요? 주소(e.g. http://www.example.com/blahblah)나 문서 제목을 입력해주세요.\n\n상위 항목은 ../를 입력해주세요.\n하위 항목은 \"/항목\"(큰따움표 제외)과 같이 입력해주세요.",getSelected());
+    if(isSomethingSelected()){
+      processSelected(function(txt){
+        return linkto!=txt?'[['+linkto+'|'+txt+']]':'[['+linkto+']]';
+      });
+    }else{
+     insertText('[['+linkto+']]') 
+    }
+    }
+  };
   buttons.id="EditInterfaceButtons";
   editstatus.id="EditInterfaceStatus";
   // 서식 버튼
@@ -218,8 +246,10 @@ if(document.querySelector("textarea[name=content]")!=null&&(/https?:\/\/[^\.]*\.
   addbutton('<span style="font-size:125%">가</span>',"글씨 크게",fontsizeMarkUp(1));
 
   addline();
+  addbutton(produceIcoSpan("ion-link"),"하이퍼링크/문서링크",HyperLinkMarkUp)
   addbutton(produceIcoSpan("ion-ios-camera-outline"),"사진 업로드",uploadImage);
-  addbutton(produceIcoSpan("ion-social-youtube-outline"),"유튜브 동영상 삽입",YouTubeMarkUp)
+  addbutton(produceIcoSpan("ion-social-youtube-outline","red"),"유튜브 동영상 삽입",YouTubeMarkUp)
+  addline();
   addbutton(produceIcoSpan("ion-ios-pricetag-outline"),"임시저장",makeAutoSave);
   addbutton(produceIcoSpan("ion-ios-pricetags-outline"),"임시저장 불러오기",checkAutoSaves);
   addbutton(produceIcoSpan("ion-ios-filing-outline"),"임시저장 삭제",clearAutoSaves)
