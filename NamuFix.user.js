@@ -4,12 +4,12 @@
 // @description 나무위키 편집 인터페이스 등을 개선합니다.
 // @include     http://namu.wiki/*
 // @include     https://namu.wiki/*
-// @version     2.8
+// @version     2.9
 // @namespace   http://litehell.info/
 // @downloadURL https://raw.githubusercontent.com/LiteHell/NamuFix/master/NamuFix.user.js
+// @require     https://github.com/LiteHell/NamuFix/raw/master/FlexiColorPicker.js
 // @grant       GM_addStyle
 // @grant       GM_xmlhttpRequest
-// @grant       GM_getResourceText
 // @grant       GM_getValue
 // @grant       GM_setValue
 // @run-at      document-end
@@ -84,12 +84,12 @@ if(document.querySelector("textarea[name=content]")!=null&&(/https?:\/\/[^\.]*\.
   var produceIcoSpan=function(icotxt, color){ // http://ionicons.com/
     return '<span class="icon '+icotxt+'" '+ ((typeof color !== 'undefined')?'style="color: '+color+'"':'') +'></span>'
   };
-  var WrapWithMarkUp=function(mk){
+  var WrapWithMarkUp=function(mk,leftadd){
     return function(){
      if(isSomethingSelected())
-       processSelected(function(txt){return mk+txt+mk});
+       processSelected(function(txt){return mk+txt+((typeof leftadd === "undefined")?mk:leftadd);});
       else{
-        var t=mk+'내용'+mk;
+        var t=mk+'내용'+((typeof leftadd === "undefined")?mk:leftadd);
         var s=txtarea.selectionStart;
         insertText(t);
         txtarea.focus();
@@ -236,6 +236,36 @@ if(document.querySelector("textarea[name=content]")!=null&&(/https?:\/\/[^\.]*\.
     }
     }
   };
+  var CreateDialog=function(dialogtitle, func){
+    if(document.querySelector("#Dialog")){
+      var olddiag=document.querySelector("#Dialog");
+      olddig.parentNode.removeChild(olddig);
+    }
+    var pickerparent=document.createElement("div");
+    pickerparent.id="Dialog";
+    pickerparent.setAttribute("style","position: relative; min-height: 200px; min-width: 200px; background: white; border:1px solid black; top:20px;");
+    var Title=document.createElement("h1");
+    Title.innerHTML=dialogtitle;
+    Title.setAttribute("style","color:black; margin-top: 8px; margin-left: 8px; margin-bottom: 0px; margin-right: 0px; padding: 0px 0px 0px 0px; font-size:15px; font-family:Nanum Gothic;")
+    var hr=document.createElement("hr");
+    var dialogcon=document.createElement("div");
+    func(dialogcon, pickerparent, function(){editstatus.removeChild(pickerparent);});
+    pickerparent.appendChild(Title);
+    pickerparent.appendChild(hr);
+    pickerparent.appendChild(dialogcon);
+    editstatus.appendChild(pickerparent);
+  };
+  var ColouredMarkUp=function(){
+    CreateDialog("색 선택",function(container, parent, closer){
+      var picker=document.createElement("div");
+      picker.className="cp-default";
+      container.appendChild(picker);
+      ColorPicker(picker,function(hex,hsv,rgb){
+        WrapWithMarkUp("{{{"+hex+" ","}}}")();
+        closer();
+      });
+    });
+  };
   buttons.id="EditInterfaceButtons";
   editstatus.id="EditInterfaceStatus";
   // 서식 버튼
@@ -247,7 +277,8 @@ if(document.querySelector("textarea[name=content]")!=null&&(/https?:\/\/[^\.]*\.
   addbutton("가<sup>ga</sup>","윗첨자",WrapWithMarkUp("^^"));
   addbutton('<span style="font-size:75%">가</span>',"글씨 작게",fontsizeMarkUp(-1));
   addbutton('<span style="font-size:125%">가</span>',"글씨 크게",fontsizeMarkUp(1));
-
+  addbutton('<span style="color:red;">가</span>','색 지정',ColouredMarkUp);
+  
   addline();
   addbutton(produceIcoSpan("ion-link"),"하이퍼링크/문서링크",HyperLinkMarkUp)
   addbutton(produceIcoSpan("ion-android-image"),"사진 업로드",uploadImage);
