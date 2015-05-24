@@ -86,10 +86,16 @@ if(document.querySelector("textarea[name=content]")!=null&&(/https?:\/\/[^\.]*\.
   };
   var WrapWithMarkUp=function(mk,leftadd){
     return function(){
-     if(isSomethingSelected())
-       processSelected(function(txt){return mk+txt+((typeof leftadd === "undefined")?mk:leftadd);});
-      else{
-        var t=mk+'내용'+((typeof leftadd === "undefined")?mk:leftadd);
+     var l=(typeof leftadd === "undefined")?mk:leftadd;
+     if(isSomethingSelected()){
+       processSelected(function(txt){
+         if(txt.indexOf(mk)!=0 || txt.substring(txt.length-l.length)!=l)
+           return mk+txt+l;
+         else
+           return txt.substring(mk.length,txt.length-l.length);
+       });
+     } else{
+        var t=mk+'내용'+l;
         var s=txtarea.selectionStart;
         insertText(t);
         txtarea.focus();
@@ -269,7 +275,6 @@ if(document.querySelector("textarea[name=content]")!=null&&(/https?:\/\/[^\.]*\.
             return '{{{'+hex+' '+(isEmpty(txt)?'내용':txt)+'}}}';
           }
         });
-        //WrapWithMarkUp("{{{"+hex+" ","}}}")();
         closer();
       });
     });
