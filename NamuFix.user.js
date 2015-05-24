@@ -261,7 +261,15 @@ if(document.querySelector("textarea[name=content]")!=null&&(/https?:\/\/[^\.]*\.
       picker.className="cp-default";
       container.appendChild(picker);
       ColorPicker(picker,function(hex,hsv,rgb){
-        WrapWithMarkUp("{{{"+hex+" ","}}}")();
+        processSelected(function(txt){
+          var pattern=/{{{#[0-9a-zA-Z]+ (.+?)}}}/;
+          if(pattern.test(txt)){
+            return '{{{'+hex+' '+txt.replace(pattern,'$1')+'}}}';
+          }else{
+            return '{{{'+hex+' '+(isEmpty(txt)?'내용':txt)+'}}}';
+          }
+        });
+        //WrapWithMarkUp("{{{"+hex+" ","}}}")();
         closer();
       });
     });
