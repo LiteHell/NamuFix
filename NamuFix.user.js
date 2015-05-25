@@ -4,7 +4,7 @@
 // @description 나무위키 편집 인터페이스 등을 개선합니다.
 // @include     http://namu.wiki/*
 // @include     https://namu.wiki/*
-// @version     2.9
+// @version     3
 // @namespace   http://litehell.info/
 // @downloadURL https://raw.githubusercontent.com/LiteHell/NamuFix/master/NamuFix.user.js
 // @require     https://github.com/LiteHell/NamuFix/raw/master/FlexiColorPicker.js
@@ -249,7 +249,7 @@ if(document.querySelector("textarea[name=content]")!=null&&(/https?:\/\/[^\.]*\.
     }
     var pickerparent=document.createElement("div");
     pickerparent.id="Dialog";
-    pickerparent.setAttribute("style","position: relative; min-height: 200px; min-width: 200px; background: white; border:1px solid black; top:20px;");
+    pickerparent.setAttribute("style","position: relative; min-height: 100px; min-width: 200px; background: white; border:1px solid black; top:20px;");
     var Title=document.createElement("h1");
     Title.innerHTML=dialogtitle;
     Title.setAttribute("style","color:black; margin-top: 8px; margin-left: 8px; margin-bottom: 0px; margin-right: 0px; padding: 0px 0px 0px 0px; font-size:15px; font-family:Nanum Gothic;")
@@ -279,6 +279,265 @@ if(document.querySelector("textarea[name=content]")!=null&&(/https?:\/\/[^\.]*\.
       });
     });
   };
+  var HighlightCode=function(){
+    CreateDialog("언어/테마 선택",function(container,parent,closer){
+    var AddOption=function(sel,opn){
+      var op=document.createElement("option");
+      op.value=opn;
+      op.innerHTML=opn;
+      sel.appendChild(op);
+    }
+    var LabeledAppend=function(elm,label){
+       var la=document.createElement("label");
+       la.setAttribute("for",elm.id);
+       la.innerHTML=label;
+       la.style.color="black";
+       container.appendChild(la);
+       container.appendChild(elm);
+       container.appendChild(document.createElement("br"));
+     }
+     var langs=document.createElement("select");
+     var themes=document.createElement("select");
+     container.style.paddingLeft="12px";
+     langs.id="lang";
+     themes.id="theme";
+     (function(){
+      AddOption(langs,"ActionScript");
+      AddOption(langs,"Active4D");
+      AddOption(langs,"Active4D Config");
+      AddOption(langs,"Active4D Library");
+      AddOption(langs,"Ada");
+      AddOption(langs,"Ant");
+      AddOption(langs,"ANTLR");
+      AddOption(langs,"Apache");
+      AddOption(langs,"AppleScript");
+      AddOption(langs,"ASP");
+      AddOption(langs,"ASP vb.NET");
+      AddOption(langs,"Bash");
+      AddOption(langs,"BibTeX");
+      AddOption(langs,"Bison");
+      AddOption(langs,"Blog — HTML");
+      AddOption(langs,"Blog — Markdown");
+      AddOption(langs,"Blog — Text");
+      AddOption(langs,"Blog — Textile");
+      AddOption(langs,"Bulletin Board");
+      AddOption(langs,"C");
+      AddOption(langs,"C++");
+      AddOption(langs,"C++ Qt");
+      AddOption(langs,"camlp4");
+      AddOption(langs,"CMake Listfile");
+      AddOption(langs,"ColdFusion");
+      AddOption(langs,"Context Free");
+      AddOption(langs,"CSS");
+      AddOption(langs,"CSV");
+      AddOption(langs,"D");
+      AddOption(langs,"DokuWiki");
+      AddOption(langs,"Doxygen");
+      AddOption(langs,"Dylan");
+      AddOption(langs,"Eiffel");
+      AddOption(langs,"Erlang");
+      AddOption(langs,"F-Script");
+      AddOption(langs,"Fortran - Modern");
+      AddOption(langs,"Fortran - Punchcard");
+      AddOption(langs,"FXScript");
+      AddOption(langs,"Gettext");
+      AddOption(langs,"Grails Server Page");
+      AddOption(langs,"Graphviz (DOT)");
+      AddOption(langs,"Greasemonkey");
+      AddOption(langs,"Gri");
+      AddOption(langs,"Groovy");
+      AddOption(langs,"GTD");
+      AddOption(langs,"GTDalt");
+      AddOption(langs,"Haskell");
+      AddOption(langs,"HTML");
+      AddOption(langs,"HTML (Active4D)");
+      AddOption(langs,"HTML (ASP)");
+      AddOption(langs,"HTML (ASP.net)");
+      AddOption(langs,"HTML (Django)");
+      AddOption(langs,"HTML (Erlang)");
+      AddOption(langs,"HTML (Mason)");
+      AddOption(langs,"HTML (Rails)");
+      AddOption(langs,"HTML (Tcl)");
+      AddOption(langs,"HTML (Template Toolkit)");
+      AddOption(langs,"iCalendar");
+      AddOption(langs,"Inform");
+      AddOption(langs,"Ini");
+      AddOption(langs,"Installer Distribution Script");
+      AddOption(langs,"Io");
+      AddOption(langs,"Java");
+      AddOption(langs,"JavaDoc");
+      AddOption(langs,"Java Properties");
+      AddOption(langs,"JavaScript");
+      AddOption(langs,"JavaScript (Rails)");
+      AddOption(langs,"JavaScript jQuery");
+      AddOption(langs,"JavaScript Prototype & Script.aculo.us");
+      AddOption(langs,"Javascript YUI");
+      AddOption(langs,"Java Server Page (JSP)");
+      AddOption(langs,"JSFL");
+      AddOption(langs,"JSON");
+      AddOption(langs,"JUnit Test Report");
+      AddOption(langs,"Language Grammar");
+      AddOption(langs,"LaTeX");
+      AddOption(langs,"LaTeX Beamer");
+      AddOption(langs,"LaTeX Log");
+      AddOption(langs,"LaTeX Memoir");
+      AddOption(langs,"LaTeX Rdaemon");
+      AddOption(langs,"Lex/Flex");
+      AddOption(langs,"Lid File");
+      AddOption(langs,"Lighttpd");
+      AddOption(langs,"LilyPond");
+      AddOption(langs,"Lisp");
+      AddOption(langs,"Literate Haskell");
+      AddOption(langs,"Logo");
+      AddOption(langs,"Logtalk");
+      AddOption(langs,"Lua");
+      AddOption(langs,"MacPorts Portfile");
+      AddOption(langs,"Mail");
+      AddOption(langs,"Makefile");
+      AddOption(langs,"Makegen");
+      AddOption(langs,"Man");
+      AddOption(langs,"Markdown");
+      AddOption(langs,"MATLAB");
+      AddOption(langs,"Maven POM");
+      AddOption(langs,"Mediawiki");
+      AddOption(langs,"MEL");
+      AddOption(langs,"MIPS Assembler");
+      AddOption(langs,"Modula-3");
+      AddOption(langs,"mod_perl");
+      AddOption(langs,"MoinMoin");
+      AddOption(langs,"MooTools");
+      AddOption(langs,"Movable Type");
+      AddOption(langs,"Movable Type (MT only)");
+      AddOption(langs,"MultiMarkdown");
+      AddOption(langs,"Objective-C");
+      AddOption(langs,"Objective-C++");
+      AddOption(langs,"Objective-J");
+      AddOption(langs,"OCaml");
+      AddOption(langs,"OCamllex");
+      AddOption(langs,"OCamlyacc");
+      AddOption(langs,"Octave");
+      AddOption(langs,"OpenGL");
+      AddOption(langs,"Pascal");
+      AddOption(langs,"Perl");
+      AddOption(langs,"Perl HTML-Template");
+      AddOption(langs,"PHP");
+      AddOption(langs,"Plain Text");
+      AddOption(langs,"PmWiki");
+      AddOption(langs,"Postscript");
+      AddOption(langs,"Processing");
+      AddOption(langs,"Prolog");
+      AddOption(langs,"Property List");
+      AddOption(langs,"Prototype & Script.aculo.us (JavaScript) Bracketed");
+      AddOption(langs,"Python");
+      AddOption(langs,"Python Django");
+      AddOption(langs,"qmake Project file");
+      AddOption(langs,"Quake Style .cfg");
+      AddOption(langs,"R");
+      AddOption(langs,"Ragel");
+      AddOption(langs,"R Console (R.app)");
+      AddOption(langs,"R Console (Rdaemon)");
+      AddOption(langs,"R Console (Rdaemon) Plain");
+      AddOption(langs,"Rd (R Documentation)");
+      AddOption(langs,"Regular Expressions (Oniguruma)");
+      AddOption(langs,"Regular Expressions (Python)");
+      AddOption(langs,"Release Notes");
+      AddOption(langs,"Remind");
+      AddOption(langs,"reStructuredText");
+      AddOption(langs,"Rez");
+      AddOption(langs,"RJS");
+      AddOption(langs,"Ruby");
+      AddOption(langs,"Ruby Haml");
+      AddOption(langs,"Ruby on Rails");
+      AddOption(langs,"S5 Slide Show");
+      AddOption(langs,"Scala");
+      AddOption(langs,"Scheme");
+      AddOption(langs,"Scilab");
+      AddOption(langs,"Setext");
+      AddOption(langs,"Slate");
+      AddOption(langs,"Smarty");
+      AddOption(langs,"SQL");
+      AddOption(langs,"SQL (Rails)");
+      AddOption(langs,"SSH Config");
+      AddOption(langs,"Standard ML");
+      AddOption(langs,"Standard ML - CM");
+      AddOption(langs,"Strings File");
+      AddOption(langs,"Subversion commit message");
+      AddOption(langs,"SWeave");
+      AddOption(langs,"SWIG");
+      AddOption(langs,"Tcl");
+      AddOption(langs,"TeX");
+      AddOption(langs,"TeX Math");
+      AddOption(langs,"Textile");
+      AddOption(langs,"Thrift");
+      AddOption(langs,"TSV");
+      AddOption(langs,"Twiki");
+      AddOption(langs,"Txt2tags");
+      AddOption(langs,"Vectorscript");
+      AddOption(langs,"XML");
+      AddOption(langs,"XML strict");
+      AddOption(langs,"XSL");
+      AddOption(langs,"YAML");
+    })();
+     (function(){
+      AddOption(themes,"Active4D");
+      AddOption(themes,"All Hallow's Eve");
+      AddOption(themes,"Amy");
+      AddOption(themes,"Blackboard");
+      AddOption(themes,"Cobalt");
+      AddOption(themes,"Dawn");
+      AddOption(themes,"Eiffel");
+      AddOption(themes,"Espresso Libre");
+      AddOption(themes,"IDLE");
+      AddOption(themes,"LAZY");
+      AddOption(themes,"Mac Classic");
+      AddOption(themes,"MagicWB (Amiga)");
+      AddOption(themes,"Pastels on Dark");
+      AddOption(themes,"Slush & Poppies");
+      AddOption(themes,"Solarized (dark)");
+      AddOption(themes,"Solarized (light)");
+      AddOption(themes,"SpaceCadet");
+      AddOption(themes,"Sunburst");
+      AddOption(themes,"Twilight");
+      AddOption(themes,"Zenburnesque");
+      AddOption(themes,"iPlastic");
+    })();
+     LabeledAppend(langs,"언어");
+     LabeledAppend(themes,"테마");
+      var CloseButton = document.createElement("button");
+      CloseButton.className="d_btn f_r";
+      CloseButton.setAttribute("type","button");
+      CloseButton.innerHTML="취소";
+      CloseButton.addEventListener("click",closer);
+      var ApplyButton = document.createElement("button");
+      ApplyButton.className="d_btn f_r type_blue";
+      ApplyButton.setAttribute("type","button");
+      ApplyButton.innerHTML="강조";
+      ApplyButton.addEventListener("click",function(){
+       var lang,theme,code;
+        lang=langs.options[langs.selectedIndex].value;
+        theme=themes.options[themes.selectedIndex].value;
+        code=isSomethingSelected()?getSelected():'코드를 선택한 후 코드 문법 강조 메뉴를 이용하세요.';
+        
+      });
+      
+      container.style.height="80px";
+      container.appendChild(CloseButton);
+      container.appendChild(ApplyButton);
+    });
+  }; // IN DEV, it was planned to use markup.su api, but i think i have to think more about that.
+  var BlockquoteMarkUp=function(){
+    var s=txtarea.selectionStart;
+    var e=txtarea.selectionEnd;
+    var txt=txtarea.value.substring(s,e);
+    if(s==e) txt="인용문은 앞에 > (> 다음에 띄어쓰기 하나)를 붙이면 됩니다.\n\n 이렇게!"
+    var lines=txt.split("\n");
+    var result="\n";
+    for(var i=0;i<lines.length;i++){
+      result+="> "+lines[i]+"\n";
+    }
+    txtarea.value=txtarea.value.substring(0,s)+result+txtarea.value.substring(e);
+  }
+  
   buttons.id="EditInterfaceButtons";
   editstatus.id="EditInterfaceStatus";
   // 서식 버튼
@@ -291,7 +550,10 @@ if(document.querySelector("textarea[name=content]")!=null&&(/https?:\/\/[^\.]*\.
   addbutton('<span style="font-size:75%">가</span>',"글씨 작게",fontsizeMarkUp(-1));
   addbutton('<span style="font-size:125%">가</span>',"글씨 크게",fontsizeMarkUp(1));
   addbutton('<span style="color:red;">가</span>','색 지정',ColouredMarkUp);
-  
+  // addbutton(produceIcoSpan('ion-code'),'코드 문법 강조',HighlightCode);
+  addbutton('<span style="font-size:0.8em; vertical-align:super; color:blue;">[1]</span>','각주',WrapWithMarkUp("[* ","]"));
+  addbutton('<blockquote style="background: #EEE; color:black; font-size:70%; padding:2px;">인용</blockquote>','인용문',BlockquoteMarkUp)
+  addbutton('\u2015','수평줄',function(){insertText('\n----\n')});
   addline();
   addbutton(produceIcoSpan("ion-link"),"하이퍼링크/문서링크",HyperLinkMarkUp)
   addbutton(produceIcoSpan("ion-android-image"),"사진 업로드",uploadImage);
