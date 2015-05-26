@@ -56,7 +56,7 @@ height:20px;
 	background: white;
 }
 
-#Dialog > h1#DialogTitle {
+#Dialog > span#DialogTitle {
 	color: black;
 	padding: 0px;
 	font-family: Nanum Gothic;
