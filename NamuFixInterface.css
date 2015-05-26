@@ -43,3 +43,32 @@ color:white;
 background:#7D7F86;
 height:20px;
 }
+
+#Dialog{
+	position: fixed;
+	min-width: 300px;
+	left: 50%;
+	top: 50%;
+	transform:translate(-50%, -50%);
+	padding: 5px;
+	border: 1px solid black;
+	border-radius: 10px;
+	background: white;
+}
+
+#Dialog > h1#DialogTitle {
+	color: black;
+	padding: 0px;
+	font-family: Nanum Gothic;
+	font-size: 24px;
+	font-weight: bold;
+}
+
+#DialogParent{
+	position: fixed;
+	left: 0;
+	top: 0;
+	height: 100%;
+	width: 100%;
+	background: rgba(0,0,0,0.4);
+}

@@ -4,7 +4,7 @@
 // @description 나무위키 편집 인터페이스 등을 개선합니다.
 // @include     http://namu.wiki/*
 // @include     https://namu.wiki/*
-// @version     3
+// @version     3.1
 // @namespace   http://litehell.info/
 // @downloadURL https://raw.githubusercontent.com/LiteHell/NamuFix/master/NamuFix.user.js
 // @require     https://github.com/LiteHell/NamuFix/raw/master/FlexiColorPicker.js
@@ -243,23 +243,42 @@ if(document.querySelector("textarea[name=content]")!=null&&(/https?:\/\/[^\.]*\.
     }
   };
   var CreateDialog=function(dialogtitle, func){
-    if(document.querySelector("#Dialog")){
-      var olddiag=document.querySelector("#Dialog");
-      olddig.parentNode.removeChild(olddig);
-    }
-    var pickerparent=document.createElement("div");
-    pickerparent.id="Dialog";
-    pickerparent.setAttribute("style","position: relative; min-height: 100px; min-width: 200px; background: white; border:1px solid black; top:20px;");
-    var Title=document.createElement("h1");
-    Title.innerHTML=dialogtitle;
-    Title.setAttribute("style","color:black; margin-top: 8px; margin-left: 8px; margin-bottom: 0px; margin-right: 0px; padding: 0px 0px 0px 0px; font-size:15px; font-family:Nanum Gothic;")
-    var hr=document.createElement("hr");
-    var dialogcon=document.createElement("div");
-    func(dialogcon, pickerparent, function(){editstatus.removeChild(pickerparent);});
-    pickerparent.appendChild(Title);
-    pickerparent.appendChild(hr);
-    pickerparent.appendChild(dialogcon);
-    editstatus.appendChild(pickerparent);
+    var RemoveIfExists=function(sel){
+      if(document.querySelector(sel)){
+        var olddig=document.querySelector(sel);
+        olddig.parentNode.removeChild(olddig);
+      }
+    };
+    RemoveIfExists("#Dialog");
+    RemoveIfExists("#DialogParent");
+    
+    var dialog=document.createElement("div");
+    dialog.id="Dialog";
+    
+    var titleElement=document.createElement("span");
+    titleElement.id="DialogTitle";
+    titleElement.innerHTML=dialogtitle;
+    
+    var closeButton=document.createElement("button");
+    closeButton.innerHTML="닫기";
+    closeButton.className="f_r type_blue d_btn"
+    closeButton.addEventListener("click",function(){RemoveIfExists("#Dialog"); RemoveIfExists("#DialogParent");});
+    var horiline=document.createElement("hr");
+    
+    var container=document.createElement("div");
+    func(container,dialog,function(){RemoveIfExists("#Dialog"); RemoveIfExists("#DialogParent");});
+    
+    dialog.appendChild(titleElement);
+    dialog.appendChild(closeButton);
+    dialog.appendChild(document.createElement("br"));
+    dialog.appendChild(horiline);
+    dialog.appendChild(container);
+    
+    var digparent=document.createElement("div");
+    digparent.id="DialogParent";
+    digparent.appendChild(dialog);
+    
+    document.body.appendChild(digparent);
   };
   var ColouredMarkUp=function(){
     CreateDialog("색 선택",function(container, parent, closer){
