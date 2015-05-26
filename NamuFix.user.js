@@ -4,7 +4,7 @@
 // @description 나무위키 편집 인터페이스 등을 개선합니다.
 // @include     http://namu.wiki/*
 // @include     https://namu.wiki/*
-// @version     3.11
+// @version     3.12
 // @namespace   http://litehell.info/
 // @downloadURL https://raw.githubusercontent.com/LiteHell/NamuFix/master/NamuFix.user.js
 // @require     https://github.com/LiteHell/NamuFix/raw/master/FlexiColorPicker.js
@@ -583,4 +583,10 @@ if(document.querySelector("textarea[name=content]")!=null&&(/https?:\/\/[^\.]*\.
   addbutton(produceIcoSpan("ion-ios-filing-outline"),"임시저장 삭제",clearAutoSaves);
   txtarea.parentNode.insertBefore(buttons,txtarea);
   txtarea.parentNode.insertBefore(editstatus,txtarea);
+  
+  function AutoSaveLoop(){
+    setTimeout(makeAutoSave,1);
+    setTimeout(AutoSaveLoop,300000);
+  }
+  AutoSaveLoop();
 }
