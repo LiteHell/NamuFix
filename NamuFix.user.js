@@ -600,3 +600,12 @@ if(document.querySelector("textarea[name=content]")!=null&&(/https?:\/\/[^\.]*\.
   }
   AutoSaveLoop();
 }
+if((/https?:\/\/[^\.]*\.?namu\.wiki\/mypage/).test(location.href)==true){
+ //사이트 레이아웃 div에 나무픽스 설정 메뉴 생성(로그인시 mypage)
+ var h3 = document.createElement("h3");
+ var text = document.createTextNode("Namufix설정");
+ h3.appendChild(text);
+  
+ var element = document.getElementById("siteLayout");
+ element.appendChild(h3);
+}
