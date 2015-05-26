@@ -261,7 +261,7 @@ if(document.querySelector("textarea[name=content]")!=null&&(/https?:\/\/[^\.]*\.
     
     var closeButton=document.createElement("button");
     closeButton.innerHTML="닫기";
-    closeButton.className="f_r type_blue d_btn"
+    closeButton.className="f_r type_blue d_btn";
     closeButton.addEventListener("click",function(){RemoveIfExists("#Dialog"); RemoveIfExists("#DialogParent");});
     var horiline=document.createElement("hr");
     
