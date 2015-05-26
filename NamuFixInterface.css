@@ -44,6 +44,22 @@ background:#7D7F86;
 height:20px;
 }
 
+//나무픽스 컨픽버튼
+#nf_settings{
+position: fixed;
+margin: 0px;
+padding: 0px;
+top: 0px;
+bottom: 0px;
+list-style-type: none;
+border-width: 1px medium medium 1px;
+border-style: solid none none solid;
+border-color: #808080 -moz-use-text-color -moz-use-text-color #808080;
+border-top-left-radius: 4px;
+background-color: #3D414D;
+z-index: 90005;
+}
+
 #Dialog{
 	position: fixed;
 	min-width: 300px;
