@@ -4,7 +4,7 @@
 // @description 나무위키 편집 인터페이스 등을 개선합니다.
 // @include     http://namu.wiki/*
 // @include     https://namu.wiki/*
-// @version     3.12
+// @version     3.13
 // @namespace   http://litehell.info/
 // @downloadURL https://raw.githubusercontent.com/LiteHell/NamuFix/master/NamuFix.user.js
 // @require     https://github.com/LiteHell/NamuFix/raw/master/FlexiColorPicker.js
@@ -564,8 +564,8 @@ if(document.querySelector("textarea[name=content]")!=null&&(/https?:\/\/[^\.]*\.
   addbutton("<i>가</i>","기울게",WrapWithMarkUp("''"));
   addbutton("<del>가</del>","취소선",WrapWithMarkUp("--"));
   addbutton("<u>가</u>","밑줄",WrapWithMarkUp("__"));
-  addbutton("가<sub>ga</sub>","아랫첨자",WrapWithMarkUp(",,"));
-  addbutton("가<sup>ga</sup>","윗첨자",WrapWithMarkUp("^^"));
+  addbutton("가<sub>가</sub>","아랫첨자",WrapWithMarkUp(",,"));
+  addbutton("가<sup>가</sup>","윗첨자",WrapWithMarkUp("^^"));
   addbutton('<span style="font-size:75%">가</span>',"글씨 작게",fontsizeMarkUp(-1));
   addbutton('<span style="font-size:125%">가</span>',"글씨 크게",fontsizeMarkUp(1));
   addbutton('<span style="color:red;">가</span>','색 지정',ColouredMarkUp);
