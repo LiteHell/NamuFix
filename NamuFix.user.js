@@ -24,7 +24,7 @@ if(document.querySelector("textarea[name=content]")!=null&&(/https?:\/\/[^\.]*\.
   GM_xmlhttpRequest({method:"GET",url:"https://raw.githubusercontent.com/LiteHell/NamuFix/master/NamuFixInterface.css",onload:function(response){GM_addStyle(response.responseText);}}); // http://jsfiddle.net/Vestride/dkr9b/ 참고함
   //floating Setting btn
  var newDiv = document.createElement("div");
-  newDiv.innerHTML = "<span class="ion-ios-gear"/>";
+  newDiv.innerHTML = "<span class=ion-ios-gear></span>";
   newDiv.id="nf_settings";
   document.body.appendChild(newDiv);
   
