@@ -561,7 +561,7 @@ if(document.querySelector("textarea[name=content]")!=null&&(/https?:\/\/[^\.]*\.
   addline();
   addbutton(produceIcoSpan("ion-ios-pricetag-outline"),"임시저장",makeAutoSave);
   addbutton(produceIcoSpan("ion-ios-pricetags-outline"),"임시저장 불러오기",checkAutoSaves);
-  addbutton(produceIcoSpan("ion-ios-filing-outline"),"임시저장 삭제",clearAutoSaves)
+  addbutton(produceIcoSpan("ion-ios-filing-outline"),"임시저장 삭제",clearAutoSaves);
   txtarea.parentNode.insertBefore(buttons,txtarea);
   txtarea.parentNode.insertBefore(editstatus,txtarea);
 }
