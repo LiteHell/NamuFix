@@ -4,7 +4,7 @@
 // @description 나무위키 편집 인터페이스 등을 개선합니다.
 // @include     http://namu.wiki/*
 // @include     https://namu.wiki/*
-// @version     3.13
+// @version     3.14
 // @namespace   http://litehell.info/
 // @downloadURL https://raw.githubusercontent.com/LiteHell/NamuFix/master/NamuFix.user.js
 // @require     https://github.com/LiteHell/NamuFix/raw/master/FlexiColorPicker.js
@@ -556,7 +556,15 @@ if(document.querySelector("textarea[name=content]")!=null&&(/https?:\/\/[^\.]*\.
     }
     txtarea.value=txtarea.value.substring(0,s)+result+txtarea.value.substring(e);
   }
-  
+  var DaumTVPotMarkUp=function(){
+    var vurl=prompt('참고 : 개발중인 기능이므로 이상하게 작동할 수 있습니다.\n\n1. 삽입하고픈 TV팟 동영상을 봅니다\n2. 공유 버튼을 누릅니다.\n3. 거기서 복사한 URL을 입력하십시오.');
+    var pattern2=/http:\/\/tvpot\.daum\.net\/v\/(.+?)/;
+    if(!pattern2.test(vurl)){
+      alert('지원되지 않는 주소 형식입니다.')
+    }else{
+      insertText('{{{#!html <iframe src="http://videofarm.daum.net/controller/video/viewer/Video.html?vid='+vurl.replace(pattern2,'$1')+'&play_loc=undefined&alert=true"></iframe>}}}');
+    }  
+  };
   buttons.id="EditInterfaceButtons";
   editstatus.id="EditInterfaceStatus";
   // 서식 버튼
@@ -577,10 +585,12 @@ if(document.querySelector("textarea[name=content]")!=null&&(/https?:\/\/[^\.]*\.
   addbutton(produceIcoSpan("ion-link"),"하이퍼링크/문서링크",HyperLinkMarkUp)
   addbutton(produceIcoSpan("ion-android-image"),"사진 업로드",uploadImage);
   addbutton(produceIcoSpan("ion-social-youtube-outline","red"),"유튜브 동영상 삽입",YouTubeMarkUp)
+  addbutton(produceIcoSpan("ion-ios-play-outline","Aqua"),"다음 TV팟 동영상 삽입",DaumTVPotMarkUp);
   addline();
   addbutton(produceIcoSpan("ion-ios-pricetag-outline"),"임시저장",makeAutoSave);
   addbutton(produceIcoSpan("ion-ios-pricetags-outline"),"임시저장 불러오기",checkAutoSaves);
   addbutton(produceIcoSpan("ion-ios-filing-outline"),"임시저장 삭제",clearAutoSaves);
+  
   txtarea.parentNode.insertBefore(buttons,txtarea);
   txtarea.parentNode.insertBefore(editstatus,txtarea);
   
