@@ -23,10 +23,10 @@ if(document.querySelector("textarea[name=content]")!=null&&(/https?:\/\/[^\.]*\.
   // 수정 인터페이스 개선
   GM_xmlhttpRequest({method:"GET",url:"https://raw.githubusercontent.com/LiteHell/NamuFix/master/NamuFixInterface.css",onload:function(response){GM_addStyle(response.responseText);}}); // http://jsfiddle.net/Vestride/dkr9b/ 참고함
   //floating Setting btn
- var newDiv = document.createElement("div");
-  newDiv.innerHTML = "<span class=ion-ios-gear></span>";
+var newDiv = document.createElement("div");
+  newDiv.innerHTML = "<span class=\"ion-ios-gear\"></span>";
   newDiv.id="nf_settings";
-  document.body.appendChild(newDiv);
+  document.body.appendChild(newDiv); 
   
   // 문서 제목
   var doctitle=document.querySelector('h1.title > a').innerHTML;
