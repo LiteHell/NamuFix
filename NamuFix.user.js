@@ -24,7 +24,7 @@ if(document.querySelector("textarea[name=content]")!=null&&(/https?:\/\/[^\.]*\.
   GM_xmlhttpRequest({method:"GET",url:"https://raw.githubusercontent.com/LiteHell/NamuFix/master/NamuFixInterface.css",onload:function(response){GM_addStyle(response.responseText);}}); // http://jsfiddle.net/Vestride/dkr9b/ 참고함
   //floating Setting btn
 var newDiv = document.createElement("div");
-  newDiv.innerHTML = "<span class=\"ion-ios-gear\"></span>";
+  newDiv.innerHTML = "<a><li><span style=\"color: rgb(255, 255, 255); font-size: 20pt; margin-left: 10px\" class=\"ion-ios-gear\"></span></li></a>";
   newDiv.id="nf_settings";
   document.body.appendChild(newDiv); 
   
@@ -607,14 +607,9 @@ var newDiv = document.createElement("div");
   
   
 }
-/*
-if((/https?:\/\/[^\.]*\.?namu\.wiki\/mypage/).test(location.href)==true){
- //사이트 레이아웃 div에 나무픽스 설정 메뉴 생성(로그인시 mypage)
- var h3 = document.createElement("h3");
- var text = document.createTextNode("Namufix설정");
- h3.appendChild(text);
-  
- var element = document.getElementById("siteLayout");
- element.appendChild(h3);
+if((/https?:\/\/[^\.]*\.?namu\.wiki\/w\/.*/).test(location.href)==true){
+ //일반문서페이지에서도 보이게함.
+  newDiv.innerHTML = "<li><span onclick=\"menu();\" style=\"color: rgb(255, 255, 255); font-size: 20pt; margin-left: 10px; cursor:pointer\" class=\"ion-ios-gear\"></span></li>";
+  newDiv.id="nf_settings";
+  document.body.appendChild(newDiv); 
 }
-*/

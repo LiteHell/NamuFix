@@ -44,12 +44,10 @@ background:#7D7F86;
 height:20px;
 }
 
-#nf_settings{
+div#nf_settings{
 position: fixed;
 margin: 0px;
 padding: 0px;
-top: 10px;
-bottom: 10px;
 list-style-type: none;
 border-width: 1px medium medium 1px;
 border-style: solid none none solid;
@@ -58,7 +56,6 @@ border-top-left-radius: 4px;
 background-color: #3D414D;
 z-index: 90005;
 }
-
 #Dialog{
 	position: fixed;
 	min-width: 300px;
