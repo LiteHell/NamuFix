@@ -23,10 +23,13 @@ if(document.querySelector("textarea[name=content]")!=null&&(/https?:\/\/[^\.]*\.
   // 수정 인터페이스 개선
   GM_xmlhttpRequest({method:"GET",url:"https://raw.githubusercontent.com/LiteHell/NamuFix/master/NamuFixInterface.css",onload:function(response){GM_addStyle(response.responseText);}}); // http://jsfiddle.net/Vestride/dkr9b/ 참고함
   //floating Setting btn
-var newDiv = document.createElement("div");
+  var newDiv = document.createElement("div");
   newDiv.innerHTML = "<li><span onclick=\"menu();\" style=\"color: rgb(255, 255, 255); font-size: 20pt; margin-left: 10px; cursor:pointer\" class=\"ion-ios-gear\"></span></li>";
   newDiv.id="nf_settings";
-  document.body.appendChild(newDiv); 
+  //newdiv.addEventListener("click", function(){
+	//Setting();
+  //});
+  document.body.appendChild(newDiv);
   
   // 문서 제목
   var doctitle=document.querySelector('h1.title > a').innerHTML;
@@ -609,7 +612,19 @@ var newDiv = document.createElement("div");
 }
 if((/https?:\/\/[^\.]*\.?namu\.wiki\/w\/.*/).test(location.href)==true){
  //일반문서페이지에서도 보이게함.
+/*  function Setting(){
+	 var nf_dialog = document.createElement("div");
+	 nf_dialog.id ="nf_dialog";
+	 nf_dialog.style="width:640px;height:700px;backgroundColor: #ffffff; left:300px; bottom:300px;";
+	 nf_dialog.body.appendChild(nf_dialog);
+ } */
+  GM_xmlhttpRequest({method:"GET",url:"https://raw.githubusercontent.com/LiteHell/NamuFix/master/NamuFixInterface.css",onload:function(response){GM_addStyle(response.responseText);}}); // css 불러오기
+  var newDiv = document.createElement("div");
   newDiv.innerHTML = "<li><span onclick=\"menu();\" style=\"color: rgb(255, 255, 255); font-size: 20pt; margin-left: 10px; cursor:pointer\" class=\"ion-ios-gear\"></span></li>";
   newDiv.id="nf_settings";
-  document.body.appendChild(newDiv); 
+  //newdiv.addEventListener("click", function(){
+	//Setting();
+  //});
+  document.body.appendChild(newDiv);
+  
 }
