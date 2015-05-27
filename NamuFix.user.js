@@ -15,13 +15,10 @@
 // @run-at      document-end
 // ==/UserScript==
 
-// 나무마크 도움말 : https://namu.wiki/w/HelpOnEditing?from=%ED%8E%B8%EC%A7%91%20%EB%8F%84%EC%9B%80%EB%A7%90
-
 GM_addStyle('em{font-style: italic;}');
 if(document.querySelector("textarea[name=content]")!=null&&(/https?:\/\/[^\.]*\.?namu\.wiki\/edit.*/).test(location.href)){
-// if(document.querySelector("textarea[name=content]")){
   // 수정 인터페이스 개선
-  GM_xmlhttpRequest({method:"GET",url:"https://raw.githubusercontent.com/LiteHell/NamuFix/master/NamuFixInterface.css",onload:function(response){GM_addStyle(response.responseText);}}); // http://jsfiddle.net/Vestride/dkr9b/ 참고함
+  GM_xmlhttpRequest({method:"GET",url:"https://raw.githubusercontent.com/LiteHell/NamuFix/master/NamuFixInterface.css",onload:function(response){GM_addStyle(response.responseText);}});
 
   // 문서 제목
   var doctitle=document.querySelector('h1.title > a').innerHTML;
