@@ -48,9 +48,13 @@ div#nf_settings{
 position: fixed;
 margin: 0px;
 padding: 0px;
-list-style-type: none;
-border-width: 1px medium medium 1px;
-border-style: solid none none solid;
+width:50px;
+height:50px;
+top: 0px;
+left: 0px;
+opacity: 0.4;
+border-width: 1px 1px 1px 1px;
+border-style: solid solid  solid solid;
 border-color: #808080 -moz-use-text-color -moz-use-text-color #808080;
 border-top-left-radius: 4px;
 background-color: #3D414D;
