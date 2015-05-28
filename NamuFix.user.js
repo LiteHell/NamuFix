@@ -28,4 +28,4 @@ function Include(path){
   });
 }
 
-Include('ModifyEditor.js');
+Include('CheckLocation.js');
