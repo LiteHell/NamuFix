@@ -28,4 +28,17 @@ function Include(path){
   });
 }
 
+GM_xmlhttpRequest({
+  url:'https://raw.githubusercontent.com/LiteHell/NamuFix/dev/static/NamuFixInterface.css',
+  method:'GET',
+  onload:function(response){
+    GM_addStyle(response.responseText);
+  }
+})
+
 Include('CheckLocation.js');
+if(wikiloc=="edit"){
+  Include("EditorModifier.js");
+  Include("EditorFuncHelper.js");
+  Include("AddEditorButtons.js");
+}
