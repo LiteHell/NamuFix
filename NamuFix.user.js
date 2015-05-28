@@ -6,7 +6,7 @@
 // @include     https://namu.wiki/*
 // @include     http://*.namu.wiki/*
 // @include     https://*.namu.wiki/*
-// @version     3.15
+// @version     3.16
 // @namespace   http://litehell.info/
 // @downloadURL https://raw.githubusercontent.com/LiteHell/NamuFix/dev/NamuFix.user.js
 // @require     https://raw.githubusercontent.com/LiteHell/NamuFix/dev/static/FlexiColorPicker.js
@@ -22,6 +22,7 @@ function Include(path){
     method: "GET",
     url: "https://raw.githubusercontent.com/LiteHell/NamuFix/dev/src/"+path,
     onload:function(response){
+      console.log(response.responseText);
       eval(response.responseText);
     }
   });
