@@ -38,7 +38,7 @@ GM_xmlhttpRequest({
 
 Include('CheckLocation.js');
 if(wikiloc=="edit"){
-  Include("EditorModifier.js");
-  Include("EditorFuncHelper.js");
-  Include("AddEditorButtons.js");
+  Include("Editor/EditorModifier.js");
+  Include("Editor/EditorFuncHelper.js");
+  Include("Editor/AddEditorButtons.js");
 }

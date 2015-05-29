@@ -1,5 +1,4 @@
-var editorModifier;
-function EditorModifierClass(){
+var editorModifier=new function(){
   this.docTitle=document.querySelector('h1.title > a').innerHTML;
   this.docSectionNo=document.querySelector("#editForm > input[name=section]").value;
 
@@ -36,4 +35,3 @@ function EditorModifierClass(){
     editorStatus.innerHTML=txt;
   }
 }
-editorModifier=new EditorModifierClass();
