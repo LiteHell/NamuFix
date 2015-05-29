@@ -6,7 +6,7 @@
 // @include     https://namu.wiki/*
 // @include     http://*.namu.wiki/*
 // @include     https://*.namu.wiki/*
-// @version     3.16
+// @version     3.17
 // @namespace   http://litehell.info/
 // @downloadURL https://raw.githubusercontent.com/LiteHell/NamuFix/dev/NamuFix.user.js
 // @require     https://raw.githubusercontent.com/LiteHell/NamuFix/dev/static/FlexiColorPicker.js
@@ -37,6 +37,7 @@ GM_xmlhttpRequest({
 })
 
 Include('CheckLocation.js');
+if(wikiloc==0){
   Include("Editor/EditorModifier.js");
   Include("Editor/EditorFuncHelper.js");
   Include("Editor/AddEditorButtons.js");
