@@ -23,7 +23,7 @@ function Include(path){
     url: "https://raw.githubusercontent.com/LiteHell/NamuFix/dev/src/"+path,
     onload:function(response){
       console.log(response.responseText);
-      eval(response.responseText);
+      (0,eval)(response.responseText);
     }
   });
 }
