@@ -32,6 +32,14 @@ function getIncluded(fn){
       read=read.replace(brp,getIncluded(filenames[i]));
     }
   }
+
+  var devBranch="raw.githubusercontent.com/LiteHell/NamuFix/dev";
+  var masterBranch="raw.githubusercontent.com/LiteHell/NamuFix/master";
+  var masterMode=process.argv.indexOf('master')>1;
+  while(read.indexOf(masterMode?devBranch:masterBranch)!=-1){
+    read=read.replace(masterMode?devBranch:masterBranch,masterMode?masterBranch:devBranch);
+  }
+
   return read;
 }
 fs.writeFileSync(output,getIncluded(first),{"encoding":"utf8"});
