@@ -92,10 +92,13 @@ if (IsEditing()) {
       txtarea.selectionStart = s;
       txtarea.selectionEnd = s + str.length;
     }
-    this.WrapSelectedWith = function(l, r) {
-      if (typeof r === "undefined") var r = l;
+    this.ToggleWrapSelected = function(l, r_) {
+      if (typeof r === "undefined")
+        var r = l;
+      else
+        var r = r_;
       var p = this.getSelected();
-      if (p.indexOf(l) != 0 || p.indexOf(r) != p.length - r.length);
+      if (p.indexOf(l) != 0 || p.indexOf(r) != (p.length - r.length));
       p = l + p + r;
       else
         p = p.substring(l.length, p.length - r.length)
