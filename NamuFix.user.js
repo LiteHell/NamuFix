@@ -23,7 +23,7 @@ GM_xmlhttpRequest({
   onload:function(response){
     GM_addStyle(response.responseText);
   }
-})
+});
 
 // Included : src/CheckLocation.js
 // 0 : Editor
