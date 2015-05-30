@@ -23,7 +23,7 @@ GM_xmlhttpRequest({
   onload:function(response){
     GM_addStyle(response.responseText);
   }
-});
+})
 
 // Included : src/CheckLocation.js
 // 0 : Editor
@@ -104,6 +104,6 @@ var WikiText= new function(){
   }
 };
 
-  // Included : src/Editor/SimpleMarkUpButtons.js
+  // Included : src/Editor/EditorFeatures.js
 
 }
