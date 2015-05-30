@@ -27,7 +27,7 @@ GM_xmlhttpRequest({
 
 // Included : src/CheckLocation.js
 function IsEditing() {
-  document.querySelector("textarea[name=content]") != null && (/https?:\/\/[^\.]*\.?namu\.wiki\/edit.*/).test(location.href);
+  return document.querySelector("textarea[name=content]") !== null && (/https?:\/\/[^\.]*\.?namu\.wiki\/edit.*/).test(location.href);
 }
 
 if (IsEditing()) {
