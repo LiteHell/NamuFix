@@ -19,10 +19,11 @@ var WikiText= new function(){
     txtarea.selectionEnd=s+str.length;
   }
   this.ToggleWrapSelected=function(l,r_){
-    if (typeof r === "undefined")
+    if (typeof r === "undefined"){
       var r = l;
-    else
+    }else{
       var r = r_;
+    }
     var p=this.getSelected();
     if(p.indexOf(l)!=0||p.indexOf(r)!=(p.length-r.length));
       p=l+p+r;
