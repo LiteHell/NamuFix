@@ -1,4 +1,4 @@
-var editorModifier=new function(){
+var editorModifier=new (function(){
   this.docTitle=document.querySelector('h1.title > a').innerHTML;
   this.docSectionNo=document.querySelector("#editForm > input[name=section]").value;
 
@@ -34,4 +34,4 @@ var editorModifier=new function(){
   this.setStatus=function(txt){
     editorStatus.innerHTML=txt;
   }
-}
+})();

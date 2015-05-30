@@ -34,7 +34,7 @@ if(document.querySelector("textarea[name=content]")!=null&&(/https?:\/\/[^\.]*\.
 if(wikiloc==0){
 
   // Included : src/Editor/EditorModifier.js
-var editorModifier=new function(){
+var editorModifier=new (function(){
   this.docTitle=document.querySelector('h1.title > a').innerHTML;
   this.docSectionNo=document.querySelector("#editForm > input[name=section]").value;
 
@@ -70,10 +70,10 @@ var editorModifier=new function(){
   this.setStatus=function(txt){
     editorStatus.innerHTML=txt;
   }
-}
+})();
 
   // Included : src/Editor/EditorFuncHelper.js
-var WikiText= new function(){
+var WikiText= new (function(){
   var txtarea=document.querySelector('txtarea[name=content]');
   this.isSomethingSelected=function(){
     return txtarea.selectionStart!=txtarea.selectionEnd;
@@ -102,7 +102,7 @@ var WikiText= new function(){
       p=p.substring(l.length,p.length-r.length)
     this.replaceSelected(p);
   }
-};
+})();
 
   // Included : src/Editor/EditorFeatures.js
 
