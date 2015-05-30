@@ -30,5 +30,5 @@ if(wikiloc==0){
 
   /** Include("src/Editor/EditorModifier.js") **/
   /** Include("src/Editor/EditorFuncHelper.js") **/
-  /** Include("src/Editor/SimpleMarkUpButtons.js") **/
+  /** Include("src/Editor/EditorFeatures.js") **/
 }
