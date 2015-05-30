@@ -1,4 +1,4 @@
-var WikiText= new (function(){
+var WikiText= new function(){
   var txtarea=document.querySelector('txtarea[name=content]');
   this.isSomethingSelected=function(){
     return txtarea.selectionStart!=txtarea.selectionEnd;
@@ -27,4 +27,4 @@ var WikiText= new (function(){
       p=p.substring(l.length,p.length-r.length)
     this.replaceSelected(p);
   }
-})();
+}();
