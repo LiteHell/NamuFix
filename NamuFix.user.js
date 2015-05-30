@@ -25,6 +25,7 @@ GM_xmlhttpRequest({
   }
 })
 
+// Included : src/CheckLocation.js
 // 0 : Editor
 var wikiloc=null;
 if(document.querySelector("textarea[name=content]")!=null&&(/https?:\/\/[^\.]*\.?namu\.wiki\/edit.*/).test(location.href))
@@ -32,7 +33,8 @@ if(document.querySelector("textarea[name=content]")!=null&&(/https?:\/\/[^\.]*\.
 
 if(wikiloc==0){
 
-  var editorModifier=new function(){
+  // Included : src/Editor/EditorModifier.js
+var editorModifier=new function(){
   this.docTitle=document.querySelector('h1.title > a').innerHTML;
   this.docSectionNo=document.querySelector("#editForm > input[name=section]").value;
 
@@ -70,7 +72,8 @@ if(wikiloc==0){
   }
 }
 
-  var WikiText= new function(){
+  // Included : src/Editor/EditorFuncHelper.js
+var WikiText= new function(){
   var txtarea=document.querySelector('txtarea[name=content]');
   this.isSomethingSelected=function(){
     return txtarea.selectionStart!=txtarea.selectionEnd;
@@ -101,5 +104,6 @@ if(wikiloc==0){
   }
 };
 
-  
+  // Included : src/Editor/SimpleMarkUpButtons.js
+
 }

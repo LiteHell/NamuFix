@@ -29,7 +29,7 @@ function getIncluded(fn){
     var brp='/** Include(\"'+filenames[i]+'\") **/';
     while(read.indexOf(brp)!=-1){
       console.log('Replacing in '+fn);
-      read=read.replace(brp,getIncluded(filenames[i]));
+      read=read.replace(brp,'// Included : '+filenames[i]+'\n'+getIncluded(filenames[i]));
     }
   }
 
