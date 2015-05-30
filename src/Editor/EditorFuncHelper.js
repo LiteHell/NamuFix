@@ -13,7 +13,7 @@ var WikiText= new (function(){
     var r=txtarea.value;
     var s=txtarea.selectionStart;
     var e=txtarea.selectionEnd;
-    txtarea.value=txtarea.substring(0,s)+str+txtarea.substring(e);
+    txtarea.value=r.substring(0,s)+str+r.substring(e);
     txtarea.focus();
     txtarea.selectionStart=s;
     txtarea.selectionEnd=s+str.length;
