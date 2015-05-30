@@ -26,7 +26,7 @@ GM_xmlhttpRequest({
 })
 
 /** Include("src/CheckLocation.js") **/
-if(wikiloc==0){
+if(IsEditing()){
 
   /** Include("src/Editor/EditorModifier.js") **/
   /** Include("src/Editor/EditorFuncHelper.js") **/

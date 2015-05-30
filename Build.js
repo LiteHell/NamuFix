@@ -40,6 +40,14 @@ function getIncluded(fn){
     read=read.replace(masterMode?devBranch:masterBranch,masterMode?masterBranch:devBranch);
   }
 
+  try{
+    var beautifier=require('js-beautify').js_beautify;
+    var indented=read;
+    indented=beautifier(indented,{indent_size: 2});
+    read=indented();
+  }catch(err){
+    console.log('error while beautifig code ('+err.name+', '+err.message+'), but not a serious problem.\nIf you want to beautify code without any error, install js-beautify library. by "npm install js-beautify"');
+  }
   return read;
 }
 fs.writeFileSync(output,getIncluded(first),{"encoding":"utf8"});

@@ -26,12 +26,11 @@ GM_xmlhttpRequest({
 })
 
 // Included : src/CheckLocation.js
-// 0 : Editor
-var wikiloc=null;
-if(document.querySelector("textarea[name=content]")!=null&&(/https?:\/\/[^\.]*\.?namu\.wiki\/edit.*/).test(location.href))
-  wikiloc=0;
+function IsEditing(){
+  document.querySelector("textarea[name=content]")!=null&&(/https?:\/\/[^\.]*\.?namu\.wiki\/edit.*/).test(location.href);
+  }
 
-if(wikiloc==0){
+if(IsEditing()){
 
   // Included : src/Editor/EditorModifier.js
 var editorModifier=new (function(){
@@ -88,7 +87,7 @@ var WikiText= new (function(){
     var r=txtarea.value;
     var s=txtarea.selectionStart;
     var e=txtarea.selectionEnd;
-    txtarea.value=txtarea.substring(0,s)+str+txtarea.substring(e);
+    txtarea.value=r.substring(0,s)+str+r.substring(e);
     txtarea.focus();
     txtarea.selectionStart=s;
     txtarea.selectionEnd=s+str.length;
