@@ -73,6 +73,9 @@ if (IsEditing()) {
 
   // Included : src/Editor/EditorFuncHelper.js
   var WikiText = new function() {
+    this.docTitle = document.querySelector('h1.title > a').innerHTML;
+    this.docSectionNo = document.querySelector("#editForm > input[name=section]").value;
+
     var txtarea = document.querySelector('txtarea[name=content]');
     this.isSomethingSelected = function() {
       return txtarea.selectionStart != txtarea.selectionEnd;

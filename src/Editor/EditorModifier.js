@@ -1,7 +1,4 @@
 var editorModifier=new function(){
-  this.docTitle=document.querySelector('h1.title > a').innerHTML;
-  this.docSectionNo=document.querySelector("#editForm > input[name=section]").value;
-
   var hiddenFileInput=document.createElement('input');
   hiddenFileInput.setAttribute('type','file');
   hiddenFileInput.style.visibility='hidden';
