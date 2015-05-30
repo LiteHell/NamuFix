@@ -35,4 +35,7 @@ var WikiText= new function(){
     }
     this.replaceSelected(p);
   }
+  this.ToogleWrapSelectedClosure=function(l,r_){
+    return function(){WikiText.ToogleWrapSelected(l,r_);};
+  }
 }();
