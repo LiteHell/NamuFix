@@ -52,7 +52,8 @@ if (IsEditing()) {
 
     this.addButton = function(labelHtml, alt, func) {
       var button = document.createElement("button");
-      button.clssName = "BetterNamuButton";
+      button.setAttribute("type", "button");
+      button.className = "BetterNamuButton";
       button.title = alt;
       button.setAttribute("alt", alt);
       button.innerHTML = labelHtml;
