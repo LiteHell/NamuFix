@@ -44,7 +44,7 @@ function getIncluded(fn){
     var beautifier=require('js-beautify').js_beautify;
     var indented=read;
     indented=beautifier(indented,{indent_size: 2});
-    read=indented();
+    read=indented;
   }catch(err){
     console.log('error while beautifig code ('+err.name+', '+err.message+'), but not a serious problem.\nIf you want to beautify code without any error, install js-beautify library. by "npm install js-beautify"');
   }
