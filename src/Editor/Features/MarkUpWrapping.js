@@ -29,5 +29,5 @@ editorModifier.addButton('<del>가</del>','취소선',WrapClorsure("--"));
 editorModifier.addButton('<u>가</u>','밑줄',WrapClorsure("__"));
 editorModifier.addButton('가<sub>가</sub>','아랫첨자',WrapClorsure(",,"));
 editorModifier.addButton('가<sup>가</sup>','윗첨자',WrapClorsure("^^"));
-editorModifier.addButton('<span style="font-size:65%;">가</span>','글씨 작게',fontSizeMarkUp(-1));
-editorModifier.addButton('<span style="font-size:135%;">가</span>','글씨 크게',fontSizeMarkUp(1));
+editorModifier.addButton('<span style="font-size:75%;">가</span>','글씨 작게',fontSizeMarkUp(-1));
+editorModifier.addButton('<span style="font-size:125%;">가</span>','글씨 크게',fontSizeMarkUp(1));
