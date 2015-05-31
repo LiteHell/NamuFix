@@ -17,7 +17,7 @@ function fontSizeMarkUp(a){
       var newsize=Number(currentsize)+a;
       if(newsize < 1) newsize = 1;
       if(newsize > 5) newsize = 5;
-      WikiText.replaceSelected('{{{+'+newsize+' '+ifEmpty(content,'내용')'}}}')
+      WikiText.replaceSelected('{{{+'+newsize+' '+ifEmpty(content,'내용')+'}}}')
     }else{
       WikiText.replaceSelected('{{{+1 '+ifEmpty(sel,'내용')+'}}}')
     }

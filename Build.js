@@ -46,7 +46,20 @@ function getIncluded(fn){
     indented=beautifier(indented,{indent_size: 2});
     read=indented;
   }catch(err){
-    console.log('error while beautifig code ('+err.name+', '+err.message+'), but not a serious problem.\nIf you want to beautify code without any error, install js-beautify library. by "npm install js-beautify"');
+    console.error('error while beautifig code ('+err.name+', '+err.message+'), but not a serious problem.\nIf you want to beautify code without any error, install js-beautify library by running "npm install js-beautify"');
+  }
+  try{
+    var syntaxCheck=require('syntax-error');
+    var syntaxError=syntaxCheck(read,fn);
+    if(syntaxError){
+      console.error('there is a syntax error');
+      console.error('------------------------------------------');
+      console.error(syntaxError);
+      console.error('------------------------------------------');
+    }
+  }catch(err){
+    console.error('error while checking syntax('+err.name+','+err.message+'), but not a serious problem.');
+    console.error('If you want to check syntax automacilly, install syntax-error library by running "npm install syntax-error"')
   }
   return read;
 }
