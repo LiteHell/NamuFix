@@ -1,7 +1,7 @@
-function WrapClorsure(l, r_) {
+function WrapClosure(l, r_) {
   if (typeof r_ === "undefined") {
     return function() {
-      WikiText.ToogleWrapSelected(l, l);
+      WikiText.ToogleWrapSelected(l);
     };
   } else {
     return function() {
@@ -33,11 +33,11 @@ function fontSizeMarkUp(a) {
     }
   }
 }
-editorModifier.addButton('<strong>가</strong>', '굵게', WrapClorsure("'''"));
-editorModifier.addButton('<i>가</i>', '기울게', WrapClorsure("''"));
-editorModifier.addButton('<del>가</del>', '취소선', WrapClorsure("--"));
-editorModifier.addButton('<u>가</u>', '밑줄', WrapClorsure("__"));
-editorModifier.addButton('가<sub>가</sub>', '아랫첨자', WrapClorsure(",,"));
-editorModifier.addButton('가<sup>가</sup>', '윗첨자', WrapClorsure("^^"));
+editorModifier.addButton('<strong>가</strong>', '굵게', WrapClosure("'''"));
+editorModifier.addButton('<i>가</i>', '기울게', WrapClosure("''"));
+editorModifier.addButton('<del>가</del>', '취소선', WrapClosure("--"));
+editorModifier.addButton('<u>가</u>', '밑줄', WrapClosure("__"));
+editorModifier.addButton('가<sub>가</sub>', '아랫첨자', WrapClosure(",,"));
+editorModifier.addButton('가<sup>가</sup>', '윗첨자', WrapClosure("^^"));
 editorModifier.addButton('<span style="font-size:75%;">가</span>', '글씨 작게', fontSizeMarkUp(-1));
 editorModifier.addButton('<span style="font-size:125%;">가</span>', '글씨 크게', fontSizeMarkUp(1));
