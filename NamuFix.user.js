@@ -25,7 +25,7 @@ GM_xmlhttpRequest({
   }
 });
 //NF Setting Btn
-function NF-Setting(){
+function NF_Setting(){
 	var nfbtn = document.createElement("div");
 	nfbtn.id = "nf_set";
 	nfbtn.innerHTML = "<a><li><span style=\"color: rgb(255, 255, 255); font-size: 20pt; margin-left: 10px\" class=\"ion-ios-gear\"></span></li></a>";
