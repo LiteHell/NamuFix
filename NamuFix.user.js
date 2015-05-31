@@ -43,10 +43,6 @@ function NF_Setting(){
 function IsEditing() {
   return document.querySelector("textarea[name=content]") !== null && (/https?:\/\/[^\.]*\.?namu\.wiki\/edit.*/).test(location.href);
 }
-function Iswikipage() {
-  return (/https?:\/\/[^\.]*\.?namu\.wiki\/edit.*/).test(location.href)==true;
-}
-
 if (IsEditing()) {
   // Included : src/Editor/EditorModifier.js
   var editorModifier = new function() {
