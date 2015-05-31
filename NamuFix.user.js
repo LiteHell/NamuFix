@@ -24,14 +24,29 @@ GM_xmlhttpRequest({
     GM_addStyle(response.responseText);
   }
 });
-
+//NF Setting Btn
+function NF-Setting(){
+	var nfbtn = document.createElement("div");
+	nfbtn.id = "nf_set";
+	//click evt
+	nfbtn.onclick = function(){
+	var window = document.createElement("div");
+	window.id = "nf-set";
+	window.innerHTML = "<div id=\"nf-title\"> 설정 <a href=\"#close\" id=\"close\">X</a> </div>"
+	document.body.appendChild(window);
+	}
+	//btn create
+	document.body.appendChild(nfbtn);
+}
 // Included : src/CheckLocation.js
 function IsEditing() {
   return document.querySelector("textarea[name=content]") !== null && (/https?:\/\/[^\.]*\.?namu\.wiki\/edit.*/).test(location.href);
 }
+function Iswikipage() {
+  return (/https?:\/\/[^\.]*\.?namu\.wiki\/edit.*/).test(location.href)==true;
+}
 
 if (IsEditing()) {
-
   // Included : src/Editor/EditorModifier.js
   var editorModifier = new function() {
     var hiddenFileInput = document.createElement('input');
@@ -156,3 +171,4 @@ if (IsEditing()) {
   editorModifier.addButton('<span style="font-size:75%;">가</span>', '글씨 작게', fontSizeMarkUp(-1));
   editorModifier.addButton('<span style="font-size:125%;">가</span>', '글씨 크게', fontSizeMarkUp(1));
 }
+

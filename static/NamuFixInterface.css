@@ -76,3 +76,40 @@ height:20px;
 	width: 100%;
 	background: rgba(0,0,0,0.4);
 }
+
+//Namufix Menu
+div#nf-set{
+background-color: #0000FF;
+width: 400px;
+height: 500px;
+box-shadow: 0px 0px 10px 4px rgba(0, 0, 0, 0.75);
+-moz-box-shadow: 0px 0px 10px 4px rgba(0, 0, 0, 0.75);
+-webkit-box-shadow: 0px 0px 10px 4px rgba(0, 0, 0, 0.75);
+border-color: #ffffff;
+background-image: url("line.png");
+}
+div#nf-title{
+background-color:#99CCFF;
+height:30px;
+width: 400px;
+}
+a#close{
+list-style:none;
+float: right;
+}
+
+//Namufix Btn
+
+div#nf_set{
+ position: fixed;
+ margin: 0px;
+ padding: 0px;
+-top: 10px;
+-bottom: 10px;
+ list-style-type: none;
+ border-width: 1px medium medium 1px;
+ border-style: solid none none solid;
+ @@ -58,7 +56,6 @@ border-top-left-radius: 4px;
+ background-color: #3D414D;
+ z-index: 90005;
+ }
