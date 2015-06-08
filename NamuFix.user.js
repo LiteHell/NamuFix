@@ -16,7 +16,7 @@
 // ==/UserScript==
 
 GM_addStyle('em{font-style: italic;}');
-if(document.querySelector("textarea[name=content]")!=null&&(/https?:\/\/[^\.]*\.?namu\.wiki\/edit.*/).test(location.href)){
+if(document.querySelector("textarea[name=text]")!=null&&(/https?:\/\/[^\.]*\.?namu\.wiki\/edit.*/).test(location.href)){
   // 수정 인터페이스 개선
   GM_xmlhttpRequest({method:"GET",url:"https://raw.githubusercontent.com/LiteHell/NamuFix/master/NamuFixInterface.css",onload:function(response){GM_addStyle(response.responseText);}});
 
@@ -38,7 +38,7 @@ if(document.querySelector("textarea[name=content]")!=null&&(/https?:\/\/[^\.]*\.
     if(v=='') return true;
     return false;
   };
-  var txtarea=document.querySelector("textarea[name=content]");
+  var txtarea=document.querySelector("textarea[name=text]");
   var buttons=document.createElement("div");
   var editstatus=document.createElement("div");
   var isSomethingSelected=function(){return txtarea.selectionStart!=txtarea.selectionEnd;};
