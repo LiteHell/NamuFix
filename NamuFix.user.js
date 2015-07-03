@@ -31,7 +31,7 @@ if(document.querySelector("textarea[name=text]")!=null&&(/https?:\/\/[^\.]*\.?na
   elm.setAttribute("type","file");
   elm.style.visibility="hidden";
   document.body.appendChild(elm);
-  
+
   var isEmpty=function(v){
     if(typeof v === "undefined") return true;
     if(v==null) return true;
@@ -201,7 +201,7 @@ if(document.querySelector("textarea[name=text]")!=null&&(/https?:\/\/[^\.]*\.?na
     }
   }
   var YouTubeMarkUp=function(){
-	var ExtractYouTubeID=function(){ 
+	var ExtractYouTubeID=function(){
 	// from Lasnv's answer from http://stackoverflow.com/questions/3452546/javascript-regex-how-to-get-youtube-video-id-from-url
 	var regExp = /^.*((youtu.be\/)|(v\/)|(\/u\/\w\/)|(embed\/)|(watch\?))\??v?=?([^#\&\?]*).*/;
 	var match = url.match(regExp);
@@ -226,7 +226,7 @@ if(document.querySelector("textarea[name=text]")!=null&&(/https?:\/\/[^\.]*\.?na
     //     }
     //     return newlink;
     //   });
-    //   
+    //
     // }else{
     if(!/\[\[.+?\]\]/.test(getSelected())){
     var linkto=prompt("어디로 링크를 걸까요? 주소(e.g. http://www.example.com/blahblah)나 문서 제목을 입력해주세요.\n\n상위 항목은 ../를 입력해주세요.\n하위 항목은 \"/항목\"(큰따움표 제외)과 같이 입력해주세요.",getSelected());
@@ -235,7 +235,7 @@ if(document.querySelector("textarea[name=text]")!=null&&(/https?:\/\/[^\.]*\.?na
         return linkto!=txt?'[['+linkto+'|'+txt+']]':'[['+linkto+']]';
       });
     }else{
-     insertText('[['+linkto+']]') 
+     insertText('[['+linkto+']]')
     }
     }
   };
@@ -248,33 +248,33 @@ if(document.querySelector("textarea[name=text]")!=null&&(/https?:\/\/[^\.]*\.?na
     };
     RemoveIfExists("#Dialog");
     RemoveIfExists("#DialogParent");
-    
+
     var dialog=document.createElement("div");
     dialog.id="Dialog";
-    
+
     var titleElement=document.createElement("span");
     titleElement.id="DialogTitle";
     titleElement.innerHTML=dialogtitle;
-    
+
     var closeButton=document.createElement("button");
     closeButton.innerHTML="닫기";
     closeButton.className="f_r type_blue d_btn";
     closeButton.addEventListener("click",function(){RemoveIfExists("#Dialog"); RemoveIfExists("#DialogParent");});
     var horiline=document.createElement("hr");
-    
+
     var container=document.createElement("div");
     func(container,dialog,function(){RemoveIfExists("#Dialog"); RemoveIfExists("#DialogParent");});
-    
+
     dialog.appendChild(titleElement);
     dialog.appendChild(closeButton);
     dialog.appendChild(document.createElement("br"));
     dialog.appendChild(horiline);
     dialog.appendChild(container);
-    
+
     var digparent=document.createElement("div");
     digparent.id="DialogParent";
     digparent.appendChild(dialog);
-    
+
     document.body.appendChild(digparent);
   };
   var ColouredMarkUp=function(){
@@ -533,9 +533,9 @@ if(document.querySelector("textarea[name=text]")!=null&&(/https?:\/\/[^\.]*\.?na
         lang=langs.options[langs.selectedIndex].value;
         theme=themes.options[themes.selectedIndex].value;
         code=isSomethingSelected()?getSelected():'코드를 선택한 후 코드 문법 강조 메뉴를 이용하세요.';
-        
+
       });
-      
+
       container.style.height="80px";
       container.appendChild(CloseButton);
       container.appendChild(ApplyButton);
@@ -560,8 +560,26 @@ if(document.querySelector("textarea[name=text]")!=null&&(/https?:\/\/[^\.]*\.?na
       alert('지원되지 않는 주소 형식입니다.')
     }else{
       insertText('{{{#!html <iframe src="http://videofarm.daum.net/controller/video/viewer/Video.html?vid='+vurl.replace(pattern2,'$1')+'&play_loc=undefined&alert=true"></iframe>}}}');
-    }  
+    }
   };
+  var LoadTemplate=function(){
+    var templateName=prompt('템플릿 문서 이름을 입력하세요.',GM_getValue('lastTemplateName',''));
+    var templateUrl='https://namu.wiki/raw/'+templateName;
+    GM_xmlhttpRequest({
+      method:"GET",
+      url:templateUrl,
+      onerror:function(res){
+        alert('오류가 발생했습니다!');
+      },
+      onload:function(res){
+        if(res.status===404){
+          alert('오류가 발생했습니다! 템플릿 이름이나 인터넷 접속을 확인해주세요.');
+        }else {
+            txtarea.value=res.responseText;
+        }
+      }
+    });
+  }
   buttons.id="EditInterfaceButtons";
   editstatus.id="EditInterfaceStatus";
   // 서식 버튼
@@ -577,6 +595,7 @@ if(document.querySelector("textarea[name=text]")!=null&&(/https?:\/\/[^\.]*\.?na
   // addbutton(produceIcoSpan('ion-code'),'코드 문법 강조',HighlightCode);
   addbutton('<span style="font-size:0.8em; vertical-align:super; color:blue;">[1]</span>','각주',WrapWithMarkUp("[* ","]"));
   addbutton('<blockquote style="background: #EEE; color:black; font-size:70%; padding:2px;">인용</blockquote>','인용문',BlockquoteMarkUp)
+  addbutton('템','템플릿 불려오기',LoadTemplate);
   addbutton('\u2015','수평줄',function(){insertText('\n----\n')});
   addline();
   addbutton(produceIcoSpan("ion-link"),"하이퍼링크/문서링크",HyperLinkMarkUp)
@@ -587,10 +606,10 @@ if(document.querySelector("textarea[name=text]")!=null&&(/https?:\/\/[^\.]*\.?na
   addbutton(produceIcoSpan("ion-ios-pricetag-outline"),"임시저장",makeAutoSave);
   addbutton(produceIcoSpan("ion-ios-pricetags-outline"),"임시저장 불러오기",checkAutoSaves);
   addbutton(produceIcoSpan("ion-ios-filing-outline"),"임시저장 삭제",clearAutoSaves);
-  
+
   txtarea.parentNode.insertBefore(buttons,txtarea);
   txtarea.parentNode.insertBefore(editstatus,txtarea);
-  
+
   function AutoSaveLoop(){
     setTimeout(makeAutoSave,1);
     setTimeout(AutoSaveLoop,300000);
