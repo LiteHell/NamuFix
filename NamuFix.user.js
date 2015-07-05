@@ -4,7 +4,7 @@
 // @description 나무위키 편집 인터페이스 등을 개선합니다.
 // @include     http://namu.wiki/*
 // @include     https://namu.wiki/*
-// @version     150705.0
+// @version     150706.0
 // @namespace   http://litehell.info/
 // @downloadURL https://raw.githubusercontent.com/LiteHell/NamuFix/master/NamuFix.user.js
 // @require     https://github.com/LiteHell/NamuFix/raw/master/FlexiColorPicker.js
@@ -247,7 +247,7 @@ if(document.querySelector("textarea[name=text]")!=null&&(/https?:\/\/[^\.]*\.?na
       }
     }
     RemoveIfExists("#DialogParent");
-    RemoveIfExists(".window"); // to Bypass CSS Settings
+    RemoveIfExists(".window");
     var DigParent=document.createElement("div");
     DigParent.id="DialogParent";
 
@@ -272,7 +272,7 @@ if(document.querySelector("textarea[name=text]")!=null&&(/https?:\/\/[^\.]*\.?na
       btn.setAttribute("type","button");
       btn.className='d_btn f_r';
       if((typeof color !== undefined)&&(color != null)){
-        if((['blue','purple','red','yellow','green','black']).indexOf(color)!=-1)
+        //if((['blue','purple','red','yellow','green','black']).indexOf(color)!=-1)
           btn.className+= ' type_'+color;
       }
       btn.innerHTML=label;
@@ -288,12 +288,36 @@ if(document.querySelector("textarea[name=text]")!=null&&(/https?:\/\/[^\.]*\.?na
   var ColouredMarkUp=function(){
     CreateDialog("색 선택",function(container, helper){
       var color='#000000';
-      var picker=document.createElement("div");
+      /*var picker=document.createElement("div");
       picker.className="cp-default";
       container.appendChild(picker);
       ColorPicker(picker,function(hex,hsv,rgb){
         color=hex;
-      });
+      });*/
+      var picker=document.createElement("div");
+      var slider=document.createElement("div");
+      var infoText=document.createElement('span');
+      picker.id='colorPicker';
+      picker.style.width='200px';
+      picker.style.height='250px';
+      picker.style.display='inline-block';
+      slider.id='colorSlider';
+      slider.style.width='30px';
+      slider.style.height='250px';
+      slider.style.display='inline-block';
+      infoText.style.display='inline-block';
+      container.appendChild(picker);
+      container.appendChild(slider);
+      container.appendChild(infoText);
+
+      ColorPicker(
+        picker,
+        slider,
+        function(hex,hsv,rgb){
+          color=hex;
+          infoText.innerHTML='<strong>HSV</strong><br>H : '+hsv.h+'<br>S : '+hsv.s+'<br>V : '+hsv.v+'<br><br><strong>RGB</strong><br>R: '+rgb.r+'<br>G: '+rgb.g+'<br>B: '+rgb.b+'<br><br><strong>CSS HEX</strong> : '+hex+'<span style="color: '+hex+';background:'+hex+'">______</span>';
+        }
+      );
       helper.addButton('적용',function(){
         processSelected(function(txt){
           var pattern=/{{{#[0-9a-zA-Z]+ (.+?)}}}/;
