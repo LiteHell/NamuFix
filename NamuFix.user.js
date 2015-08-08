@@ -26,13 +26,8 @@ GM_xmlhttpRequest({
 });
 
 var ENV = {};
-if (/https?:\/\/namu\.wiki\/edit\/(.+?)/.test(location.href))
-  ENV.IsEditing = true;
-else if (/https?:\/\/namu\.wiki\/topic\/(.+?)/.test(location.href))
-  ENV.Discussing = true;
-else
-  throw new Error('토론도 편집도 아님.');
-// escaped version of namufix.css
+ENV.IsEditing = /https?:\/\/namu\.wiki\/edit\/(.+?)/.test(location.href);
+ENV.Discussing = /https?:\/\/namu\.wiki\/topic\/(.+?)/.test(location.href);
 var NEWindow = function() {
   var wi = document.createElement('div');
   var wiHead = document.createElement('div');
@@ -88,7 +83,7 @@ var NEWindow = function() {
   return r;
 }
 
-if (ENV.isEditing || ENV.Discussing) {
+if (ENV.IsEditing || ENV.Discussing) {
   var rootDiv = document.createElement("div");
 
   // Init (Add Elements)
@@ -405,11 +400,15 @@ if (ENV.isEditing || ENV.Discussing) {
   });
 
   // set Size
-  rootDiv.style.height = ENV.IsEditing? '600px' : '170px';
+  if(ENV.Discussing)
+    rootDiv.style.height = '170px';
+  else
+    rootDiv.style.height='600px';
 
   // Add NamuFix Div
   var oldTextarea = document.querySelector("textarea");
-  txtarea.value = oldTextrea.value;
+  var wText=oldTextarea.value;
   oldTextarea.parentNode.insertBefore(rootDiv, oldTextarea);
   oldTextarea.parentNode.removeChild(oldTextarea);
+  txtarea.value = wText;
 }
