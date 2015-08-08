@@ -20,7 +20,7 @@ em {
   min-width: 100%;
 }
 .NamaEditor.NETextarea {
-  height: calc(600px - var(--editor-menu-bar));
+  height: calc(100% - var(--editor-menu-bar));
   width: 100%;
 }
 .NamaEditor.NEMenuButton {
