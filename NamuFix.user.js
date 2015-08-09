@@ -522,7 +522,8 @@ if (ENV.IsEditing || ENV.Discussing) {
           'var firstLocation=new google.maps.LatLng(37.46455,126.67435);\n' +
           'var mapOptions={\n' +
           'zoom: 8,\n' +
-          'center: firstLocation\n' +
+          'center: firstLocation\n,' +
+          'streetViewControl: false\n' +
           '};\n' +
           'NFMap=new google.maps.Map(document.querySelector("#NFMapDiv"),mapOptions);\n' +
           '}';
@@ -544,11 +545,22 @@ if (ENV.IsEditing || ENV.Discussing) {
       })
       win.button("닫기", win.close);
     }
+
+    function DaumTVPotMarkUp() {
+      var vurl = prompt('참고 : 개발중인 기능이므로 이상하게 작동할 수 있습니다.\n\n1. 삽입하고픈 TV팟 동영상을 봅니다\n2. 공유 버튼을 누릅니다.\n3. 거기서 복사한 URL을 입력하십시오.');
+      var pattern2 = /http:\/\/tvpot\.daum\.net\/v\/(.+?)/;
+      if (!pattern2.test(vurl)) {
+        alert('지원되지 않는 주소 형식입니다.')
+      } else {
+        insertText('{{{#!html <iframe src="//videofarm.daum.net/controller/video/viewer/Video.html?vid=' + vurl.replace(pattern2, '$1') + '&play_loc=undefined&alert=true" style="max-height: 100%; max-width:100%;" frameborder=\'0\' scrolling=\'0\' width=\'640px\' height=\'360px\'></iframe>}}}');
+      }
+    };
     // Add Insertable Things
     var insertablesDropDown = Designer.dropdown('<span class="ion-paperclip"></span>').hoverMessage('삽입 가능한 미디어');
-    insertablesDropDown.button('<span class="ion-image"></span>', '사진(Imgur)').click(ImgurUpload);
+    insertablesDropDown.button('<span class="ion-image"></span>', '사진(Imgur 익명 업로드)').click(ImgurUpload);
     insertablesDropDown.button('<span class="ion-social-youtube" style="color:red;"></span>', 'YouTube 동영상').click(InsertYouTube);
     insertablesDropDown.button('<span class="ion-map"></span>', '지도').click(MapMacro);
+    insertablesDropDown.button('<span class="ion-ios-play-outline" style="color: Aqua;"></span>', '다음 TV팟 동영상').click(DaumTVPotMarkUp);
     if (ENV.IsEditing) {
       // Manager Class
       var tempsaveManager = new function() {
@@ -678,9 +690,9 @@ if (ENV.IsEditing || ENV.Discussing) {
         });
         win.button('닫기', win.close);
       });
-      tempsaveDropdown.button('<span class="ion-gear-a"></span>', '전역 임시저장 관리자').click(function() {
-        alert('구현 예정');
-      });
+      /* tempsaveDropdown.button('<span class="ion-gear-a"></span>', '전역 임시저장 관리자').click(function() {
+        alert('구현예정');
+      }); */
       tempsaveDropdown.button('<span class="ion-trash-a" style="color:red;"></span>', '이 문서의 모든 임시저장 삭제').click(function() {
         tempsaveManager.delete(ENV.docTitle);
       });
