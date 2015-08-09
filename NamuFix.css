@@ -121,7 +121,7 @@ div.NamaEditor.NEMenuButton{
   padding-left: 10px;
   padding-right: 10px;
 }
-.NamaEditor.NEWindowFoot button{
+.NamaEditor button{
   margin-left: 2px;
   margin-right: 2px;
   padding-top: 5px;
@@ -133,7 +133,7 @@ div.NamaEditor.NEMenuButton{
   color: white;
   min-width: 60px;
 }
-.NamaEditor.NEWindowFoot button:hover{
+.NamaEditor button:hover{
   background: #9D75D9;
 }
 /* Color Picker Part */
