@@ -26,17 +26,24 @@ GM_xmlhttpRequest({
   }
 });
 
-function nOu(a){
+function nOu(a) {
   return typeof a === 'undefined' || a == null;
+}
+function formatDateTime(t){
+  var d = new Date(t);
+  return d.getFullYear()+'년 '+(d.getMonth()+1)+'월 '+d.getDate()+'일 '+d.getHours()+'시 '+d.getMinutes()+'분 '+d.getSeconds()+'초';
 }
 
 var ENV = {};
 ENV.IsEditing = /https?:\/\/namu\.wiki\/edit\/(.+?)/.test(location.href);
 ENV.Discussing = /https?:\/\/namu\.wiki\/topic\/(.+?)/.test(location.href);
-if(document.querySelector("input[name=section]"))
-  ENV.section=document.querySelector("input[name=section]").value;
-if(ENV.IsEditing)
-  ENV.docTitle=document.querySelector("h1.title > a").innerHTML;
+if (document.querySelector("input[name=section]"))
+  ENV.section = document.querySelector("input[name=section]").value;
+if (ENV.IsEditing)
+  ENV.docTitle = document.querySelector("h1.title > a").innerHTML;
+if(nOu(ENV.section))
+  ENV.section=-2;
+
 var SET = new function() {
   var discards = ['save', 'load'];
   this.save = function() {
@@ -46,12 +53,17 @@ var SET = new function() {
     }
   };
   this.load = function() {
-    var sets = GM_listValues;
+    var sets = GM_listValues();
     for (var i = 0; i < sets.length; i++) {
       var now = sets[i];
       if (now.indexOf('SET_') != 0) continue;
       if (discards.indexOf(now) != -1) continue;
       this[now.substring(4)] = GM_getValue(now);
+    }
+    for(var i in this){
+      if(sets.indexOf('SET_'+i)==-1&&discards.indexOf(i)==-1){
+        delete this[i];
+      }
     }
   };
 };
@@ -500,69 +512,182 @@ if (ENV.IsEditing || ENV.Discussing) {
       win.title("지도 삽입");
       win.content(function(el) {
         var mapDiv = document.createElement("div");
-        mapDiv.id="NFMapDiv";
+        mapDiv.id = "NFMapDiv";
         mapDiv.style.height = '480px';
         mapDiv.style.width = '640px';
         el.appendChild(mapDiv);
-        var initFuncContext = 'var NFMap;\n'+
-          'function NFMapInit(){\n'+
-          'var firstLocation=new google.maps.LatLng(37.46455,126.67435);\n'+
+        var initFuncContext = 'var NFMap;\n' +
+          'function NFMapInit(){\n' +
+          'var firstLocation=new google.maps.LatLng(37.46455,126.67435);\n' +
           'var mapOptions={\n' +
           'zoom: 8,\n' +
-          'center: firstLocation\n'+
+          'center: firstLocation\n' +
           '};\n' +
-          'NFMap=new google.maps.Map(document.querySelector("#NFMapDiv"),mapOptions);\n'+
+          'NFMap=new google.maps.Map(document.querySelector("#NFMapDiv"),mapOptions);\n' +
           '}';
         var onloadScript = document.createElement("script");
         onloadScript.innerHTML = initFuncContext;
         el.appendChild(onloadScript);
-        setTimeout(function(){var mapsAPILib = document.createElement("script");
-        mapsAPILib.setAttribute("src", "//maps.googleapis.com/maps/api/js?key=AIzaSyAqi9PjUr_F54U0whrbMeavFfvNap3kjvA&callback=NFMapInit");
-        el.appendChild(mapsAPILib);},500);
+        setTimeout(function() {
+          var mapsAPILib = document.createElement("script");
+          mapsAPILib.setAttribute("src", "//maps.googleapis.com/maps/api/js?key=AIzaSyAqi9PjUr_F54U0whrbMeavFfvNap3kjvA&callback=NFMapInit");
+          el.appendChild(mapsAPILib);
+        }, 500);
       });
-      win.button("삽입",function(){
-        var lat=unsafeWindow.NFMap.getCenter().lat();
-        var lng=unsafeWindow.NFMap.getCenter().lng();
-        var zoom=unsafeWindow.NFMap.getZoom();
-        TextProc.selectionText(TextProc.selectionText()+'\n[Include(틀:지도,position='+lat+'%2C'+lng+',zoom='+zoom+')]');
+      win.button("삽입", function() {
+        var lat = unsafeWindow.NFMap.getCenter().lat();
+        var lng = unsafeWindow.NFMap.getCenter().lng();
+        var zoom = unsafeWindow.NFMap.getZoom();
+        TextProc.selectionText(TextProc.selectionText() + '\n[Include(틀:지도,position=' + lat + '%2C' + lng + ',zoom=' + zoom + ')]');
         win.close();
       })
-      win.button("닫기",win.close);
+      win.button("닫기", win.close);
     }
     // Add Insertable Things
     var insertablesDropDown = Designer.dropdown('<span class="ion-paperclip"></span>').hoverMessage('삽입 가능한 미디어');
     insertablesDropDown.button('<span class="ion-image"></span>', '사진(Imgur)').click(ImgurUpload);
     insertablesDropDown.button('<span class="ion-social-youtube" style="color:red;"></span>', 'YouTube 동영상').click(InsertYouTube);
     insertablesDropDown.button('<span class="ion-map"></span>', '지도').click(MapMacro);
+    if (ENV.IsEditing) {
+      // Manager Class
+      var tempsaveManager = new function() {
+        if (nOu(SET.tempsaves)) {
+          SET.tempsaves = {};
+          SET.save();
+        }
+        var ht = this;
+        this.getTitles = function() {
+          var r = [];
+          for (var i in SET.tempsaves) {
+            r.push(i);
+          }
+          return r;
+        }
+        this.getByTitle = function(docTitle) {
+          SET.load();
+          if (nOu(SET.tempsaves[docTitle])) {
+            SET.tempsaves[docTitle] = [];
+            SET.save();
+          }
+          return SET.tempsaves[docTitle]; // {section, text, timestamp}
+        };
+        this.getByTitleAndSectionNo = function(docTitle, sectno) {
+          SET.load();
+          var b = ht.getByTitle(docTitle);
+          var a = [];
+          for (var i = 0; i < b.length; i++) {
+            if (b[i].section == sectno)
+              a.push(b[i]);
+          }
+          return a;
+        }
+        this.save = function(docTitle, sectno, timestamp, text) {
+          SET.load();
+          if (nOu(SET.tempsaves[docTitle])) {
+            SET.tempsaves[docTitle] = [];
+            SET.save();
+          }
+          SET.tempsaves[docTitle].push({
+            section: sectno,
+            timestamp: timestamp,
+            text: text
+          });
+          SET.save();
+        }
+        this.delete = function(docTitle, sectno, timestamp) {
+          SET.load();
+          if (nOu(SET.tempsaves[docTitle])) return;
+          var newArray=[];
+          for (var i = 0; i < SET.tempsaves[docTitle].length; i++) {
+            var archiveThis = true;
+            var now = SET.tempsaves[docTitle][i];
+            if (nOu(sectno) && now.section != sectno) archiveThis = false;
+            if (nOu(timestamp) && now.timestamp != timestamp) archiveThis = false;
+            if (archiveThis) {
+              newArray.push(SET.tempsaves[docTitle][i]);
+            }
+          }
+          SET.tempsaves[docTitle]=newArray;
+          SET.save();
+        }
+        this.MigrateIfThereIs = function() {
+          SET.load();
+          var autosaves = JSON.parse(GM_getValue("AutoSavedDocuments", "null"));
+          if (autosaves != null) {
+            var pattern = /(.+?)###sec-(.+?)/;
+            for (var i in autosaves) {
+              var matches = pattern.exec(i);
+              var title = matches[1];
+              var sectno = matches[2];
+              if (nOu(SET.tempsaves[title])) {
+                SET.tempsaves[title] = [];
+              }
+              for (var ii in autosaves[i]) {
+                ht.save(title, sectno, ii, autosaves[i][ii]);
+              }
+            }
+            SET.save();
+            GM_setValue("AutoSavedDocuments", "null");
+          }
+        };
+      }
+      tempsaveManager.MigrateIfThereIs();
+      // Tempsave Menu
+      var tempsaveDropdown = Designer.dropdown('<span class="ion-ios-pricetags-outline"></span>').hoverMessage('임시저장');
+      tempsaveDropdown.button('<span class="ion-ios-pricetag-outline"></span>', '임시저장').click(function() {
+        tempsaveManager.save(ENV.docTitle, ENV.section, Date.now(), txtarea.value);
+      });
+      tempsaveDropdown.button('<span class="ion-filing"></span>', '임시저장 불려오기').click(function() {
+        // title(text), content(callback), foot(callback), button(text,onclick), close
+        var win = NEWindow();
+        var tempsaveList = tempsaveManager.getByTitle(ENV.docTitle);
+        win.content(function(el) {
+          el.innerHTML='<p>현재 편집중인 문단인 경우 문단 번호가 <strong>굵게</strong> 표시됩니다.<br>문단 번호가 -2인 경우는 문단 번호가 감지되지 않은 경우입니다.</p>';
+          var table = document.createElement("table");
+          var headrow = document.createElement("tr");
+          headrow.innerHTML = '<th>문단 번호</th><th>저장된 날짜와 시간</th><th>불려오기 버튼</th>';
+          table.appendChild(headrow);
+          for (var i = 0; i < tempsaveList.length; i++) {
+            var now=tempsaveList[i];
+            var tr=document.createElement("tr");
+            tr.innerHTML='<td>'+(now.section == ENV.section ? '<strong>' : '')+now.section+(now.section == ENV.section ? '</strong>' : '')+'</td><td>'+formatDateTime(now.timestamp)+'</td>'
+            var td=document.createElement("td");
+            var btn=document.createElement("button");
+            btn.setAttribute("type","button");
+            btn.innerHTML="불려오기";
+            btn.dataset.json=JSON.stringify(now);
+            btn.addEventListener('click',function(evt){
+              var now=JSON.parse(evt.target.dataset.json);
+              txtarea.value=now.text;
+            });
+            td.appendChild(btn);
+            tr.appendChild(td);
+            table.appendChild(tr);
+          }
+          el.appendChild(table);
+        });
+        win.button('닫기',win.close);
+      });
+      tempsaveDropdown.button('<span class="ion-gear-a"></span>', '전역 임시저장 관리자').click(function() {
+        alert('구현 예정');
+      });
+      tempsaveDropdown.button('<span class="ion-trash-a" style="color:red;"></span>', '이 문서의 모든 임시저장 삭제').click(function() {
+        tempsaveManager.delete(ENV.docTitle);
+      });
+      tempsaveDropdown.button('<span class="ion-trash-a" style="color:orangered;"></span>', '이 문서의 이 문단의 모든 임시저장 삭제').click(function() {
+        tempsaveManager.delete(ENV.docTitle, ENV.section);
+      });
+      tempsaveDropdown.button('<span class="ion-trash-a" style="color:orange;"></span>', '특정 임시저장만 삭제').click(function() {
+        // title(text), content(callback), foot(callback), button(text,onclick), close
+        // var win=NEWindow();
+        alert('구현 예정');
+      });
+    }
     // set Size
     if (ENV.Discussing)
       rootDiv.style.height = '170px';
     else
       rootDiv.style.height = '600px';
-
-    /* // Migrate Temporary Saves
-    (function(){
-      var autosaves=JSON.parse(GM_getValue("AutoSavedDocuments","null"));
-      if(autosaves!=null){
-        var pattern=/(.+?)###sec-(.+?)/;
-        for(var i in autosaves){
-          var matches=pattern.exec(i);
-          var title=matches[1];
-          var sectno=matches[2];
-          if(nOu(SET.tempsaves[title])){
-            SET.tempsaves[title]=[];
-          }
-          for(var ii in autosaves[i]){
-            SET.tempsaves[title].push({
-              section: sectno,
-              text: autosaves[i][ii],
-              timestamp: ii
-            });
-          }
-        }
-        SET.save();
-      }
-    })(); */
 
     // Add NamuFix Div
     var oldTextarea = document.querySelector("textarea");
