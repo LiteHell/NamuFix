@@ -478,7 +478,10 @@ if (ENV.IsEditing || ENV.Discussing) {
                 if (!res["success"]) {
                   setStatus("죄송하지만 이미지 업로드에 실패하였습니다.");
                 } else {
-                  TextProc.selectionText(TextProc.selectionText() + '\n##삭제는 http://imgur.com/delete/' + res["data"]["deletehash"] + '에 접속하여 할 수 있습니다.\n##삭제 링크 외에 기술적으로 자세한 내용은 API 응답을 참고하세요.\n##\n##주석은 지우셔도 되고 삭제 링크 메모후 주석을 지우시는 것을 권장합니다.\n##\n## API 응답 : ' + JSON.stringify(res) + '\n' + res["data"]["link"] + '\n');
+                  var deleteLink='http://imgur.com/delete/' + res["data"]["deletehash"];
+                  var imageDirectLink=res["data"]["link"];
+                  prompt('삭제 링크입니다. \'\'\'반드시 지금\'\'\' 복사해서 어딘가에 메모해두세요.',deleteLink);
+                  TextProc.selectionText(TextProc.selectionText() + '\n'+imageDirectLink);
                 }
               }
             });
@@ -792,6 +795,11 @@ if (ENV.IsEditing || ENV.Discussing) {
       });
     };
     setTimeout(refreshTemplatesDropdown, 500);
+    /* // Grammar Checker
+    Designer.button('<span class="ion-checkmark-round" style="color:gold;"></span>').hoverMessage('멍청한 문법 검사기').click(function(){
+      var plain=TextProc.value();
+      alert('구현 예정');
+    }); */
 
     // set Size
     if (ENV.Discussing)
