@@ -865,7 +865,7 @@ if (ENV.IsEditing || ENV.Discussing) {
       pattern18.message = '"밖에"는 붙여씁니다.';
 
       var pattern17 = /갯수|그닥|금새|기달리다|깨끗히|네모낳다|눈꼽|당췌|덮히다|돌맹이|뒷처리|뒷태|떄|말야|몇\s?일|배[끼낀]|모[(자르)(잘)]|부숴|살고기|삼가[(하니)(하여)해(하였)(했)하]|서슴치|설겆이|설레[이여였]|실[다어(으니)었]|쓰여|씌여|애시당초|어떻|왜래어|왔다리 갔다리|월셋방|어짜피|여지껏|역활|윳|일일히|잘르다|재털이|절대절명|주구창창|줏[(으니)어었다]|질르|청천병력|촛점|통채|폐쇠|폭팔|풍지박산|풍지박살|홀홀달신|회손/;
-      pattern17.message = '백괴사전의 <a href="http://uncyclopedia.kr/wiki/%EB%8F%84%EC%9B%80%EB%A7%90:%ED%97%B7%EA%B0%88%EB%A6%AC%EB%8A%94_%ED%95%9C%EA%B5%AD%EC%96%B4">도움말:헷갈리는 한국어</a> 문서를 참고하세요.'
+      pattern17.message = '잘못된 어휘 또는 활용이 존재합니다. 백괴사전의 <a href="http://uncyclopedia.kr/wiki/%EB%8F%84%EC%9B%80%EB%A7%90:%ED%97%B7%EA%B0%88%EB%A6%AC%EB%8A%94_%ED%95%9C%EA%B5%AD%EC%96%B4">도움말:헷갈리는 한국어</a> 문서를 참고하세요.'
 
       var pattern18 = /어드저스트|어드밴스드|엔젤|앤절|앵글부츠|밧데리|브릿지|케익|케잌|크레딧|데미지|데자부|데자뷰|앳자|플룻|럭키|메세지|네비게이션|판넬|로보트|소세지|타겟/;
       pattern18.message = '잘못된 외래어 표기가 존재합니다. 백괴사전의 <a href="http://uncyclopedia.kr/wiki/%EB%8F%84%EC%9B%80%EB%A7%90:%ED%97%B7%EA%B0%88%EB%A6%AC%EB%8A%94_%ED%95%9C%EA%B5%AD%EC%96%B4">도움말:헷갈리는 한국어</a> 문서 중 <i>외래어 표기</i> 문단을 참고하세요.';
@@ -876,7 +876,7 @@ if (ENV.IsEditing || ENV.Discussing) {
         if (patterns[i].test(plain)) {
           var message = document.createElement('li');
           message.innerHTML = patterns[i].message;
-          if(pattern[i].careful)
+          if(patterns[i].careful)
             message.style.fontStyle='italic';
           messages.appendChild(message);
         }
@@ -884,7 +884,7 @@ if (ENV.IsEditing || ENV.Discussing) {
       var win = NEWindow();
       win.title('검사 결과');
       win.content(function(el) {
-        el.innerHTML = '<p>검사에 완료했습니다. 이 검사기는 멍청하므로 진짜 제대로 검사할거면 <a href="http://speller.cs.pusan.ac.kr/">부산대 한국어 맞춤법/문법 검사기</a>를 사용하세요.</p>'
+        el.innerHTML = '<p>검사에 완료했습니다. 이 검사기는 멍청하므로 오류를 감지하지 못하거나 개소리를 할 수 있습니다. 진짜 제대로 검사할거면 <a href="http://speller.cs.pusan.ac.kr/">부산대 한국어 맞춤법/문법 검사기</a>를 사용하세요.</p>'
         el.appendChild(messages);
       })
       win.button('닫기', win.close);
