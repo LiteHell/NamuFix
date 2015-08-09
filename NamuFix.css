@@ -103,8 +103,9 @@ div.NamaEditor.NEMenuButton{
   min-height: 200px;
   padding: 5px;
 }
-.NamaEditor.NEWindowContainer table td, .NamaEditor.NEWindowContainer table th{
+.NamaEditor.NEWindowContainer table{
   border: #9D75D9 1px solid;
+  border-collapse: collapse;
 }
 .NamaEditor.NEWindowContainer table th{
   background: #9D75D9;
