@@ -36,7 +36,7 @@ ENV.Discussing = /https?:\/\/namu\.wiki\/topic\/(.+?)/.test(location.href);
 if(document.querySelector("input[name=section]"))
   ENV.section=document.querySelector("input[name=section]").value;
 if(ENV.IsEditing)
-  EMV.docTitle=document.querySelector("h1.title > a").innerHTML;
+  ENV.docTitle=document.querySelector("h1.title > a").innerHTML;
 var SET = new function() {
   var discards = ['save', 'load'];
   this.save = function() {
@@ -539,7 +539,7 @@ if (ENV.IsEditing || ENV.Discussing) {
       rootDiv.style.height = '170px';
     else
       rootDiv.style.height = '600px';
-      
+
     /* // Migrate Temporary Saves
     (function(){
       var autosaves=JSON.parse(GM_getValue("AutoSavedDocuments","null"));
