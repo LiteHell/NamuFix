@@ -26,10 +26,17 @@ GM_xmlhttpRequest({
   }
 });
 
+function nOu(a){
+  return typeof a === 'undefined' || a == null;
+}
+
 var ENV = {};
 ENV.IsEditing = /https?:\/\/namu\.wiki\/edit\/(.+?)/.test(location.href);
 ENV.Discussing = /https?:\/\/namu\.wiki\/topic\/(.+?)/.test(location.href);
-
+if(document.querySelector("input[name=section]"))
+  ENV.section=document.querySelector("input[name=section]").value;
+if(ENV.IsEditing)
+  EMV.docTitle=document.querySelector("h1.title > a").innerHTML;
 var SET = new function() {
   var discards = ['save', 'load'];
   this.save = function() {
@@ -48,6 +55,7 @@ var SET = new function() {
     }
   };
 };
+SET.load();
 
 var NEWindow = function() {
   var wi = document.createElement('div');
@@ -508,9 +516,9 @@ if (ENV.IsEditing || ENV.Discussing) {
         var onloadScript = document.createElement("script");
         onloadScript.innerHTML = initFuncContext;
         el.appendChild(onloadScript);
-        var mapsAPILib = document.createElement("script");
+        setTimeout(function(){var mapsAPILib = document.createElement("script");
         mapsAPILib.setAttribute("src", "//maps.googleapis.com/maps/api/js?key=AIzaSyAqi9PjUr_F54U0whrbMeavFfvNap3kjvA&callback=NFMapInit");
-        el.appendChild(mapsAPILib);
+        el.appendChild(mapsAPILib);},500);
       });
       win.button("삽입",function(){
         var lat=unsafeWindow.NFMap.getCenter().lat();
@@ -531,6 +539,30 @@ if (ENV.IsEditing || ENV.Discussing) {
       rootDiv.style.height = '170px';
     else
       rootDiv.style.height = '600px';
+      
+    /* // Migrate Temporary Saves
+    (function(){
+      var autosaves=JSON.parse(GM_getValue("AutoSavedDocuments","null"));
+      if(autosaves!=null){
+        var pattern=/(.+?)###sec-(.+?)/;
+        for(var i in autosaves){
+          var matches=pattern.exec(i);
+          var title=matches[1];
+          var sectno=matches[2];
+          if(nOu(SET.tempsaves[title])){
+            SET.tempsaves[title]=[];
+          }
+          for(var ii in autosaves[i]){
+            SET.tempsaves[title].push({
+              section: sectno,
+              text: autosaves[i][ii],
+              timestamp: ii
+            });
+          }
+        }
+        SET.save();
+      }
+    })(); */
 
     // Add NamuFix Div
     var oldTextarea = document.querySelector("textarea");
