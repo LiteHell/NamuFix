@@ -476,7 +476,7 @@ if (ENV.IsEditing || ENV.Discussing) {
               onload: function(response) {
                 res = JSON.parse(response.responseText)
                 if (!res["success"]) {
-                  setStatus("죄송하지만 이미지 업로드에 실패하였습니다.");
+                  alert("죄송하지만 이미지 업로드에 실패하였습니다.");
                 } else {
                   var deleteLink='http://imgur.com/delete/' + res["data"]["deletehash"];
                   var imageDirectLink=res["data"]["link"];
