@@ -1,9 +1,6 @@
 @import url(//fonts.googleapis.com/earlyaccess/nanummyeongjo.css);
 @import url(//fonts.googleapis.com/earlyaccess/nanumgothic.css);
 
-:root {
-  --editor-menu-bar: 50px;
-}
 em {
   font-style: italic;
 }
@@ -15,12 +12,12 @@ em {
 }
 .NamaEditor.NEMenu {
   background: #3D414D;
-  height: var(--editor-menu-bar);
+  height: 50px;
   width: 100%;
   min-width: 100%;
 }
 .NamaEditor.NETextarea {
-  height: calc(100% - var(--editor-menu-bar));
+  height: calc(100% - 50px);
   width: 100%;
 }
 .NamaEditor.NEMenuButton {
@@ -29,7 +26,7 @@ em {
   background: #3D414D;
   vertical-align: middle;
   border: none;
-  height: var(--editor-menu-bar);
+  height: 50px;
   color: white;
   width: 40px;
   cursor: pointer;
