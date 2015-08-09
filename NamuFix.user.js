@@ -662,9 +662,13 @@ if (ENV.IsEditing || ENV.Discussing) {
       tempsaveDropdown.button('<span class="ion-filing"></span>', '임시저장 불려오기').click(function() {
         // title(text), content(callback), foot(callback), button(text,onclick), close
         var win = NEWindow();
+        win.title('임시저장 불려오기')
         var tempsaveList = tempsaveManager.getByTitle(ENV.docTitle);
         win.content(function(el) {
           el.innerHTML = '<p>현재 편집중인 문단인 경우 문단 번호가 <strong>굵게</strong> 표시됩니다.<br>문단 번호가 -2인 경우는 문단 번호가 감지되지 않은 경우입니다.</p>';
+          var divWithscrollbars = document.createElement("div");
+          divWithscrollbars.style.height = '500px';
+          divWithscrollbars.style.overflow = 'scroll';
           var table = document.createElement("table");
           var headrow = document.createElement("tr");
           headrow.innerHTML = '<th>문단 번호</th><th>저장된 날짜와 시간</th><th>불려오기 버튼</th>';
@@ -686,7 +690,8 @@ if (ENV.IsEditing || ENV.Discussing) {
             tr.appendChild(td);
             table.appendChild(tr);
           }
-          el.appendChild(table);
+          divWithscrollbars.appendChild(table);
+          el.appendChild(divWithscrollbars);
         });
         win.button('닫기', win.close);
       });
@@ -703,8 +708,12 @@ if (ENV.IsEditing || ENV.Discussing) {
         // title(text), content(callback), foot(callback), button(text,onclick), close
         var win = NEWindow();
         var tempsaveList = tempsaveManager.getByTitle(ENV.docTitle);
+        win.title('임시저장 삭제');
         win.content(function(el) {
           el.innerHTML = '<p>현재 편집중인 문단인 경우 문단 번호가 <strong>굵게</strong> 표시됩니다.<br>문단 번호가 -2인 경우는 문단 번호가 감지되지 않은 경우입니다.</p>';
+          var divWithscrollbars = document.createElement("div");
+          divWithscrollbars.style.height = '500px';
+          divWithscrollbars.style.overflow = 'scroll';
           var table = document.createElement("table");
           var headrow = document.createElement("tr");
           headrow.innerHTML = '<th>문단 번호</th><th>저장된 날짜와 시간</th><th>삭제 버튼</th>';
@@ -727,10 +736,14 @@ if (ENV.IsEditing || ENV.Discussing) {
             tr.appendChild(td);
             table.appendChild(tr);
           }
-          el.appendChild(table);
+          divWithscrollbars.appendChild(table);
+          el.appendChild(divWithscrollbars);
         });
         win.button('닫기', win.close);
       });
+      setInterval(function() {
+        tempsaveManager.save(ENV.docTitle, ENV.section, Date.now(), txtarea.value);
+      }, 600000);
     }
     // Template Insert Feature
     var templatesDropdown = Designer.dropdown('<span class="ion-ios-copy-outline"></span>').hoverMessage('템플릿 삽입/최근에 사용한 템플릿');
