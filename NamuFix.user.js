@@ -29,9 +29,10 @@ GM_xmlhttpRequest({
 function nOu(a) {
   return typeof a === 'undefined' || a == null;
 }
-function formatDateTime(t){
+
+function formatDateTime(t) {
   var d = new Date(t);
-  return d.getFullYear()+'년 '+(d.getMonth()+1)+'월 '+d.getDate()+'일 '+d.getHours()+'시 '+d.getMinutes()+'분 '+d.getSeconds()+'초';
+  return d.getFullYear() + '년 ' + (d.getMonth() + 1) + '월 ' + d.getDate() + '일 ' + d.getHours() + '시 ' + d.getMinutes() + '분 ' + d.getSeconds() + '초';
 }
 
 var ENV = {};
@@ -41,8 +42,8 @@ if (document.querySelector("input[name=section]"))
   ENV.section = document.querySelector("input[name=section]").value;
 if (ENV.IsEditing)
   ENV.docTitle = document.querySelector("h1.title > a").innerHTML;
-if(nOu(ENV.section))
-  ENV.section=-2;
+if (nOu(ENV.section))
+  ENV.section = -2;
 
 var SET = new function() {
   var discards = ['save', 'load'];
@@ -60,8 +61,8 @@ var SET = new function() {
       if (discards.indexOf(now) != -1) continue;
       this[now.substring(4)] = GM_getValue(now);
     }
-    for(var i in this){
-      if(sets.indexOf('SET_'+i)==-1&&discards.indexOf(i)==-1){
+    for (var i in this) {
+      if (sets.indexOf('SET_' + i) == -1 && discards.indexOf(i) == -1) {
         delete this[i];
       }
     }
@@ -597,17 +598,26 @@ if (ENV.IsEditing || ENV.Discussing) {
         this.delete = function(docTitle, sectno, timestamp) {
           SET.load();
           if (nOu(SET.tempsaves[docTitle])) return;
-          var newArray=[];
+          var newArray = [];
           for (var i = 0; i < SET.tempsaves[docTitle].length; i++) {
-            var archiveThis = true;
+            var keepThis = true;
             var now = SET.tempsaves[docTitle][i];
-            if (nOu(sectno) && now.section != sectno) archiveThis = false;
-            if (nOu(timestamp) && now.timestamp != timestamp) archiveThis = false;
-            if (archiveThis) {
+            switch (arguments.length) {
+              case 1:
+                keepThis = false;
+                break;
+              case 2:
+                if (now.section == sectno) keepThis = false;
+                break;
+              case 3:
+                if (now.section == sectno && now.timestamp == timestamp) keepThis = false;
+                break;
+            }
+            if (keepThis) {
               newArray.push(SET.tempsaves[docTitle][i]);
             }
           }
-          SET.tempsaves[docTitle]=newArray;
+          SET.tempsaves[docTitle] = newArray;
           SET.save();
         }
         this.MigrateIfThereIs = function() {
@@ -642,23 +652,23 @@ if (ENV.IsEditing || ENV.Discussing) {
         var win = NEWindow();
         var tempsaveList = tempsaveManager.getByTitle(ENV.docTitle);
         win.content(function(el) {
-          el.innerHTML='<p>현재 편집중인 문단인 경우 문단 번호가 <strong>굵게</strong> 표시됩니다.<br>문단 번호가 -2인 경우는 문단 번호가 감지되지 않은 경우입니다.</p>';
+          el.innerHTML = '<p>현재 편집중인 문단인 경우 문단 번호가 <strong>굵게</strong> 표시됩니다.<br>문단 번호가 -2인 경우는 문단 번호가 감지되지 않은 경우입니다.</p>';
           var table = document.createElement("table");
           var headrow = document.createElement("tr");
           headrow.innerHTML = '<th>문단 번호</th><th>저장된 날짜와 시간</th><th>불려오기 버튼</th>';
           table.appendChild(headrow);
           for (var i = 0; i < tempsaveList.length; i++) {
-            var now=tempsaveList[i];
-            var tr=document.createElement("tr");
-            tr.innerHTML='<td>'+(now.section == ENV.section ? '<strong>' : '')+now.section+(now.section == ENV.section ? '</strong>' : '')+'</td><td>'+formatDateTime(now.timestamp)+'</td>'
-            var td=document.createElement("td");
-            var btn=document.createElement("button");
-            btn.setAttribute("type","button");
-            btn.innerHTML="불려오기";
-            btn.dataset.json=JSON.stringify(now);
-            btn.addEventListener('click',function(evt){
-              var now=JSON.parse(evt.target.dataset.json);
-              txtarea.value=now.text;
+            var now = tempsaveList[i];
+            var tr = document.createElement("tr");
+            tr.innerHTML = '<td>' + (now.section == ENV.section ? '<strong>' : '') + now.section + (now.section == ENV.section ? '</strong>' : '') + '</td><td>' + formatDateTime(now.timestamp) + '</td>'
+            var td = document.createElement("td");
+            var btn = document.createElement("button");
+            btn.setAttribute("type", "button");
+            btn.innerHTML = "불려오기";
+            btn.dataset.json = JSON.stringify(now);
+            btn.addEventListener('click', function(evt) {
+              var now = JSON.parse(evt.target.dataset.json);
+              txtarea.value = now.text;
             });
             td.appendChild(btn);
             tr.appendChild(td);
@@ -666,7 +676,7 @@ if (ENV.IsEditing || ENV.Discussing) {
           }
           el.appendChild(table);
         });
-        win.button('닫기',win.close);
+        win.button('닫기', win.close);
       });
       tempsaveDropdown.button('<span class="ion-gear-a"></span>', '전역 임시저장 관리자').click(function() {
         alert('구현 예정');
@@ -679,8 +689,35 @@ if (ENV.IsEditing || ENV.Discussing) {
       });
       tempsaveDropdown.button('<span class="ion-trash-a" style="color:orange;"></span>', '특정 임시저장만 삭제').click(function() {
         // title(text), content(callback), foot(callback), button(text,onclick), close
-        // var win=NEWindow();
-        alert('구현 예정');
+        var win = NEWindow();
+        var tempsaveList = tempsaveManager.getByTitle(ENV.docTitle);
+        win.content(function(el) {
+          el.innerHTML = '<p>현재 편집중인 문단인 경우 문단 번호가 <strong>굵게</strong> 표시됩니다.<br>문단 번호가 -2인 경우는 문단 번호가 감지되지 않은 경우입니다.</p>';
+          var table = document.createElement("table");
+          var headrow = document.createElement("tr");
+          headrow.innerHTML = '<th>문단 번호</th><th>저장된 날짜와 시간</th><th>삭제 버튼</th>';
+          table.appendChild(headrow);
+          for (var i = 0; i < tempsaveList.length; i++) {
+            var now = tempsaveList[i];
+            var tr = document.createElement("tr");
+            tr.innerHTML = '<td>' + (now.section == ENV.section ? '<strong>' : '') + now.section + (now.section == ENV.section ? '</strong>' : '') + '</td><td>' + formatDateTime(now.timestamp) + '</td>'
+            var td = document.createElement("td");
+            var btn = document.createElement("button");
+            btn.setAttribute("type", "button");
+            btn.innerHTML = "삭제하기";
+            btn.dataset.json = JSON.stringify(now);
+            btn.addEventListener('click', function(evt) {
+              var now = JSON.parse(evt.target.dataset.json);
+              tempsaveManager.delete(ENV.docTitle, now.section, now.timestamp);
+              win.close();
+            });
+            td.appendChild(btn);
+            tr.appendChild(td);
+            table.appendChild(tr);
+          }
+          el.appendChild(table);
+        });
+        win.button('닫기', win.close);
       });
     }
     // set Size
