@@ -732,6 +732,54 @@ if (ENV.IsEditing || ENV.Discussing) {
         win.button('닫기', win.close);
       });
     }
+    // Template Insert Feature
+    var templatesDropdown = Designer.dropdown('<span class="ion-ios-copy-outline"></span>').hoverMessage('템플릿 삽입/최근에 사용한 템플릿');
+    var refreshTemplatesDropdown = function() {
+      SET.load();
+      if (nOu(SET.recentlyUsedTemplates)) {
+        SET.recentlyUsedTemplates = [];
+        SET.save();
+      }
+      templatesDropdown.clear();
+      var rutl = SET.recentlyUsedTemplates.length;
+
+      function InsertTemplateClosure(na) {
+        return function() {
+          GM_xmlhttpRequest({
+            method: 'GET',
+            url: 'https://namu.wiki/raw/' + na,
+            onload: function(res) {
+              if (res.status == 404) {
+                alert('존재하지 않는 템플릿입니다.');
+                return;
+              }
+              SET.load();
+              if (SET.recentlyUsedTemplates.indexOf(na) == -1) SET.recentlyUsedTemplates.push(na);
+              SET.save();
+              txtarea.value = res.responseText;
+              setTimeout(refreshTemplatesDropdown, 300);
+            }
+          })
+        };
+      }
+      for (var i = 0; i < (rutl < 5 ? rutl : 5); i++) {
+        templatesDropdown.button('<span class="ion-ios-paper-outline"></span>', SET.recentlyUsedTemplates[i]).click(InsertTemplateClosure(SET.recentlyUsedTemplates[i]));
+      }
+      templatesDropdown.button('<span class="ion-close-round"></span>', '기록 삭제').click(function() {
+        SET.load();
+        SET.recentlyUsedTemplates = [];
+        SET.save();
+        setTimeout(refreshTemplatesDropdown, 300);
+      });
+      templatesDropdown.button('<span class="ion-plus-round"></span>', '템플릿 삽입').click(function() {
+        var templateName = prompt('템플릿 이름을 입력하세요.');
+        if (!/^템플릿:.+/.test(templateName) && !/.+Template$/.test(templateName) && !confirm('올바른 템플릿 이름이 아닌 것 같습니다. 계속할까요?')) return;
+        InsertTemplateClosure(templateName)();
+        setTimeout(refreshTemplatesDropdown, 300);
+      });
+    };
+    setTimeout(refreshTemplatesDropdown, 500);
+
     // set Size
     if (ENV.Discussing)
       rootDiv.style.height = '170px';
