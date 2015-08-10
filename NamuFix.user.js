@@ -18,7 +18,7 @@
 // ==/UserScript==
 if (typeof chrome !== "undefined") {
   alert('크롬은 Tampermonkey를 이용해서 설치하세요.');
-  throw New Error("Don't install this directly.");
+  throw new Error("Don't install this directly.");
 }
 var showNotification = function(text) {
   if (!("Notification" in unsafeWindow)) {
