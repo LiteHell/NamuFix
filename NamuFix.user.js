@@ -4,7 +4,7 @@
 // @description 나무위키 편집 인터페이스 등을 개선합니다.
 // @include     http://namu.wiki/*
 // @include     https://namu.wiki/*
-// @version     150810.6
+// @version     150810.7
 // @namespace   http://litehell.info/
 // @downloadURL https://raw.githubusercontent.com/LiteHell/NamuFix/master/NamuFix.user.js
 // @require     https://raw.githubusercontent.com/LiteHell/NamuFix/master/FlexiColorPicker.js
@@ -16,6 +16,10 @@
 // @grant       GM_listValues
 // @run-at      document-end
 // ==/UserScript==
+if (typeof chrome !== "undefined") {
+  alert('크롬은 Tampermonkey를 이용해서 설치하세요.');
+  throw New Error("Don't install this directly.");
+}
 var showNotification = function(text) {
   if (!("Notification" in unsafeWindow)) {
     alert(text);
@@ -51,9 +55,10 @@ function formatDateTime(t) {
 }
 
 var ENV = {};
-ENV.IsEditing = /https?:\/\/namu\.wiki\/edit\/(.+?)/.test(location.href);
-ENV.Discussing = /https?:\/\/namu\.wiki\/topic\/(.+?)/.test(location.href);
-ENV.IsDocument = /https?:\/\/namu\.wiki\/w\/(.+)/.test(location.href); //&& document.querySelector('p.wiki-edit-date');
+ENV.IsEditing = /^https?:\/\/namu\.wiki\/edit\/(.+?)/.test(location.href);
+ENV.Discussing = /^https?:\/\/namu\.wiki\/topic\/(.+?)/.test(location.href);
+ENV.IsDocument = /^https?:\/\/namu\.wiki\/w\/(.+)/.test(location.href); //&& document.querySelector('p.wiki-edit-date');
+ENV.IsSettings = /^https?:\/\/namu\.wiki\/settings/.test(location.href);
 if (document.querySelector("input[name=section]"))
   ENV.section = document.querySelector("input[name=section]").value;
 if (ENV.IsEditing)
@@ -950,8 +955,8 @@ if (ENV.IsEditing || ENV.Discussing) {
       evt.target.innerHTML = '주시해제';
     }
   });
-  btn.appendChild(aTag);
-  document.querySelector('ul.tab_bar').appendChild(btn);
+  //btn.appendChild(aTag);
+  //document.querySelector('ul.tab_bar').appendChild(btn);
 
   var rdbtn = document.createElement("li");
   rdbtn.className = "f_r";
@@ -966,4 +971,30 @@ if (ENV.IsEditing || ENV.Discussing) {
   rdbtn.appendChild(rdaTag);
   document.querySelector('ul.tab_bar').appendChild(rdbtn);
 }
+/* else if (ENV.IsSettings) {
+  var aside = document.querySelector("aside > ul.nav_list");
+  var li = document.createElement("li");
+  var a = document.createElement("a");
+  a.innerHTML = "NamuFix";
+  a.className = "menu-item";
+  a.setAttribute("href", "#NamuFixSettings");
+  li.appendChild(a);
+  aside.appendChild(li);
+
+  var pages = document.querySelector("section");
+  var page = document.createElement("div");
+  page.innerHTML = '<h3>NamuFix</h3>';
+  page.className = "tab_page";
+  page.style.display = "none";
+  page.id = "NamuFixSettings";
+
+  var dwOption = document.createElement("input");
+  dwOption.setAttribute("type", "checkbox");
+  dwOption.addEventListener("change", function(evt) {
+    alert('Ho!');
+  })
+  page.appendChild(dwOption);
+  page.innerHTML += '문서 주시기능 활성화';
+  pages.appendChild(page);
+}*/
 Watcher.runWorker();
