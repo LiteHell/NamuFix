@@ -4,7 +4,7 @@
 // @description 나무위키 편집 인터페이스 등을 개선합니다.
 // @include     http://namu.wiki/*
 // @include     https://namu.wiki/*
-// @version     150810.4
+// @version     150810.5
 // @namespace   http://litehell.info/
 // @downloadURL https://raw.githubusercontent.com/LiteHell/NamuFix/master/NamuFix.user.js
 // @require     https://raw.githubusercontent.com/LiteHell/NamuFix/master/FlexiColorPicker.js
@@ -955,7 +955,8 @@ if (ENV.IsEditing || ENV.Discussing) {
   rdaTag.setAttribute("href", "#NothingToLink");
   rdaTag.addEventListener('click', function(evt) {
     var redirectTo = prompt('어디로?');
-    location.href = 'https://namu.wiki/edit/' + ENV.docTitle + '?redirectTo=' + redirectTo;
+    if(redirectTo != null && redirectTo.trim().length!=0)
+      location.href = 'https://namu.wiki/edit/' + ENV.docTitle + '?redirectTo=' + redirectTo;
   });
   rdbtn.appendChild(rdaTag);
   document.querySelector('ul.tab_bar').appendChild(rdbtn);
