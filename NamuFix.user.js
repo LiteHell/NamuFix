@@ -144,6 +144,10 @@ var NEWindow = function() {
 }
 var Watcher = new function() {
   SET.load();
+  if (nOu(SET.dwHashes)) {
+    SET.dwHashes = {};
+    SET.save();
+  }
   var docs = Object.keys(SET.dwHashes);
   docs = docs.sort();
   var docIndex = 0;
@@ -152,10 +156,6 @@ var Watcher = new function() {
     var shaObj = new jsSHA("SHA-512", "TEXT");
     shaObj.update(str);
     return shaObj.getHash("HEX");
-  }
-  if (nOu(SET.dwHashes)) {
-    SET.dwHashes = {};
-    SET.save();
   }
   this.runWorker = function(r) {
     SET.load();
