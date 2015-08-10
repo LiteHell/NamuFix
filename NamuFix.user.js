@@ -4,7 +4,7 @@
 // @description 나무위키 편집 인터페이스 등을 개선합니다.
 // @include     http://namu.wiki/*
 // @include     https://namu.wiki/*
-// @version     150810.8
+// @version     150810.9
 // @namespace   http://litehell.info/
 // @downloadURL https://raw.githubusercontent.com/LiteHell/NamuFix/master/NamuFix.user.js
 // @require     https://raw.githubusercontent.com/LiteHell/NamuFix/master/FlexiColorPicker.js
@@ -16,10 +16,6 @@
 // @grant       GM_listValues
 // @run-at      document-end
 // ==/UserScript==
-if (typeof chrome !== "undefined") {
-  alert('크롬은 Tampermonkey를 이용해서 설치하세요.');
-  throw new Error("Don't install this directly.");
-}
 var showNotification = function(text) {
   if (!("Notification" in unsafeWindow)) {
     alert(text);
