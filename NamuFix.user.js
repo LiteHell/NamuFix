@@ -796,7 +796,7 @@ if (ENV.IsEditing || ENV.Discussing) {
     };
     setTimeout(refreshTemplatesDropdown, 500);
     // Grammar Checker
-    Designer.button('<span class="ion-checkmark-round" style="color:gold;"></span>').hoverMessage('멍청한 문법 검사기').click(function() {
+    /* Designer.button('<span class="ion-checkmark-round" style="color:gold;"></span>').hoverMessage('멍청한 문법 검사기').click(function() {
       var plain = TextProc.value();
       var markupPatterns = [
         /^=+(.+?)=+$/,
@@ -824,71 +824,7 @@ if (ENV.IsEditing || ENV.Discussing) {
         }
       }
 
-      // 위키백과 [[사용자:Nike787/일반인이 많이 틀리는 맞춤법]]
-      var pattern1 = /(웬지|왠[^지])/;
-      pattern1.message = '‘왠’은 단독으로 쓰일 수 없고, ‘왜인지’의 약어인 ‘왠지’의 형식으로 쓰여야 합니다. 반면 ‘웬’은 단독으로 쓰여야 합니다.';
-      var pattern2 = /(됐다|돼었다|돼고|됀다|돼죠|돼지[\.\?])/;
-      pattern2.message = '이러한 맞춤법 실수는 "되다" 동사를 "하다"로 바꾸어 "하"가 들어가야 할 부분에 "되"를 넣고 "해"가 들어가야 할 부분에 "돼"를 넣는 식으로 고칠 수 있습니다.';
-      // 데와 대 -> 정규표현식으로 불가능하므로 생략.
-      var pattern3 = /어의없/;
-      pattern3.message = '"그 어이없는 놈"할때 어이의 의미라면 어의가 아니라 어이로 써야합니다. 다만 임금을 치료하던 조선시대 관직, 임금님이 입는 옷, 말의 뜻 이 세가지 의미 중 하나를 의도한경우 맞습니다'
-      var pattern4 = /않\s?(했|된)|/;
-      pattern4.message = '"안"은 "아니"의 축약형이고, "않"은 "아니하"의 축약형입니다.';
-      var pattern5 = /꺽[(었다)다(습니다)(는구나)(었구나)(어라)게자고(으며)어임음]+[\.\?,]?/;
-      pattern4.message = '"꺽다"가 아니라 "꺾다"가 옳습니다.';
-      var pattern6 = /깍[(었다)(았다)다(습니다)(는구나)(었구나)(았구나)(어라)(아라)자고(으며)어아임음]+[\.\?,]?/;
-      pattern5.message = '"깍다"가 아니라 "깎다"가 옳습니다.';
-      var pattern7 = /불리우다|불리운/;
-      pattern7.message = '어떤 경우에도 "불리다"가 옳고 "불리우다"는 틀립니다.';
-      var pattern8 = /왜숙모/;
-      pattern8.message = '외숙모, 설마 이걸...';
-      var pattern9 = /낮|낳|났|낫|나/;
-      pattern9.careful = true;
-      pattern9.message = '"낳다": 애기를 "낳다"\n"낮다":저 산의 높이는 "낮다"\n"났다":고도리가 "났다"\n"낫다":아무래도 사람 살기엔 겨울보다 여름이 낫다.';
-      var pattern10 = /아만자/;
-      pattern10.message = '암환자, 설마 이걸....';
-      var pattern11 = /[신실]뢰지만/;
-      pattern11.message = '실례지만, 설마 이걸....';
-      var pattern12 = /사생활치매/;
-      pattern12.message = '사생활침해, 설마 이걸....';
-      var pattern13 = /날으[는다]/;
-      pattern13.message = '옳은 표기 : (하늘을 )나는/날다';
-      var pattern14 = /되어[(지다)진]/;
-      pattern14.message = '"되다"가 옳습니다';
-      var pattern15 = /들어[(나다)난]/;
-      pattern15.message = '"드러나다"가 옳습니다.';
-      var pattern16 = /몇\s?일/;
-      pattern16.message = '며칠이 옳은 표기입니다.';
-
-      // 백괴사전 [[도움말:헷갈리는_한국어]]
-      var pattern18 = /[\s]밖에/;
-      pattern18.message = '"밖에"는 붙여씁니다.';
-
-      var pattern17 = /갯수|그닥|금새|기달리다|깨끗히|네모낳다|눈꼽|당췌|덮히다|돌맹이|뒷처리|뒷태|떄|말야|몇\s?일|배[끼낀]|모[(자르)(잘)]|부숴|살고기|삼가[(하니)(하여)해(하였)(했)하]|서슴치|설겆이|설레[이여였]|실[다어(으니)었]|쓰여|씌여|애시당초|어떻|왜래어|왔다리 갔다리|월셋방|어짜피|여지껏|역활|윳|일일히|잘르다|재털이|절대절명|주구창창|줏[(으니)어었다]|질르|청천병력|촛점|통채|폐쇠|폭팔|풍지박산|풍지박살|홀홀달신|회손/;
-      pattern17.message = '잘못된 어휘 또는 활용이 존재합니다. 백괴사전의 <a href="http://uncyclopedia.kr/wiki/%EB%8F%84%EC%9B%80%EB%A7%90:%ED%97%B7%EA%B0%88%EB%A6%AC%EB%8A%94_%ED%95%9C%EA%B5%AD%EC%96%B4">도움말:헷갈리는 한국어</a> 문서를 참고하세요.'
-
-      var pattern18 = /어드저스트|어드밴스드|엔젤|앤절|앵글부츠|밧데리|브릿지|케익|케잌|크레딧|데미지|데자부|데자뷰|앳자|플룻|럭키|메세지|네비게이션|판넬|로보트|소세지|타겟/;
-      pattern18.message = '잘못된 외래어 표기가 존재합니다. 백괴사전의 <a href="http://uncyclopedia.kr/wiki/%EB%8F%84%EC%9B%80%EB%A7%90:%ED%97%B7%EA%B0%88%EB%A6%AC%EB%8A%94_%ED%95%9C%EA%B5%AD%EC%96%B4">도움말:헷갈리는 한국어</a> 문서 중 <i>외래어 표기</i> 문단을 참고하세요.';
-
-      var messages = document.createElement('ul');
-      var patterns = [pattern1, pattern2, pattern3, pattern4, pattern5, pattern6, pattern7, pattern8, pattern9, pattern10, pattern11, pattern12, pattern13, pattern14, pattern15, pattern16, pattern17, pattern18];
-      for (var i = 0; i < patterns.length; i++) {
-        if (patterns[i].test(plain)) {
-          var message = document.createElement('li');
-          message.innerHTML = patterns[i].message;
-          if(patterns[i].careful)
-            message.style.fontStyle='italic';
-          messages.appendChild(message);
-        }
-      }
-      var win = NEWindow();
-      win.title('검사 결과');
-      win.content(function(el) {
-        el.innerHTML = '<p>검사에 완료했습니다. 이 검사기는 멍청하므로 오류를 감지하지 못하거나 개소리를 할 수 있습니다. 진짜 제대로 검사할거면 <a href="http://speller.cs.pusan.ac.kr/">부산대 한국어 맞춤법/문법 검사기</a>를 사용하세요.</p>'
-        el.appendChild(messages);
-      })
-      win.button('닫기', win.close);
-    });
+    }); */
 
     // set Size
     if (ENV.Discussing)
