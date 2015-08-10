@@ -148,8 +148,8 @@ var Watcher = new function() {
     SET.dwHashes = {};
     SET.save();
   }
-  if (nOu(SET.dwEnabled)){
-    SET.dwEnabled=false;
+  if (nOu(SET.dwEnabled)) {
+    SET.dwEnabled = false;
   }
   var docs = Object.keys(SET.dwHashes);
   docs = docs.sort();
@@ -163,7 +163,7 @@ var Watcher = new function() {
   this.runWorker = function(r) {
     SET.load();
     var workerFunc = function() {
-      if(!SET.dwEnabled) return;
+      if (!SET.dwEnabled) return;
       if (docs.length <= docIndex) {
         SET.load();
         docs = Object.keys(SET.dwHashes);
@@ -927,10 +927,10 @@ if (ENV.IsEditing || ENV.Discussing) {
     var srwPattern = /\?redirectTo=([^\&]+)/;
     if (srwPattern.test(location.search)) {
       txtarea.value = '#redirect ' + decodeURIComponent(srwPattern.exec(location.search)[1]);
-      if(document.querySelectorAll('iframe[title="CAPTCHA 위젯"]').length==0){
-        if(document.querySelector("input#logInput")) document.querySelector("input#logInput").value="NamuFix를 이용하여 자동 리다이렉트 처리됨.";
+      if (document.querySelectorAll('iframe[title="CAPTCHA 위젯"]').length == 0) {
+        if (document.querySelector("input#logInput")) document.querySelector("input#logInput").value = "NamuFix를 이용하여 자동 리다이렉트 처리됨.";
         document.querySelector('#editBtn').click();
-    }
+      }
     }
   }
 } else if (ENV.IsDocument) {
@@ -941,6 +941,7 @@ if (ENV.IsEditing || ENV.Discussing) {
   aTag.innerHTML = Watcher.contains(ENV.docTitle) ? '주시해제' : '주시';
   aTag.setAttribute('href', "#NothingToLink");
   aTag.addEventListener('click', function(evt) {
+    alert('문서 주시기능이 비활성화되어있습니다.');
     if (Watcher.contains(ENV.docTitle)) {
       Watcher.remove(ENV.docTitle);
       evt.target.innerHTML = '주시';
@@ -959,7 +960,7 @@ if (ENV.IsEditing || ENV.Discussing) {
   rdaTag.setAttribute("href", "#NothingToLink");
   rdaTag.addEventListener('click', function(evt) {
     var redirectTo = prompt('어디로?');
-    if(redirectTo != null && redirectTo.trim().length!=0)
+    if (redirectTo != null && redirectTo.trim().length != 0)
       location.href = 'https://namu.wiki/edit/' + ENV.docTitle + '?redirectTo=' + redirectTo;
   });
   rdbtn.appendChild(rdaTag);
