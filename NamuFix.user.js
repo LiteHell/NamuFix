@@ -4,7 +4,7 @@
 // @description 나무위키 편집 인터페이스 등을 개선합니다.
 // @include     http://namu.wiki/*
 // @include     https://namu.wiki/*
-// @version     150810.1
+// @version     150810.2
 // @namespace   http://litehell.info/
 // @downloadURL https://raw.githubusercontent.com/LiteHell/NamuFix/master/NamuFix.user.js
 // @require     https://raw.githubusercontent.com/LiteHell/NamuFix/master/FlexiColorPicker.js
@@ -53,7 +53,7 @@ function formatDateTime(t) {
 var ENV = {};
 ENV.IsEditing = /https?:\/\/namu\.wiki\/edit\/(.+?)/.test(location.href);
 ENV.Discussing = /https?:\/\/namu\.wiki\/topic\/(.+?)/.test(location.href);
-ENV.IsDocument = /https?:\/\/namu\.wiki\/w\/(.+)/.test(location.href) && document.querySelector('p.wiki-edit-date');
+ENV.IsDocument = /https?:\/\/namu\.wiki\/w\/(.+)/.test(location.href); //&& document.querySelector('p.wiki-edit-date');
 if (document.querySelector("input[name=section]"))
   ENV.section = document.querySelector("input[name=section]").value;
 if (ENV.IsEditing)
@@ -179,7 +179,8 @@ var Watcher = new function() {
           }
           SET.load();
           if (SET.dwHashes[dNow] != dcNow) {
-            showNotification('변경 사항 감지됨 : ' + dNow + '\n현재 시각 : ' + formatDateTime(Date.now()));
+            if (dcNow != '--NOTFOUND') showNotification('변경 사항 감지됨 : ' + dNow);
+            else showNotification('문서가 삭제됨(또는 존재하지 않음) : ' + dNow);
             SET.dwHashes[dNow] = dcNow;
             SET.save();
           }
@@ -918,6 +919,15 @@ if (ENV.IsEditing || ENV.Discussing) {
     oldTextarea.parentNode.insertBefore(rootDiv, oldTextarea);
     oldTextarea.parentNode.removeChild(oldTextarea);
     txtarea.value = wText;
+
+    var srwPattern = /\?redirectTo=([^\&]+)/;
+    if (srwPattern.test(location.search)) {
+      txtarea.value = '#redirect ' + decodeURIComponent(srwPattern.exec(location.search)[1]);
+      if(document.querySelectorAll('iframe[title="CAPTCHA 위젯"]').length==0){
+        if(document.querySelector("input#logInput")) document.querySelector("input#logInput").value="NamuFix를 이용하여 자동 리다이렉트 처리됨.";
+        document.querySelector('#editBtn').click();
+    }
+    }
   }
 } else if (ENV.IsDocument) {
 
@@ -937,5 +947,17 @@ if (ENV.IsEditing || ENV.Discussing) {
   });
   btn.appendChild(aTag);
   document.querySelector('ul.tab_bar').appendChild(btn);
+
+  var rdbtn = document.createElement("li");
+  rdbtn.className = "f_r";
+  var rdaTag = document.createElement("a");
+  rdaTag.innerHTML = '리다이렉트 작성';
+  rdaTag.setAttribute("href", "#NothingToLink");
+  rdaTag.addEventListener('click', function(evt) {
+    var redirectTo = prompt('어디로?');
+    location.href = 'https://namu.wiki/edit/' + ENV.docTitle + '?redirectTo=' + redirectTo;
+  });
+  rdbtn.appendChild(rdaTag);
+  document.querySelector('ul.tab_bar').appendChild(rdbtn);
 }
 Watcher.runWorker();
