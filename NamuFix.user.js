@@ -923,7 +923,10 @@ if (ENV.IsEditing || ENV.Discussing) {
     var srwPattern = /\?redirectTo=([^\&]+)/;
     if (srwPattern.test(location.search)) {
       txtarea.value = '#redirect ' + decodeURIComponent(srwPattern.exec(location.search)[1]);
-      if(document.querySelectorAll('iframe[title="CAPTCHA 위젯"]').length==0) document.querySelector('#editBtn').click();
+      if(document.querySelectorAll('iframe[title="CAPTCHA 위젯"]').length==0){
+        if(document.querySelector("input#logInput")) document.querySelector("input#logInput").value="NamuFix를 이용하여 자동 리다이렉트 처리됨.";
+        document.querySelector('#editBtn').click();
+    }
     }
   }
 } else if (ENV.IsDocument) {
@@ -951,7 +954,6 @@ if (ENV.IsEditing || ENV.Discussing) {
   rdaTag.innerHTML = '리다이렉트 작성';
   rdaTag.setAttribute("href", "#NothingToLink");
   rdaTag.addEventListener('click', function(evt) {
-    // iframe[title="reCAPTCHA 위젯"]
     var redirectTo = prompt('어디로?');
     location.href = 'https://namu.wiki/edit/' + ENV.docTitle + '?redirectTo=' + redirectTo;
   });
