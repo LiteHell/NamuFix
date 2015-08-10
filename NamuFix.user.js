@@ -4,7 +4,7 @@
 // @description 나무위키 편집 인터페이스 등을 개선합니다.
 // @include     http://namu.wiki/*
 // @include     https://namu.wiki/*
-// @version     150810.9
+// @version     150810.10
 // @namespace   http://litehell.info/
 // @downloadURL https://raw.githubusercontent.com/LiteHell/NamuFix/master/NamuFix.user.js
 // @require     https://raw.githubusercontent.com/LiteHell/NamuFix/master/FlexiColorPicker.js
@@ -933,45 +933,42 @@ if (ENV.IsEditing || ENV.Discussing) {
 
     var srwPattern = /\?redirectTo=([^\&]+)/;
     if (srwPattern.test(location.search)) {
-      txtarea.value = '#redirect ' + decodeURIComponent(srwPattern.exec(location.search)[1]);
-      if (document.querySelectorAll('iframe[title="CAPTCHA 위젯"]').length == 0) {
-        if (document.querySelector("input#logInput")) document.querySelector("input#logInput").value = "NamuFix를 이용하여 자동 리다이렉트 처리됨.";
-        document.querySelector('#editBtn').click();
+      if ((txtarea.value.trim().search(/^#redirect .+/) == 0 || txtarea.value.trim().length == 0) || confirm('빈 문서가 아닌것 같습니다만 그래도 계속?')) {
+        txtarea.value = '#redirect ' + decodeURIComponent(srwPattern.exec(location.search)[1]);
+        if (document.querySelectorAll('iframe[title="CAPTCHA 위젯"]').length == 0) {
+          if (document.querySelector("input#logInput")) document.querySelector("input#logInput").value = "NamuFix를 이용하여 자동 리다이렉트 처리됨.";
+          document.querySelector('#editBtn').click();
+        }
       }
     }
   }
 } else if (ENV.IsDocument) {
-
-  var btn = document.createElement("li");
-  btn.className = "f_r";
-  var aTag = document.createElement("a");
-  aTag.innerHTML = Watcher.contains(ENV.docTitle) ? '주시해제' : '주시';
-  aTag.setAttribute('href', "#NothingToLink");
-  aTag.addEventListener('click', function(evt) {
-    if (Watcher.contains(ENV.docTitle)) {
-      Watcher.remove(ENV.docTitle);
-      evt.target.innerHTML = '주시';
-    } else {
-      Watcher.add(ENV.docTitle);
-      evt.target.innerHTML = '주시해제';
-    }
-  });
-  if (Watcher.onoff()) {
+  function addButton(text, onclick) {
+    var btn = document.createElement("li");
+    btn.className = "f_r";
+    var aTag = document.createElement("a");
+    aTag.innerHTML = text;
+    aTag.setAttribute("href", "#NothingToLink");
+    aTag.addEventListener('click', onclick);
     btn.appendChild(aTag);
     document.querySelector('ul.tab_bar').appendChild(btn);
+  };
+  if (Watcher.onoff()) {
+    addButton(Watcher.contains(ENV.docTitle) ? '주시해제' : '주시', function(evt) {
+      if (Watcher.contains(ENV.docTitle)) {
+        Watcher.remove(ENV.docTitle);
+        evt.target.innerHTML = '주시';
+      } else {
+        Watcher.add(ENV.docTitle);
+        evt.target.innerHTML = '주시해제';
+      }
+    });
   }
-  var rdbtn = document.createElement("li");
-  rdbtn.className = "f_r";
-  var rdaTag = document.createElement("a");
-  rdaTag.innerHTML = '리다이렉트 작성';
-  rdaTag.setAttribute("href", "#NothingToLink");
-  rdaTag.addEventListener('click', function(evt) {
-    var redirectTo = prompt('어디로?');
-    if (redirectTo != null && redirectTo.trim().length != 0)
-      location.href = 'https://namu.wiki/edit/' + ENV.docTitle + '?redirectTo=' + redirectTo;
+  addButton('리다이렉트', function(evt) {
+    var redirectFrom = prompt('어느 문서에서 지금 이문서로 리다이렉트?');
+    if (redirectFrom != null && redirectFrom.trim().length != 0)
+      location.href = 'https://namu.wiki/edit/' + redirectFrom + '?redirectTo=' + ENV.docTitle;
   });
-  rdbtn.appendChild(rdaTag);
-  document.querySelector('ul.tab_bar').appendChild(rdbtn);
 } else if (ENV.IsSettings) {
   var aside = document.querySelector("aside > ul.nav_list");
   var li = document.createElement("li");
