@@ -4,7 +4,7 @@
 // @description 나무위키 편집 인터페이스 등을 개선합니다.
 // @include     http://namu.wiki/*
 // @include     https://namu.wiki/*
-// @version     150810.7
+// @version     150810.8
 // @namespace   http://litehell.info/
 // @downloadURL https://raw.githubusercontent.com/LiteHell/NamuFix/master/NamuFix.user.js
 // @require     https://raw.githubusercontent.com/LiteHell/NamuFix/master/FlexiColorPicker.js
@@ -155,6 +155,7 @@ var Watcher = new function() {
   }
   if (nOu(SET.dwEnabled)) {
     SET.dwEnabled = false;
+    SET.save();
   }
   var docs = Object.keys(SET.dwHashes);
   docs = docs.sort();
@@ -213,6 +214,14 @@ var Watcher = new function() {
   this.contains = function(r) {
     SET.load();
     return Object.keys(SET.dwHashes).indexOf(r) != -1;
+  }
+  this.onoff = function(op) {
+    if (typeof op !== "undefined") {
+      SET.dwEnabled = op;
+      SET.save();
+    } else {
+      return SET.dwEnabled;
+    }
   }
 };
 if (ENV.IsEditing || ENV.Discussing) {
@@ -788,9 +797,6 @@ if (ENV.IsEditing || ENV.Discussing) {
         });
         win.button('닫기', win.close);
       });
-      /* tempsaveDropdown.button('<span class="ion-gear-a"></span>', '전역 임시저장 관리자').click(function() {
-        alert('구현예정');
-      }); */
       tempsaveDropdown.button('<span class="ion-trash-a" style="color:red;"></span>', '이 문서의 모든 임시저장 삭제').click(function() {
         tempsaveManager.delete(ENV.docTitle);
       });
@@ -946,7 +952,6 @@ if (ENV.IsEditing || ENV.Discussing) {
   aTag.innerHTML = Watcher.contains(ENV.docTitle) ? '주시해제' : '주시';
   aTag.setAttribute('href', "#NothingToLink");
   aTag.addEventListener('click', function(evt) {
-    alert('문서 주시기능이 비활성화되어있습니다.');
     if (Watcher.contains(ENV.docTitle)) {
       Watcher.remove(ENV.docTitle);
       evt.target.innerHTML = '주시';
@@ -955,9 +960,10 @@ if (ENV.IsEditing || ENV.Discussing) {
       evt.target.innerHTML = '주시해제';
     }
   });
-  //btn.appendChild(aTag);
-  //document.querySelector('ul.tab_bar').appendChild(btn);
-
+  if (Watcher.onoff()) {
+    btn.appendChild(aTag);
+    document.querySelector('ul.tab_bar').appendChild(btn);
+  }
   var rdbtn = document.createElement("li");
   rdbtn.className = "f_r";
   var rdaTag = document.createElement("a");
@@ -970,8 +976,7 @@ if (ENV.IsEditing || ENV.Discussing) {
   });
   rdbtn.appendChild(rdaTag);
   document.querySelector('ul.tab_bar').appendChild(rdbtn);
-}
-/* else if (ENV.IsSettings) {
+} else if (ENV.IsSettings) {
   var aside = document.querySelector("aside > ul.nav_list");
   var li = document.createElement("li");
   var a = document.createElement("a");
@@ -988,13 +993,29 @@ if (ENV.IsEditing || ENV.Discussing) {
   page.style.display = "none";
   page.id = "NamuFixSettings";
 
-  var dwOption = document.createElement("input");
-  dwOption.setAttribute("type", "checkbox");
-  dwOption.addEventListener("change", function(evt) {
-    alert('Ho!');
-  })
-  page.appendChild(dwOption);
-  page.innerHTML += '문서 주시기능 활성화';
+  var nfSetBtn = document.createElement("button");
+  nfSetBtn.setAttribute("type", "button");
+  nfSetBtn.className = "d_btn type_blue";
+  nfSetBtn.innerHTML = "NamuFix 설정";
+  nfSetBtn.addEventListener("click", function() {
+    var win = NEWindow();
+    var elems = {};
+    win.title('NamuFix 설정');
+    SET.load();
+    win.content(function(el) {
+      el.innerHTML = '<input type="checkbox" id="enableDw"></input> 문서주시기능 활성화<br>';
+      el.querySelector('#enableDw').checked = Watcher.onoff();
+      elems['enableDw'] = el.querySelector('#enableDw');
+    });
+    win.button('저장하지 않고 닫기', win.close);
+    win.button('저장하고 닫기', function() {
+      console.log(elems['enableDw'].checked);
+      Watcher.onoff(elems['enableDw'].checked);
+      win.close();
+    });
+  });
+  page.appendChild(nfSetBtn);
   pages.appendChild(page);
-}*/
-Watcher.runWorker();
+}
+if (Watcher.onoff())
+  Watcher.runWorker();
