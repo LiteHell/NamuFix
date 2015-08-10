@@ -4,7 +4,7 @@
 // @description 나무위키 편집 인터페이스 등을 개선합니다.
 // @include     http://namu.wiki/*
 // @include     https://namu.wiki/*
-// @version     150810.0
+// @version     150810.1
 // @namespace   http://litehell.info/
 // @downloadURL https://raw.githubusercontent.com/LiteHell/NamuFix/master/NamuFix.user.js
 // @require     https://raw.githubusercontent.com/LiteHell/NamuFix/master/FlexiColorPicker.js
@@ -16,7 +16,22 @@
 // @grant       GM_listValues
 // @run-at      document-end
 // ==/UserScript==
-
+var showNotification = function(text) {
+  if (!("Notification" in unsafeWindow)) {
+    alert(text);
+    return;
+  }
+  var makeNoti = function(permission) {
+    if (permission === "granted") {
+      var notification = new Notification(text);
+    }
+  };
+  if (Notification.permission === "granted") {
+    makeNoti("granted");
+  } else if (Notification.permission !== 'denied') {
+    Notification.requestPermission(makeNoti);
+  }
+}
 GM_addStyle("em{font-style: italic;}");
 GM_xmlhttpRequest({
   method: "GET",
@@ -38,10 +53,13 @@ function formatDateTime(t) {
 var ENV = {};
 ENV.IsEditing = /https?:\/\/namu\.wiki\/edit\/(.+?)/.test(location.href);
 ENV.Discussing = /https?:\/\/namu\.wiki\/topic\/(.+?)/.test(location.href);
+ENV.IsDocument = /https?:\/\/namu\.wiki\/w\/(.+)/.test(location.href) && document.querySelector('p.wiki-edit-date');
 if (document.querySelector("input[name=section]"))
   ENV.section = document.querySelector("input[name=section]").value;
 if (ENV.IsEditing)
   ENV.docTitle = document.querySelector("h1.title > a").innerHTML;
+else if (ENV.IsDocument)
+  ENV.docTitle = document.querySelector("h1.title").innerHTML;
 if (nOu(ENV.section))
   ENV.section = -2;
 
@@ -124,7 +142,69 @@ var NEWindow = function() {
   };
   return r;
 }
+var Watcher = new function() {
+  SET.load();
+  var docs = Object.keys(SET.dwHashes);
+  docs = docs.sort();
+  var docIndex = 0;
 
+  function SHA512(str) {
+    var shaObj = new jsSHA("SHA-512", "TEXT");
+    shaObj.update(str);
+    return shaObj.getHash("HEX");
+  }
+  if (nOu(SET.dwHashes)) {
+    SET.dwHashes = {};
+    SET.save();
+  }
+  this.runWorker = function(r) {
+    SET.load();
+    var workerFunc = function() {
+      if (docs.length <= docIndex) {
+        SET.load();
+        docs = Object.keys(SET.dwHashes);
+        docs = docs.sort();
+        docIndex = 0;
+      }
+      var dNow = docs[docIndex++];
+      GM_xmlhttpRequest({
+        url: 'https://namu.wiki/raw/' + dNow,
+        method: "GET",
+        onload: function(res) {
+          var dcNow = 'ERR';
+          if (res.status == 404) {
+            dcNow = '--NOTFOUND';
+          } else {
+            dcNow = SHA512(res.responseText);
+          }
+          SET.load();
+          if (SET.dwHashes[dNow] != dcNow) {
+            showNotification('변경 사항 감지됨 : ' + dNow + '\n현재 시각 : ' + formatDateTime(Date.now()));
+            SET.dwHashes[dNow] = dcNow;
+            SET.save();
+          }
+        }
+      });
+    };
+    setInterval(workerFunc, 1700);
+  };
+  this.add = function(r) {
+    SET.load();
+    if (Object.keys(SET.dwHashes).indexOf(r) == -1)
+      SET.dwHashes[r] = '';
+    SET.save();
+  };
+  this.remove = function(r) {
+    SET.load();
+    if (Object.keys(SET.dwHashes).indexOf(r) != -1)
+      delete SET.dwHashes[r];
+    SET.save();
+  };
+  this.contains = function(r) {
+    SET.load();
+    return Object.keys(SET.dwHashes).indexOf(r) != -1;
+  }
+};
 if (ENV.IsEditing || ENV.Discussing) {
   if (document.querySelectorAll("textarea").length == 1) {
     var rootDiv = document.createElement("div");
@@ -839,4 +919,23 @@ if (ENV.IsEditing || ENV.Discussing) {
     oldTextarea.parentNode.removeChild(oldTextarea);
     txtarea.value = wText;
   }
+} else if (ENV.IsDocument) {
+
+  var btn = document.createElement("li");
+  btn.className = "f_r";
+  var aTag = document.createElement("a");
+  aTag.innerHTML = Watcher.contains(ENV.docTitle) ? '주시해제' : '주시';
+  aTag.setAttribute('href', "#NothingToLink");
+  aTag.addEventListener('click', function(evt) {
+    if (Watcher.contains(ENV.docTitle)) {
+      Watcher.remove(ENV.docTitle);
+      evt.target.innerHTML = '주시';
+    } else {
+      Watcher.add(ENV.docTitle);
+      evt.target.innerHTML = '주시해제';
+    }
+  });
+  btn.appendChild(aTag);
+  document.querySelector('ul.tab_bar').appendChild(btn);
 }
+Watcher.runWorker();
