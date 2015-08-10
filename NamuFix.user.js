@@ -187,7 +187,7 @@ var Watcher = new function() {
         }
       });
     };
-    setInterval(workerFunc, 2900);
+    setInterval(workerFunc, 5000);
   };
   this.add = function(r) {
     SET.load();
