@@ -4,10 +4,10 @@
 // @description 나무위키 편집 인터페이스 등을 개선합니다.
 // @include     http://namu.wiki/*
 // @include     https://namu.wiki/*
-// @version     INDEV
+// @version     150810.0
 // @namespace   http://litehell.info/
-// @downloadURL https://raw.githubusercontent.com/LiteHell/NamuFix/dev1/NamuFix.user.js
-// @require     https://raw.githubusercontent.com/LiteHell/NamuFix/dev1/FlexiColorPicker.js
+// @downloadURL https://raw.githubusercontent.com/LiteHell/NamuFix/master/NamuFix.user.js
+// @require     https://raw.githubusercontent.com/LiteHell/NamuFix/master/FlexiColorPicker.js
 // @require     https://raw.githubusercontent.com/Caligatio/jsSHA/v2.0.1/src/sha512.js
 // @grant       GM_addStyle
 // @grant       GM_xmlhttpRequest
@@ -20,7 +20,7 @@
 GM_addStyle("em{font-style: italic;}");
 GM_xmlhttpRequest({
   method: "GET",
-  url: "https://raw.githubusercontent.com/LiteHell/NamuFix/dev1/NamuFix.css",
+  url: "https://raw.githubusercontent.com/LiteHell/NamuFix/master/NamuFix.css",
   onload: function(res) {
     GM_addStyle(res.responseText);
   }
