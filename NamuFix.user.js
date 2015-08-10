@@ -148,6 +148,9 @@ var Watcher = new function() {
     SET.dwHashes = {};
     SET.save();
   }
+  if (nOu(SET.dwEnabled)){
+    SET.dwEnabled=false;
+  }
   var docs = Object.keys(SET.dwHashes);
   docs = docs.sort();
   var docIndex = 0;
@@ -160,6 +163,7 @@ var Watcher = new function() {
   this.runWorker = function(r) {
     SET.load();
     var workerFunc = function() {
+      if(!SET.dwEnabled) return;
       if (docs.length <= docIndex) {
         SET.load();
         docs = Object.keys(SET.dwHashes);
