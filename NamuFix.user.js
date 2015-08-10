@@ -4,11 +4,12 @@
 // @description 나무위키 편집 인터페이스 등을 개선합니다.
 // @include     http://namu.wiki/*
 // @include     https://namu.wiki/*
-// @version     150810.10
+// @version     150810.11
 // @namespace   http://litehell.info/
 // @downloadURL https://raw.githubusercontent.com/LiteHell/NamuFix/master/NamuFix.user.js
 // @require     https://raw.githubusercontent.com/LiteHell/NamuFix/master/FlexiColorPicker.js
 // @require     https://raw.githubusercontent.com/Caligatio/jsSHA/v2.0.1/src/sha512.js
+// @require     https://github.com/zenozeng/color-hash/raw/master/dist/color-hash.js
 // @grant       GM_addStyle
 // @grant       GM_xmlhttpRequest
 // @grant       GM_getValue
@@ -52,7 +53,7 @@ function formatDateTime(t) {
 
 var ENV = {};
 ENV.IsEditing = /^https?:\/\/namu\.wiki\/edit\/(.+?)/.test(location.href);
-ENV.Discussing = /^https?:\/\/namu\.wiki\/topic\/(.+?)/.test(location.href);
+ENV.Discussing = /^https?:\/\/namu\.wiki\/topic\/([0-9]+?)/.test(location.href);
 ENV.IsDocument = /^https?:\/\/namu\.wiki\/w\/(.+)/.test(location.href); //&& document.querySelector('p.wiki-edit-date');
 ENV.IsSettings = /^https?:\/\/namu\.wiki\/settings/.test(location.href);
 if (document.querySelector("input[name=section]"))
@@ -1002,13 +1003,39 @@ if (ENV.IsEditing || ENV.Discussing) {
     });
     win.button('저장하지 않고 닫기', win.close);
     win.button('저장하고 닫기', function() {
-      console.log(elems['enableDw'].checked);
       Watcher.onoff(elems['enableDw'].checked);
       win.close();
     });
   });
   page.appendChild(nfSetBtn);
   pages.appendChild(page);
+}
+if (ENV.Discussing) {
+  setInterval(function() {
+    var messages = document.querySelectorAll('.res');
+    var colorHash = new ColorHash();
+    for (var i = 0; i < messages.length; i++) {
+      var message = messages[i];
+      if (message.querySelector('.first-author')) continue;
+      if (message.querySelector('[data-nfbeauty]')) continue;
+      var a = message.querySelector('.r-head > a');
+      var n = a.innerHTML;
+      if (a.getAttribute("href").indexOf("/contribution/author") == 0) {
+        // 로그인
+        n = '!ID!' + n;
+      } else {
+        // IP
+        n = '!IP!' + n;
+      }
+
+      var span = document.createElement("span");
+      span.style.background = colorHash.hex(n);
+      span.style.color = colorHash.hex(n);
+      span.innerHTML = '__';
+      a.appendChild(span);
+      a.dataset.nfbeauty = true;
+    }
+  }, 200);
 }
 if (Watcher.onoff())
   Watcher.runWorker();
