@@ -4,7 +4,7 @@
 // @description 나무위키 편집 인터페이스 등을 개선합니다.
 // @include     http://namu.wiki/*
 // @include     https://namu.wiki/*
-// @version     150814.0
+// @version     150814.1
 // @namespace   http://litehell.info/
 // @downloadURL https://raw.githubusercontent.com/LiteHell/NamuFix/master/NamuFix.user.js
 // @require     https://raw.githubusercontent.com/LiteHell/NamuFix/master/FlexiColorPicker.js
@@ -57,6 +57,7 @@ ENV.IsEditing = /^https?:\/\/namu\.wiki\/edit\/(.+?)/.test(location.href);
 ENV.Discussing = /^https?:\/\/namu\.wiki\/topic\/([0-9]+?)/.test(location.href);
 ENV.IsDocument = /^https?:\/\/namu\.wiki\/w\/(.+)/.test(location.href); //&& document.querySelector('p.wiki-edit-date');
 ENV.IsSettings = /^https?:\/\/namu\.wiki\/settings/.test(location.href);
+ENV.IsUserPage = /^https?:\/\/namu\.wiki\/contribution\/author\/.+\/(?:document|discuss)/.test(location.href);
 if (document.querySelector("input[name=section]"))
   ENV.section = document.querySelector("input[name=section]").value;
 if (ENV.IsEditing)
@@ -1267,6 +1268,72 @@ if (ENV.Discussing) {
       a.dataset.nfbeauty = true;
     }
   }, 200);
+} else if (ENV.IsUserPage) {
+  var p = document.createElement("p");
+  if (/\/document$/.test(location.href)) {
+    var rows = document.querySelectorAll('table tr');
+    var contCount = 0,
+      contTotalBytes = 0,
+      contDocuments = 0;
+    var documents = [];
+    for (var i = 0; i < rows.length; i++) {
+      var row = rows[i];
+      if (row.querySelectorAll('a').length == 0) continue;
+      var documentName = row.querySelector('a').getAttribute('href');
+      var contributedBytes = row.querySelector('span.f_r > span').innerHTML;
+      var negativeContribution = /^\-[0-9]+/.test(contributedBytes);
+      if (/^\+[0-9]+/.test(contributedBytes)) contributedBytes = contributedBytes.substring(contributedBytes.indexOf('+'));
+      contributedBytes = Number(contributedBytes);
+      if (documents.indexOf(documentName) == -1) documents.push(documentName);
+      contCount++;
+      if (negativeContribution)
+        contTotalBytes -= contributedBytes;
+      else
+        contTotalBytes += contributedBytes;
+    }
+    p.innerHTML = '총 기여 수 : ' + contCount + '<br>총 기여한 바이트 수 : ' + contTotalBytes + '<br>총 기여한 문서 (ACL 변경, 문서 이동 포함) : ' + documents.length + '<br>한 문서당 평균 기여 바이트 수 : ' + (contTotalBytes / documents.length);
+  } else if (/\/discuss$/.test(location.href)) {
+    function standardDeviation(numbers) {
+      var total = 0;
+      for (var i = 0; i < numbers.length; i++) {
+        total += numbers[i];
+      }
+      var avg = total / numbers.length;
+      var temp1 = 0;
+      for (var i = 0; i < numbers.length; i++) {
+        temp1 += Math.pow(numbers[i] - avg, 2);
+      }
+      temp1 /= numbers.length;
+      return Math.sqrt(temp1);
+    }
+    var rows = document.querySelectorAll('table tr');
+    var docuAndTalks = {};
+    for (var i = 0; i < rows.length; i++) {
+      var row = rows[i];
+      if (row.querySelectorAll('a').length == 0) continue;
+      var docuNow = rows[i].querySelector('a').getAttribute('href');
+      docuNow = /^\/topic\/([0-9]+)(?:#[0-9]+|)/.exec(docuNow)[1];
+      if (docuAndTalks[docuNow]) {
+        docuAndTalks[docuNow]++;
+      } else {
+        docuAndTalks[docuNow] = 1;
+      }
+    }
+    var totalTalks = 0,
+      avgTalks = 0,
+      discussCount = 0,
+      Talks = [];
+    for (var i in docuAndTalks) {
+      totalTalks += docuAndTalks[i];
+      Talks.push(docuAndTalks[i]);
+    }
+    discussCount = Object.keys(docuAndTalks).length;
+    avgTalks = totalTalks / discussCount;
+    p.innerHTML = '총 발언 수 : ' + totalTalks + '<br>참여한 토론 수 : ' + discussCount + '<br>한 토론당 평균 발언 수 : ' + avgTalks + '<br>한 토론 당 발언 수 표준편차 : ' + standardDeviation(Talks);
+  } else {
+    delete p;
+  }
+  if (typeof p !== 'undefined') document.querySelector("h1.title").parentNode.insertBefore(p, document.querySelector("h1.title").nextSibling);
 }
 if (Watcher.onoff())
   Watcher.runWorker();
