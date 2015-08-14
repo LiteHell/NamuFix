@@ -4,7 +4,7 @@
 // @description 나무위키 편집 인터페이스 등을 개선합니다.
 // @include     http://namu.wiki/*
 // @include     https://namu.wiki/*
-// @version     150813.0
+// @version     150814.0
 // @namespace   http://litehell.info/
 // @downloadURL https://raw.githubusercontent.com/LiteHell/NamuFix/master/NamuFix.user.js
 // @require     https://raw.githubusercontent.com/LiteHell/NamuFix/master/FlexiColorPicker.js
@@ -91,6 +91,20 @@ var SET = new function() {
 };
 SET.load();
 
+function INITSET() { // Storage INIT
+  if (nOu(SET.dwHashes))
+    SET.dwHashes = {};
+  if (nOu(SET.dwEnabled))
+    SET.dwEnabled = false;
+  if (nOu(SET.tempsaves))
+    SET.tempsaves = {};
+  if (nOu(SET.recentlyUsedTemplates))
+    SET.recentlyUsedTemplates = [];
+  if (nOu(SET.imgurDeletionLinks))
+    SET.imgurDeletionLinks = [];
+  SET.save();
+}
+INITSET();
 var NEWindow = function() {
   var wi = document.createElement('div');
   var wiHead = document.createElement('div');
@@ -146,15 +160,6 @@ var NEWindow = function() {
   return r;
 }
 var Watcher = new function() {
-  SET.load();
-  if (nOu(SET.dwHashes)) {
-    SET.dwHashes = {};
-    SET.save();
-  }
-  if (nOu(SET.dwEnabled)) {
-    SET.dwEnabled = false;
-    SET.save();
-  }
   var docs = Object.keys(SET.dwHashes);
   docs = docs.sort();
   var docIndex = 0;
@@ -555,9 +560,20 @@ if (ENV.IsEditing || ENV.Discussing) {
           alert('선택된 파일이 없습니다.');
           return;
         }
-        // imgur Client ID : 60a43baebed658a
+        var win = NEWindow();
+        win.title('Imgur 업로드');
+        win.content(function(el) {
+          el.innerHTML = '<span id="msg">진행중입니다. 잠시만 기다려주세요....</span><br>이미지 삭제 주소는 <a href="https://namu.wiki/settings" target="_blank">NamuFix 설정 페이지</a>를 참고하세요.'
+        });
+        var setMsg = function(msg) {
+            win.content(function(el) {
+              el.querySelector('span#msg').innerHTML = msg;
+            });
+          }
+          // imgur Client ID : 60a43baebed658a
         var file = evt.target.files[0];
         if (file) {
+          setMsg('전송중입니다. 잠시만 기다려주세요.....');
           var reader = new FileReader();
           reader.onload = function(evt) {
             var res;
@@ -574,16 +590,26 @@ if (ENV.IsEditing || ENV.Discussing) {
                 res = JSON.parse(response.responseText)
                 if (!res["success"]) {
                   alert("죄송하지만 이미지 업로드에 실패하였습니다.");
+                  NE.close();
                 } else {
                   var deleteLink = 'http://imgur.com/delete/' + res["data"]["deletehash"];
                   var imageDirectLink = res["data"]["link"];
-                  prompt('삭제 링크입니다. \'\'\'반드시 지금\'\'\' 복사해서 어딘가에 메모해두세요.', deleteLink);
+                  setMsg('완료됬습니다.');
+                  SET.load();
+                  SET.imgurDeletionLinks.push({
+                    imgUrl: imageDirectLink,
+                    deleteionUrl: deleteLink,
+                    uploadedAt: Date.now()
+                  });
+                  SET.save();
+                  win.close();
                   TextProc.selectionText(TextProc.selectionText() + ' ' + imageDirectLink + ' ');
                 }
               }
             });
             document.body.removeChild(elm);
           };
+          setMsg('진행중입니다. 파일을 읽고있습니다....');
           reader.readAsDataURL(file);
         }
       });
@@ -664,10 +690,6 @@ if (ENV.IsEditing || ENV.Discussing) {
     if (ENV.IsEditing) {
       // Manager Class
       var tempsaveManager = new function() {
-        if (nOu(SET.tempsaves)) {
-          SET.tempsaves = {};
-          SET.save();
-        }
         var ht = this;
         this.getTitles = function() {
           var r = [];
@@ -846,10 +868,6 @@ if (ENV.IsEditing || ENV.Discussing) {
     var templatesDropdown = Designer.dropdown('<span class="ion-ios-copy-outline"></span>').hoverMessage('템플릿 삽입/최근에 사용한 템플릿');
     var refreshTemplatesDropdown = function() {
       SET.load();
-      if (nOu(SET.recentlyUsedTemplates)) {
-        SET.recentlyUsedTemplates = [];
-        SET.save();
-      }
       templatesDropdown.clear();
       var rutl = SET.recentlyUsedTemplates.length;
 
@@ -1164,11 +1182,16 @@ if (ENV.IsEditing || ENV.Discussing) {
   page.style.display = "none";
   page.id = "NamuFixSettings";
 
-  var nfSetBtn = document.createElement("button");
-  nfSetBtn.setAttribute("type", "button");
-  nfSetBtn.className = "d_btn type_blue";
-  nfSetBtn.innerHTML = "NamuFix 설정";
-  nfSetBtn.addEventListener("click", function() {
+  function appendButton(text, onclick) {
+    var btn = document.createElement("button");
+    btn.setAttribute("type", "button");
+    btn.className = "d_btn type_blue";
+    btn.innerHTML = text;
+    btn.addEventListener("click", onclick);
+    page.appendChild(btn);
+    page.appendChild(document.createElement("br"));
+  }
+  appendButton("NamuFix 설정", function() {
     var win = NEWindow();
     var elems = {};
     win.title('NamuFix 설정');
@@ -1184,7 +1207,38 @@ if (ENV.IsEditing || ENV.Discussing) {
       win.close();
     });
   });
-  page.appendChild(nfSetBtn);
+  appendButton("Imgur 이미지 삭제 주소들", function() {
+    SET.load();
+    var win = NEWindow();
+    var divWithScrolls = document.createElement("div");
+    divWithScrolls.style.overflow = 'scroll';
+    divWithScrolls.style.maxHeight = '800px';
+    divWithScrolls.style.maxWidth = '1200px';
+
+    var table = document.createElement("table");
+    table.innerHTML = '<tr><th style="min-width: 200px;">업로드한 날짜/시각</th><th>이미지 주소(다이렉트)</th><th>이미지 삭제 주소</th></tr>';
+    var addRow = function(dt, dil, del) {
+      var tr = document.createElement("tr");
+      var appendTd = function(t) {
+        var td = document.createElement("td");
+        td.innerHTML = t;
+        tr.appendChild(td);
+      }
+      appendTd(formatDateTime(dt));
+      appendTd('<a href="' + dil + '" target="_blank">' + dil + '</a>');
+      appendTd('<a href="' + del + '" target="_blank">' + del + '</a>');
+      table.appendChild(tr);
+    }
+    for (var i = 0; i < SET.imgurDeletionLinks.length; i++) {
+      var ii = SET.imgurDeletionLinks[i];
+      addRow(ii.uploadedAt, ii.imgUrl, ii.deleteionUrl);
+    }
+    win.content(function(el) {
+      el.appendChild(table);
+    });
+    win.title('이미지 삭제 주소들');
+    win.button('닫기', win.close);
+  })
   pages.appendChild(page);
 }
 if (ENV.Discussing) {
