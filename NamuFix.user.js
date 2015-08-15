@@ -4,7 +4,7 @@
 // @description 나무위키 편집 인터페이스 등을 개선합니다.
 // @include     http://namu.wiki/*
 // @include     https://namu.wiki/*
-// @version     150815.1
+// @version     150815.2
 // @namespace   http://litehell.info/
 // @downloadURL https://raw.githubusercontent.com/LiteHell/NamuFix/master/NamuFix.user.js
 // @require     https://raw.githubusercontent.com/LiteHell/NamuFix/master/FlexiColorPicker.js
@@ -624,11 +624,11 @@ if (ENV.IsEditing || ENV.Discussing) {
       var win = NEWindow();
       win.title('YouTube 동영상 삽입');
       win.content(function(el) {
-        el.innerHTML = '<p style="background: cyan; box-shadow: 2px 2px 2px gray; color:white; padding: 8px; border-radius: 3px; margin-bottom: 5px;">환영합니다! YouTube 동영상을 검색하거나 YouTube 동영상 주소를 입력하여 YouTube 동영상을 삽입할 수 있습니다.</p>' +
-          '<p><label for="vidUrl" style="width: 120px; display: inline-block;">YouTube 동영상 주소</label><input type="text" name="vidUrl" id="vidUrl" style="width:500px;"></input><button id="insertUrl">삽입</button></p>' +
+        el.innerHTML = '<p style="background: cyan; box-shadow: 2px 2px 2px gray; color:white; padding: 8px; border-radius: 3px; margin-bottom: 5px;">YouTube 동영상을 검색하거나 동영상 주소를 입력하여 YouTube 동영상을 삽입할 수 있습니다.</p>' +
+          '<p><label for="vidUrl" style="width: 120px; display: inline-block;">YouTube 동영상 주소</label><input type="text" name="vidUrl" id="vidUrl" style="width:620px;"></input><button id="insertUrl">삽입</button></p>' +
           '<hr>' +
           '<div>' +
-          '<label for="vidQuery" style="width: 120px; display: inline-block;">검색어</label><input type="text" name="vidQuery" id="vidQuery" style="width:500px;"></input><button id="searchVids">검색</button>' +
+          '<label for="vidQuery" style="width: 120px; display: inline-block;">검색어</label><input type="text" name="vidQuery" id="vidQuery" style="width:620px;"></input><button id="searchVids">검색</button>' +
           '<div id="results" style="overflow-y: scroll; overflow-x: hidden; width: 820px; min-width: 820px; height: 400px;"><span style="color:red">검색 결과가 없습니다.</span></div>' +
           '</div>';
       })
