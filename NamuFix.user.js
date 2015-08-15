@@ -4,7 +4,7 @@
 // @description 나무위키 편집 인터페이스 등을 개선합니다.
 // @include     http://namu.wiki/*
 // @include     https://namu.wiki/*
-// @version     150815.3
+// @version     150815.4
 // @namespace   http://litehell.info/
 // @downloadURL https://raw.githubusercontent.com/LiteHell/NamuFix/master/NamuFix.user.js
 // @require     https://raw.githubusercontent.com/LiteHell/NamuFix/master/FlexiColorPicker.js
@@ -103,6 +103,10 @@ function INITSET() { // Storage INIT
     SET.recentlyUsedTemplates = [];
   if (nOu(SET.imgurDeletionLinks))
     SET.imgurDeletionLinks = [];
+  if (nOu(SET.discussIdenti))
+    SET.discussIdenti = 'icon'; // icon, headBg, none
+  if (nOu(SET.discussIdentiLightness))
+    SET.discussIdentiLightness = 0.7;
   SET.save();
 }
 INITSET();
@@ -1291,12 +1295,49 @@ if (ENV.IsEditing || ENV.Discussing) {
     win.title('NamuFix 설정');
     SET.load();
     win.content(function(el) {
-      el.innerHTML = '<input type="checkbox" id="enableDw"></input> 문서주시기능 활성화<br>';
+      el.innerHTML = '<input type="checkbox" id="enableDw"></input> 문서주시기능 활성화<br>' +
+        '<style>h1.wsmall{font-size: 14pt;}</style>' +
+        '<h1 class="wsmall">토론 아이덴티콘</h1>' +
+        '<input type="radio" name="discussIdenti" data-setname="discussIdenti" data-setvalue="icon">디시라이트 갤러콘 방식<br>' +
+        '<input type="radio" name="discussIdenti" data-setname="discussIdenti" data-setvalue="headBg">스레딕 헬퍼 방식<br>' +
+        '<input type="radio" name="discussIdenti" data-setname="discussIdenti" data-setvalue="none">사용 안함' +
+        '<h1 class="wsmall">토론 아이덴티콘 명도</h1>' +
+        '<p>스레딕 헬퍼 방식을 사용하는 경우에만 적용됩니다.</p>' +
+        '<label for="discussIdentiLightness">명도 (0이상 1이하 )</label><input name="discussIdentiLightness" data-setname="discussIdentiLightness" type="range" max="1" min="0" step="0.01">';
       el.querySelector('#enableDw').checked = Watcher.onoff();
       elems['enableDw'] = el.querySelector('#enableDw');
+      var optionTags = document.querySelectorAll('[data-setname]');
+      SET.load();
+      for (var i = 0; i < optionTags.length; i++) {
+        var tag = optionTags[i];
+        var t = tag.getAttribute('type');
+        var sn = tag.dataset.setname;
+        if (t == "radio" && tag.dataset.setvalue == SET[sn]) {
+          tag.checked = true;
+        } else if (t == "checkbox" && tag.dataset.setvalueOnChecked == SET[sn]) {
+          tag.checked = true;
+        } else if (["text", "password", "number", "range"].indexOf(t) != -1) {
+          tag.value = ["number", "range"].indexOf(t) != -1 ? Number(SET[sn]) : SET[sn];
+        }
+      }
     });
     win.button('저장하지 않고 닫기', win.close);
     win.button('저장하고 닫기', function() {
+      var optionTags = document.querySelectorAll('[data-setname]');
+      SET.load();
+      for (var i = 0; i < optionTags.length; i++) {
+        var tag = optionTags[i];
+        var t = tag.getAttribute('type');
+        var sn = tag.dataset.setname;
+        if (t == "radio" && tag.checked) {
+          SET[sn] = tag.dataset.setvalue;
+        } else if (t == "checkbox") {
+          SET[sn] = tag.checked ? t.dataset.setvalueOnChecked : t.dataset.setvalueOnUnchecked;
+        } else if (["text", "password", "number", "range"].indexOf(t) != -1) {
+          SET[sn] = tag.value;
+        }
+      }
+      SET.save();
       Watcher.onoff(elems['enableDw'].checked);
       win.close();
     });
@@ -1338,30 +1379,42 @@ if (ENV.IsEditing || ENV.Discussing) {
 if (ENV.Discussing) {
   setInterval(function() {
     var messages = document.querySelectorAll('.res');
-    var colorHash = new ColorHash();
+    var isIcon = SET.discussIdenti == 'icon';
+    var isThreadicLike = SET.discussIdenti == 'headBg';
+    var colorHash = isThreadicLike ? new ColorHash({
+      lightness: Number(SET.discussIdentiLightness)
+    }) : new ColorHash();
     for (var i = 0; i < messages.length; i++) {
       var message = messages[i];
-      if (message.querySelector('.first-author')) continue;
+      if (isIcon && message.querySelector('.first-author')) continue;
       if (message.querySelector('[data-nfbeauty]')) continue;
-      var a = message.querySelector('.r-head > a');
-      var n = a.innerHTML;
-      if (a.getAttribute("href").indexOf("/contribution/author") == 0) {
+      var n = message.querySelector('.r-head > a').innerHTML;
+      if (n.indexOf("/contribution/author") == 0) {
         // 로그인
         n = '!ID!' + n;
       } else {
         // IP
         n = '!IP!' + n;
       }
+      console.log('n : ' + colorHash.hex(n));
 
-      var nonColoredSpan = document.createElement("span");
-      nonColoredSpan.innerHTML = '　';
-      var span = document.createElement("span");
-      span.style.background = colorHash.hex(n);
-      span.style.color = colorHash.hex(n);
-      span.innerHTML = '__';
-      a.appendChild(nonColoredSpan);
-      a.appendChild(span);
-      a.dataset.nfbeauty = true;
+      if (isThreadicLike) {
+        message.querySelector('.r-head').style.background = colorHash.hex(n);
+        message.querySelector('.r-head').style.color = 'white';
+        message.querySelector('.r-head > a').style.color = 'white';
+        message.querySelector('.r-head .num a').style.color = 'white';
+      } else if (isIcon) {
+        var a = message.querySelector('.r-head > a');
+        var nonColoredSpan = document.createElement("span");
+        nonColoredSpan.innerHTML = '　';
+        var span = document.createElement("span");
+        span.style.background = colorHash.hex(n);
+        span.style.color = colorHash.hex(n);
+        span.innerHTML = '__';
+        a.appendChild(nonColoredSpan);
+        a.appendChild(span);
+      }
+      message.querySelector('.r-head > a').dataset.nfbeauty = true;
     }
   }, 200);
 } else if (ENV.IsUserPage) {
