@@ -4,7 +4,7 @@
 // @description 나무위키 편집 인터페이스 등을 개선합니다.
 // @include     http://namu.wiki/*
 // @include     https://namu.wiki/*
-// @version     150815.2
+// @version     150815.3
 // @namespace   http://litehell.info/
 // @downloadURL https://raw.githubusercontent.com/LiteHell/NamuFix/master/NamuFix.user.js
 // @require     https://raw.githubusercontent.com/LiteHell/NamuFix/master/FlexiColorPicker.js
@@ -1353,10 +1353,13 @@ if (ENV.Discussing) {
         n = '!IP!' + n;
       }
 
+      var nonColoredSpan = document.createElement("span");
+      nonColoredSpan.innerHTML = '　';
       var span = document.createElement("span");
       span.style.background = colorHash.hex(n);
       span.style.color = colorHash.hex(n);
       span.innerHTML = '__';
+      a.appendChild(nonColoredSpan);
       a.appendChild(span);
       a.dataset.nfbeauty = true;
     }
