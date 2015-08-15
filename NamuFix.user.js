@@ -4,7 +4,7 @@
 // @description 나무위키 편집 인터페이스 등을 개선합니다.
 // @include     http://namu.wiki/*
 // @include     https://namu.wiki/*
-// @version     150815.4
+// @version     150815.5
 // @namespace   http://litehell.info/
 // @downloadURL https://raw.githubusercontent.com/LiteHell/NamuFix/master/NamuFix.user.js
 // @require     https://raw.githubusercontent.com/LiteHell/NamuFix/master/FlexiColorPicker.js
@@ -1303,7 +1303,7 @@ if (ENV.IsEditing || ENV.Discussing) {
         '<input type="radio" name="discussIdenti" data-setname="discussIdenti" data-setvalue="none">사용 안함' +
         '<h1 class="wsmall">토론 아이덴티콘 명도</h1>' +
         '<p>스레딕 헬퍼 방식을 사용하는 경우에만 적용됩니다.</p>' +
-        '<label for="discussIdentiLightness">명도 (0이상 1이하 )</label><input name="discussIdentiLightness" data-setname="discussIdentiLightness" type="range" max="1" min="0" step="0.01">';
+        '<label for="discussIdentiLightness">명도</label><input name="discussIdentiLightness" data-setname="discussIdentiLightness" type="range" max="1" min="0" step="0.01">';
       el.querySelector('#enableDw').checked = Watcher.onoff();
       elems['enableDw'] = el.querySelector('#enableDw');
       var optionTags = document.querySelectorAll('[data-setname]');
