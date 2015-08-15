@@ -4,7 +4,7 @@
 // @description 나무위키 편집 인터페이스 등을 개선합니다.
 // @include     http://namu.wiki/*
 // @include     https://namu.wiki/*
-// @version     150814.1
+// @version     150815.0
 // @namespace   http://litehell.info/
 // @downloadURL https://raw.githubusercontent.com/LiteHell/NamuFix/master/NamuFix.user.js
 // @require     https://raw.githubusercontent.com/LiteHell/NamuFix/master/FlexiColorPicker.js
@@ -667,7 +667,7 @@ if (ENV.IsEditing || ENV.Discussing) {
         var lat = unsafeWindow.NFMap.getCenter().lat();
         var lng = unsafeWindow.NFMap.getCenter().lng();
         var zoom = unsafeWindow.NFMap.getZoom();
-        TextProc.selectionText(TextProc.selectionText() + '\n[Include(틀:지도,position=' + lat + '%2C' + lng + ',zoom=' + zoom + ')]');
+        TextProc.selectionText(TextProc.selectionText() + ' [Include(틀:지도,장소=' + lat + '%2C' + lng + ',zoom=' + zoom + ')] ');
         win.close();
       })
       win.button("닫기", win.close);
@@ -1329,7 +1329,7 @@ if (ENV.Discussing) {
     }
     discussCount = Object.keys(docuAndTalks).length;
     avgTalks = totalTalks / discussCount;
-    p.innerHTML = '총 발언 수 : ' + totalTalks + '<br>참여한 토론 수 : ' + discussCount + '<br>한 토론당 평균 발언 수 : ' + avgTalks + '<br>한 토론 당 발언 수 표준편차 : ' + standardDeviation(Talks);
+    p.innerHTML = '총 발언 수 : ' + totalTalks + '<br>참여한 토론 수 : ' + discussCount + '<br>한 토론당 평균 발언 수 : ' + avgTalks + '<br>한 토론당 발언 수 표준편차 : ' + standardDeviation(Talks);
   } else {
     delete p;
   }
