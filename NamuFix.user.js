@@ -4,7 +4,7 @@
 // @description 나무위키 편집 인터페이스 등을 개선합니다.
 // @include     http://namu.wiki/*
 // @include     https://namu.wiki/*
-// @version     150815.0
+// @version     150815.1
 // @namespace   http://litehell.info/
 // @downloadURL https://raw.githubusercontent.com/LiteHell/NamuFix/master/NamuFix.user.js
 // @require     https://raw.githubusercontent.com/LiteHell/NamuFix/master/FlexiColorPicker.js
@@ -123,7 +123,7 @@ var NEWindow = function() {
 
   var wrapper = document.createElement('div');
   wrapper.style.background = 'rgba(0,0,0,0.5)';
-  wrapper.style.zIndex = '9999';
+  wrapper.style.zIndex = '9999' + NEWindow.WrappingCount++;
   wrapper.style.position = 'fixed';
   wrapper.style.left = '0px';
   wrapper.style.top = '0px';
@@ -160,6 +160,7 @@ var NEWindow = function() {
   };
   return r;
 }
+NEWindow.WrappingCount = 0;
 var Watcher = new function() {
   var docs = Object.keys(SET.dwHashes);
   docs = docs.sort();
@@ -620,18 +621,110 @@ if (ENV.IsEditing || ENV.Discussing) {
 
     // Insertable Media Functions
     function InsertYouTube() {
-      var ExtractYouTubeID = function() {
-        // from Lasnv's answer from http://stackoverflow.com/questions/3452546/javascript-regex-how-to-get-youtube-video-id-from-url
-        var regExp = /^.*((youtu.be\/)|(v\/)|(\/u\/\w\/)|(embed\/)|(watch\?))\??v?=?([^#\&\?]*).*/;
-        var match = url.match(regExp);
-        if (match && match[7].length == 11)
-          return match[7];
-        else
-          return null;
-      }
-      var url = prompt("YouTube 동영상 주소를 입력해주세요.");
-      var extracted = ExtractYouTubeID(url);
-      TextProc.selectionText(TextProc.selectionText() + '\n' + extracted != null ? '[youtube(' + extracted + ')]' : '\n## YouTube 동영상 ID 추출에 실패하였습니다. 주소를 확인해주세요.');
+      var win = NEWindow();
+      win.title('YouTube 동영상 삽입');
+      win.content(function(el) {
+        el.innerHTML = '<p style="background: cyan; box-shadow: 2px 2px 2px gray; color:white; padding: 8px; border-radius: 3px; margin-bottom: 5px;">환영합니다! YouTube 동영상을 검색하거나 YouTube 동영상 주소를 입력하여 YouTube 동영상을 삽입할 수 있습니다.</p>' +
+          '<p><label for="vidUrl" style="width: 120px; display: inline-block;">YouTube 동영상 주소</label><input type="text" name="vidUrl" id="vidUrl" style="width:500px;"></input><button id="insertUrl">삽입</button></p>' +
+          '<hr>' +
+          '<div>' +
+          '<label for="vidQuery" style="width: 120px; display: inline-block;">검색어</label><input type="text" name="vidQuery" id="vidQuery" style="width:500px;"></input><button id="searchVids">검색</button>' +
+          '<div id="results" style="overflow-y: scroll; overflow-x: hidden; width: 820px; min-width: 820px; height: 400px;"><span style="color:red">검색 결과가 없습니다.</span></div>' +
+          '</div>';
+      })
+      var finish = function(vid) {
+          if (vid == null) {
+            alert('무언가 잘못된것 같습니다.');
+            return;
+          }
+          TextProc.selectionText(TextProc.selectionText() + '[youtube(' + vid + ')]');
+          win.close();
+        }
+        // 주소로 삽입 기능
+      win.content(function(el) {
+        var ExtractYouTubeID = function(url) {
+          // from Lasnv's answer from http://stackoverflow.com/questions/3452546/javascript-regex-how-to-get-youtube-video-id-from-url
+          var regExp = /^.*((youtu.be\/)|(v\/)|(\/u\/\w\/)|(embed\/)|(watch\?))\??v?=?([^#\&\?]*).*/;
+          var match = url.match(regExp);
+          if (match && match[7].length == 11)
+            return match[7];
+          else
+            return null;
+        }
+        var insertByUrlFunc = function() {
+          var url = el.querySelector('#vidUrl').value;
+          var vidId = ExtractYouTubeID(url);
+          finish(vidId);
+        }
+        el.querySelector('#insertUrl').addEventListener('click', insertByUrlFunc);
+        el.querySelector('#vidUrl').addEventListener('keyup', function(evt) {
+          if (evt.which == 13 || evt.keycode == 13) {
+            insertByUrlFunc();
+            return false;
+          }
+        })
+      });
+      // 검색 기능
+      win.content(function(el) {
+        // https://developers.google.com/youtube/v3/docs/search/list
+        var baseUri = 'https://www.googleapis.com/youtube/v3/search?key=AIzaSyAqi9PjUr_F54U0whrbMeavFfvNap3kjvA&';
+        var basicSearchUri = baseUri + 'part=snippet&safeSearch=none&type=video&maxResults=20&videoEmbeddable=true&q=';
+        var vidSearchFunc = function() {
+          var q = el.querySelector('#vidQuery').value;
+          var resultDiv = el.querySelector('#results');
+          resultDiv.innerHTML = '<span style="color:orange;">검색중입니다.</span>'
+          GM_xmlhttpRequest({
+            method: "GET",
+            url: basicSearchUri + encodeURIComponent(q),
+            onload: function(res) {
+              resultDiv.innerHTML = '<ul></ul>';
+              var ul = resultDiv.querySelector('ul');
+              if (res.status != 200) {
+                resultDiv.innerHTML = '<span style="color:red;">검색중 오류가 발생했습니다.</span>';
+                return;
+              }
+              var jobj = JSON.parse(res.responseText);
+              for (var i = 0; i < jobj.items.length; i++) {
+                var vidNow = jobj.items[i];
+                var li = document.createElement("li");
+                li.height = '90px';
+                li.innerHTML = '<img style="height: 90px;" src="' + vidNow.snippet.thumbnails.default.url + '"></img>' +
+                  '<div style="position: relative; display: inline-block; margin-left: 5px; overflow: hidden; width: 670px;">' +
+                  '<span style="font-weight: bold; font-size: 12pt; margin-bottom: 3px;">' + vidNow.snippet.title + '</span><button name="insertThis" class="moreFlat">삽입</button><button name="preview" class="moreFlat">미리보기</button><br><span style="font-size:10pt;">' + vidNow.snippet.description + '</span>' +
+                  '</div>';
+                li.querySelector('[name="preview"]').parentNode.dataset.videoId = vidNow.id.videoId;
+                li.querySelector('[name="preview"]').addEventListener('click', function(evt) {
+                  var previewWin = NEWindow();
+                  previewWin.title('미리보기');
+                  previewWin.content(function(el) {
+                    var iframe = document.createElement("iframe");
+                    iframe.setAttribute("frameborder", "0");
+                    iframe.setAttribute("src", "//www.youtube.com/embed/" + evt.target.parentNode.dataset.videoId);
+                    iframe.setAttribute("height", "360px");
+                    iframe.setAttribute("width", "640px");
+                    el.appendChild(iframe);
+                  });
+                  previewWin.button('닫기', previewWin.close);
+                });
+                li.querySelector('[name="insertThis"]').addEventListener('click', function(evt) {
+                  finish(evt.target.parentNode.dataset.videoId);
+                })
+                ul.appendChild(li);
+              }
+            }
+          });
+        };
+
+        el.querySelector('#searchVids').addEventListener('click', vidSearchFunc);
+        el.querySelector('#vidQuery').addEventListener('keyup', function(evt) {
+          if (evt.which == 13 || evt.keycode == 13) {
+            vidSearchFunc();
+            return false;
+          }
+        })
+        el.querySelector('#vidUrl').focus();
+      })
+      win.button('닫기', win.close);
     }
 
     function MapMacro() {

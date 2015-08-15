@@ -1,13 +1,12 @@
 @import url(//fonts.googleapis.com/earlyaccess/nanummyeongjo.css);
 @import url(//fonts.googleapis.com/earlyaccess/nanumgothic.css);
-
 em {
   font-style: italic;
 }
-.NEHeadIcon del{
+.NEHeadIcon del {
   color: white;
 }
-.NamaEditor{
+.NamaEditor {
   margin: 0;
 }
 .NamaEditor.NEMenu {
@@ -48,81 +47,83 @@ em {
   margin: 0px;
   padding-right: 10px;
 }
-div.NamaEditor.NEMenuButton{
+div.NamaEditor.NEMenuButton {
   display: inline-block;
 }
-.NamaEditor.NEDropDown > ul{
+.NamaEditor.NEDropDown > ul {
   list-style: inside none none;
   float: left;
   margin: 0px 0px 0px 10px;
   padding: 0px;
 }
-.NamaEditor.NEDropDown ul > li{
+.NamaEditor.NEDropDown ul > li {
   margin: 5px;
   padding: 0px;
 }
-.NamaEditor.NEMenuButton > div.NamaEditor.NEDropdownButtonLabel, .NamaEditor.NEMenuButton > div.NamaEditor.NEDropdownButtonLabel *{
+.NamaEditor.NEMenuButton > div.NamaEditor.NEDropdownButtonLabel, .NamaEditor.NEMenuButton > div.NamaEditor.NEDropdownButtonLabel * {
   text-align: center;
   height: 100%;
   width: 100%;
   line-height: 39pt;
   font-size: 15pt;
 }
-.NamaEditor.NEDropDown ul li > span.NEHeadIcon{
+.NamaEditor.NEDropDown ul li > span.NEHeadIcon {
   font-family: 'Nanum Myeongjo' !important;
   font-size: 20pt;
 }
-.NamaEditor.NEDropDown ul li > span.NEDescText{
+.NamaEditor.NEDropDown ul li > span.NEDescText {
   font-family: 'Nanum Gothic' !important;
   font-size: 10pt;
   margin-left: 10px;
 }
+
 /* Window Part */
-.NamaEditor.NEWindowRoot{
+
+.NamaEditor.NEWindowRoot {
   min-width: 300px;
   position: fixed;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
 }
-.NamaEditor.NEWindowHead{
+.NamaEditor.NEWindowHead {
   font-family: 'Nanum Gothic', sans-serif;
   font-size: 13px;
   color: white;
   background: #8453CF;
 }
-.NamaEditor.NEWindowContainer, .NamaEditor.NEWindowFoot{
+.NamaEditor.NEWindowContainer, .NamaEditor.NEWindowFoot {
   background: white;
   color: black;
   height: 100%;
 }
-.NamaEditor.NEWindowContainer{
+.NamaEditor.NEWindowContainer {
   min-height: 200px;
   padding: 5px;
 }
-.NamaEditor.NEWindowContainer table th,.NamaEditor.NEWindowContainer table tr{
+.NamaEditor.NEWindowContainer table th, .NamaEditor.NEWindowContainer table tr {
   padding: 4px;
 }
-.NamaEditor.NEWindowContainer table{
+.NamaEditor.NEWindowContainer table {
   border: #9D75D9 1px solid;
   border-collapse: collapse;
 }
-.NamaEditor.NEWindowContainer table th{
+.NamaEditor.NEWindowContainer table th {
   background: #9D75D9;
   color: white;
   font-weight: normal;
 }
-.NamaEditor.NEWindowContainer table tr{
+.NamaEditor.NEWindowContainer table tr {
   background: white;
   color: black;
 }
-.NamaEditor.NEWindowFoot, .NamaEditor.NEWindowHead{
+.NamaEditor.NEWindowFoot, .NamaEditor.NEWindowHead {
   padding-top: 5px;
   padding-bottom: 5px;
   padding-left: 10px;
   padding-right: 10px;
 }
-.NamaEditor button{
+.NamaEditor button {
   margin-left: 2px;
   margin-right: 2px;
   padding-top: 5px;
@@ -134,34 +135,43 @@ div.NamaEditor.NEMenuButton{
   color: white;
   min-width: 60px;
 }
-.NamaEditor button:hover{
+.NamaEditor button.moreFlat {
+  padding-top: 3px;
+  padding-bottom: 3px;
+  padding-left: 6px;
+  padding-right: 6px;
+}
+.NamaEditor button:hover {
   background: #9D75D9;
 }
+
 /* Color Picker Part */
-.NamaEditor.FlexiColorPicker.PickerWrapper, .NamaEditor.FlexiColorPicker.Picker{
+
+.NamaEditor.FlexiColorPicker.PickerWrapper, .NamaEditor.FlexiColorPicker.Picker {
   height: 300px;
   width: 300px;
   display: inline-block;
-
 }
-.NamaEditor.FlexiColorPicker.SliderWrapper,.NamaEditor.FlexiColorPicker.Slider{
+.NamaEditor.FlexiColorPicker.SliderWrapper, .NamaEditor.FlexiColorPicker.Slider {
   height: 300px;
   width: 30px;
   display: inline-block;
 }
-.NamaEditor.FlexiColorPicker.SliderIndicator{
+.NamaEditor.FlexiColorPicker.SliderIndicator {
   width: 30px;
   height: 3px;
   position: absolute;
   border: 1px solid black;
   background: white;
-  margin-top: 30px; /* Bug Fix */
+  margin-top: 30px;
+  /* Bug Fix */
 }
-.NamaEditor.FlexiColorPicker.PickerIndicator{
+.NamaEditor.FlexiColorPicker.PickerIndicator {
   height: 2px;
   width: 2px;
   position: absolute;
   border: 1px solid black;
   background: white;
-  margin-top: 35px; /* Bug Fix */
+  margin-top: 35px;
+  /* Bug Fix */
 }
