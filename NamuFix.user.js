@@ -4,7 +4,7 @@
 // @description 나무위키 편집 인터페이스 등을 개선합니다.
 // @include     http://namu.wiki/*
 // @include     https://namu.wiki/*
-// @version     150815.5
+// @version     150816.0
 // @namespace   http://litehell.info/
 // @downloadURL https://raw.githubusercontent.com/LiteHell/NamuFix/master/NamuFix.user.js
 // @require     https://raw.githubusercontent.com/LiteHell/NamuFix/master/FlexiColorPicker.js
@@ -18,6 +18,25 @@
 // @grant       GM_listValues
 // @run-at      document-end
 // ==/UserScript==
+/*
+This file is part of NamuFix.
+
+NamuFix is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+NamuFix is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with NamuFix.  If not, see <http://www.gnu.org/licenses/>.
+
+Copyright (C) 2015 Litehell
+If you want to contact me, send an email to asdf1234d@gmail.com
+*/
 var showNotification = function(text) {
   if (!("Notification" in unsafeWindow)) {
     alert(text);
