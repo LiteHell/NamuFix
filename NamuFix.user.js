@@ -4,7 +4,7 @@
 // @description 나무위키 편집 인터페이스 등을 개선합니다.
 // @include     http://namu.wiki/*
 // @include     https://namu.wiki/*
-// @version     150816.0
+// @version     150818.0
 // @namespace   http://litehell.info/
 // @downloadURL https://raw.githubusercontent.com/LiteHell/NamuFix/master/NamuFix.user.js
 // @require     https://raw.githubusercontent.com/LiteHell/NamuFix/master/FlexiColorPicker.js
@@ -77,6 +77,7 @@ ENV.Discussing = /^https?:\/\/namu\.wiki\/topic\/([0-9]+?)/.test(location.href);
 ENV.IsDocument = /^https?:\/\/namu\.wiki\/w\/(.+)/.test(location.href); //&& document.querySelector('p.wiki-edit-date');
 ENV.IsSettings = /^https?:\/\/namu\.wiki\/settings/.test(location.href);
 ENV.IsUserPage = /^https?:\/\/namu\.wiki\/contribution\/author\/.+\/(?:document|discuss)/.test(location.href);
+ENV.IsUploadPage = /^https?:\/\/namu\.wiki\/Upload$/.test(location.href);
 if (document.querySelector("input[name=section]"))
   ENV.section = document.querySelector("input[name=section]").value;
 if (ENV.IsEditing)
@@ -252,6 +253,20 @@ var Watcher = new function() {
     }
   }
 };
+
+function getRAW(title, onfound, onnotfound) {
+  GM_xmlhttpRequest({
+    method: 'GET',
+    url: 'https://namu.wiki/raw/' + title,
+    onload: function(res) {
+      if (res.status == 404) {
+        onnotfound(title);
+        return;
+      }
+      onfound(res.responseText, title);
+    }
+  })
+}
 if (ENV.IsEditing || ENV.Discussing) {
   if (document.querySelectorAll("textarea").length == 1) {
     var rootDiv = document.createElement("div");
@@ -1256,6 +1271,7 @@ if (ENV.IsEditing || ENV.Discussing) {
     }
   }
 } else if (ENV.IsDocument) {
+  // 버튼 추가 함수
   function addButton(text, onclick) {
     var btn = document.createElement("li");
     btn.className = "f_r";
@@ -1266,6 +1282,8 @@ if (ENV.IsEditing || ENV.Discussing) {
     btn.appendChild(aTag);
     document.querySelector('ul.tab_bar').appendChild(btn);
   };
+
+  // 주시 버튼 추가
   if (Watcher.onoff()) {
     addButton(Watcher.contains(ENV.docTitle) ? '주시해제' : '주시', function(evt) {
       if (Watcher.contains(ENV.docTitle)) {
@@ -1277,11 +1295,73 @@ if (ENV.IsEditing || ENV.Discussing) {
       }
     });
   }
+
+  // 리다이렉트 버튼 추가
   addButton('리다이렉트', function(evt) {
     var redirectFrom = prompt('어느 문서에서 지금 이문서로 리다이렉트?');
     if (redirectFrom != null && redirectFrom.trim().length != 0)
       location.href = 'https://namu.wiki/edit/' + redirectFrom + '?redirectTo=' + ENV.docTitle;
   });
+  // 상위 문서로의 링크
+  if (ENV.docTitle.indexOf('/') != -1) {
+    function spSplit(a, b) {
+      var splitted = a.split(b);
+      var result = [];
+      for (var i = 1; i <= splitted.length; i++) {
+        var now = '';
+        for (var ii = 0; ii < i; ii++) {
+          var append = splitted[ii];
+          if (ii != i - 1) append += '/';
+          now += append;
+        }
+        result.push(now);
+      }
+      return result;
+    }
+    var higherDocsWE = {};
+    var higherDocs = spSplit(ENV.docTitle, '/');
+    for (var i = 0; i < higherDocs.length; i++) {
+      higherDocsWE[i] = null;
+    }
+    var codwe = 0;
+    var codwnf = 0;
+    for (var i = 0; i < higherDocs.length; i++) {
+      getRAW(higherDocs[i], function(r, t) {
+        higherDocsWE[t] = true;
+        codwe++;
+      }, function(t) {
+        higherDocsWE[t] = false;
+        codwnf++;
+      });
+      if (i == higherDocs.length - 1) {
+        var hdinid = setInterval(function() {
+          if (codwe + codwnf != higherDocs.length) return;
+          var docTitleTag = document.querySelector('h1.title');
+          var hdsPT = document.createElement("p");
+          var sstl = 0;
+          for (var i = 0; i < higherDocs.length; i++) {
+            if (!higherDocsWE[higherDocs[i]]) continue;
+            var higherDoc = higherDocs[i];
+            var a = document.createElement("a");
+            a.setAttribute("href", '/w/' + encodeURIComponent(higherDoc));
+            a.setAttribute("title", higherDoc);
+            a.className = "wiki-link-internal";
+            if (i != 0 && higherDoc.substring(sstl).indexOf('/') == 0)
+              a.innerHTML = higherDoc.substring(sstl + 1);
+            else
+              a.innerHTML = higherDoc.substring(sstl);
+            sstl = higherDoc.length;
+            hdsPT.appendChild(a);
+            if (i != higherDocs.length - 1) hdsPT.appendChild(document.createTextNode(" > "));
+          }
+          docTitleTag.style.marginBottom = '0px';
+          hdsPT.style.marginBottom = '25px';
+          docTitleTag.parentNode.insertBefore(hdsPT, docTitleTag.nextSibling);
+          clearInterval(hdinid);
+        }, 200);
+      }
+    }
+  }
 } else if (ENV.IsSettings) {
   var aside = document.querySelector("aside > ul.nav_list");
   var li = document.createElement("li");
