@@ -2,6 +2,7 @@
 // @name        NamuFix
 // @namespace   http://litehell.info/
 // @description 나무위키 편집 인터페이스 등을 개선합니다.
+// @include     http://no-ssl.namu.wiki/*
 // @include     http://namu.wiki/*
 // @include     https://namu.wiki/*
 // @version     150818.0
@@ -72,11 +73,11 @@ function formatDateTime(t) {
 }
 
 var ENV = {};
-ENV.IsEditing = /^https?:\/\/namu\.wiki\/edit\/(.+?)/.test(location.href);
-ENV.Discussing = /^https?:\/\/namu\.wiki\/topic\/([0-9]+?)/.test(location.href);
-ENV.IsDocument = /^https?:\/\/namu\.wiki\/w\/(.+)/.test(location.href); //&& document.querySelector('p.wiki-edit-date');
-ENV.IsSettings = /^https?:\/\/namu\.wiki\/settings/.test(location.href);
-ENV.IsUserPage = /^https?:\/\/namu\.wiki\/contribution\/author\/.+\/(?:document|discuss)/.test(location.href);
+ENV.IsEditing = /^https?:\/\/(?:no-ssl\.|)namu\.wiki\/edit\/(.+?)/.test(location.href);
+ENV.Discussing = /^https?:\/\/(?:no-ssl\.|)namu\.wiki\/topic\/([0-9]+?)/.test(location.href);
+ENV.IsDocument = /^https?:\/\/(?:no-ssl\.|)namu\.wiki\/w\/(.+)/.test(location.href); //&& document.querySelector('p.wiki-edit-date');
+ENV.IsSettings = /^https?:\/\/(?:no-ssl\.|)namu\.wiki\/settings/.test(location.href);
+ENV.IsUserPage = /^https?:\/\/(?:no-ssl\.|)namu\.wiki\/contribution\/author\/.+\/(?:document|discuss)/.test(location.href);
 ENV.IsUploadPage = /^https?:\/\/namu\.wiki\/Upload$/.test(location.href);
 if (document.querySelector("input[name=section]"))
   ENV.section = document.querySelector("input[name=section]").value;
