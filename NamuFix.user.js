@@ -5,7 +5,7 @@
 // @include     http://no-ssl.namu.wiki/*
 // @include     http://namu.wiki/*
 // @include     https://namu.wiki/*
-// @version     150818.0
+// @version     150828.0
 // @namespace   http://litehell.info/
 // @downloadURL https://raw.githubusercontent.com/LiteHell/NamuFix/master/NamuFix.user.js
 // @require     https://raw.githubusercontent.com/LiteHell/NamuFix/master/FlexiColorPicker.js
@@ -473,12 +473,24 @@ if (ENV.IsEditing || ENV.Discussing) {
         this.select(s + l.length, s + t.length - r.length)
       };
       r.ToggleWrapSelection = function(l, r) {
+        function isWrapped(t) {
+          return t.indexOf(l) == 0 && t.lastIndexOf(r) == (t.length - r.length);
+        }
         if (arguments.length == 1) var r = l;
         var t = this.selectionText();
-        if (t.indexOf(l) == 0 && t.lastIndexOf(r) == (t.length - r.length)) {
+        var t_m = this.value().substring(this.selectionStart() - l.length, this.selectionEnd() + r.length);
+        var wrappedInSelection = isWrapped(t);
+        var wrappedOutOfSelection = isWrapped(t_m);
+        if (wrappedInSelection) {
           var s = this.selectionStart();
           this.selectionText(t.substring(l.length, t.length - r.length));
           this.select(s, s + t.length - l.length - r.length);
+        } else if (wrappedOutOfSelection) {
+          var s = this.selectionStart() - l.length;
+          this.selectionStart(s);
+          this.selectionEnd(s + t_m.length);
+          this.selectionText(t_m.substring(l.length, t_m.length - r.length));
+          this.select(s, s + t_m.length - l.length - r.length);
         } else {
           this.WrapSelection(l, r);
         }
@@ -1252,6 +1264,54 @@ if (ENV.IsEditing || ENV.Discussing) {
       rootDiv.style.height = '170px';
     else
       rootDiv.style.height = '600px';
+
+    // Add Keyboard Shortcut
+    txtarea.addEventListener('keyup', function(evt) {
+      if (evt.ctrlKey && evt.altKey) {
+        switch (evt.keyCode) { // Ctrl
+          case 66: // B
+          case 98:
+            TextProc.ToggleWrapSelection("'''");
+            break;
+          case 73: // I
+          case 105:
+            TextProc.ToggleWrapSelection("''");
+            break;
+          case 68: // D
+          case 100:
+            TextProc.ToggleWrapSelection("--");
+            break;
+          case 85: // U
+          case 117:
+            TextProc.ToggleWrapSelection("__");
+            break;
+          case 219:
+          case 123:
+          case 91: // [
+            FontSizeChanger(false);
+            break;
+          case 221:
+          case 125:
+          case 93: // ]
+            FontSizeChanger(true);
+            break;
+        }
+      } else if (evt.ctrlKey && evt.shiftKey) { // Ctrl + Shift
+        switch (evt.keyCode) {
+          case 83: // S
+          case 115:
+            tempsaveManager.save(ENV.docTitle, ENV.section, Date.now(), txtarea.value);
+            break;
+          case 73: // I
+          case 105:
+            ImgurUpload();
+            break;
+        }
+      } else {
+        return;
+      }
+      return false;
+    });
 
     // Add NamuFix Div
     var oldTextarea = document.querySelector("textarea");
