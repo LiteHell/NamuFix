@@ -17,6 +17,7 @@ along with NamuFix.  If not, see <http://www.gnu.org/licenses/>.
 Copyright (C) 2015 Litehell
 If you want to contact me, send an email to asdf1234d@gmail.com
 */
+
 @import url(//fonts.googleapis.com/earlyaccess/nanummyeongjo.css);
 @import url(//fonts.googleapis.com/earlyaccess/nanumgothic.css);
 em {
@@ -46,8 +47,12 @@ em {
   border: none;
   height: 50px;
   color: white;
-  width: 40px;
+  width: 40px !improtant;
   cursor: pointer;
+  margin: 0 !important;
+  padding: 0 !important;
+  line-height: 40px;
+  min-width: 40px !important;
 }
 .NamaEditor.NEright {
   float: right;

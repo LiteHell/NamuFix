@@ -71,13 +71,13 @@ function formatDateTime(t) {
   var d = new Date(t);
   return d.getFullYear() + '년 ' + (d.getMonth() + 1) + '월 ' + d.getDate() + '일 ' + d.getHours() + '시 ' + d.getMinutes() + '분 ' + d.getSeconds() + '초';
 }
-if(!String.prototype.format){
-  String.prototype.format=function(){
-    var newstr=this;
-    for(var i=0;i<arguments.length;i++){
-      var b='{'+i+'}';
-      var a=arguments[i];
-      while(newstr.indexOf(b)!=-1) newstr=newstr.replace(b,a);
+if (!String.prototype.format) {
+  String.prototype.format = function() {
+    var newstr = this;
+    for (var i = 0; i < arguments.length; i++) {
+      var b = '{' + i + '}';
+      var a = arguments[i];
+      while (newstr.indexOf(b) != -1) newstr = newstr.replace(b, a);
     }
     return newstr;
   }
@@ -97,7 +97,7 @@ if (ENV.IsEditing)
   ENV.docTitle = document.querySelector("h1.title > a").innerHTML;
 else if (ENV.IsDocument)
   ENV.docTitle = document.querySelector("h1.title").innerHTML;
-else if (ENV.IsDiff){
+else if (ENV.IsDiff) {
   ENV.docTitle = /diff\/(.+?)\?/.exec(location.href)[1];
   ENV.beforeRev = Number(/[\&\?]oldrev=([0-9]+)/.exec(location.href)[1]);
   ENV.afterRev = Number(/[\&\?]rev=([0-9]+)/.exec(location.href)[1]);
@@ -840,7 +840,7 @@ if (ENV.IsEditing || ENV.Discussing) {
       if (!pattern2.test(vurl)) {
         alert('지원되지 않는 주소 형식입니다.')
       } else {
-        insertText('{{{#!html <iframe src="//videofarm.daum.net/controller/video/viewer/Video.html?vid=' + vurl.replace(pattern2, '$1') + '&play_loc=undefined&alert=true" style="max-height: 100%; max-width:100%;" frameborder=\'0\' scrolling=\'0\' width=\'640px\' height=\'360px\'></iframe>}}}');
+        TextProc.selectionText(TextProc.selectionText() + '{{{#!html <iframe src="//videofarm.daum.net/controller/video/viewer/Video.html?vid=' + vurl.replace(pattern2, '$1') + '&play_loc=undefined&alert=true" style="max-height: 100%; max-width:100%;" frameborder=\'0\' scrolling=\'0\' width=\'640px\' height=\'360px\'></iframe>}}}');
       }
     };
     // Add Insertable Things
@@ -849,6 +849,117 @@ if (ENV.IsEditing || ENV.Discussing) {
     insertablesDropDown.button('<span class="ion-social-youtube" style="color:red;"></span>', 'YouTube 동영상').click(InsertYouTube);
     insertablesDropDown.button('<span class="ion-map"></span>', '지도').click(MapMacro);
     insertablesDropDown.button('<span class="ion-ios-play-outline" style="color: Aqua;"></span>', '다음 TV팟 동영상').click(DaumTVPotMarkUp);
+
+    Designer.button('<span class="ion-ios-timer-outline"></span>').hoverMessage('아카이브하고 외부링크 삽입').click(function() {
+      var win = NEWindow();
+      win.title("아카이브 한후 외부링크 삽입");
+      var linkTo = "",
+        linkText = "",
+        WayBack = false,
+        WayBack = false,
+        WayBackAsMobile = false,
+        archiveIs = false,
+        archiveLinks = [];
+      var refresh;
+      win.content(function(container) {
+        container.innerHTML = '<h1 style="margin: 0px 0px 5px 0px; font-size: 20px;">링크할 곳(외부링크)</h1>' +
+          '<style>#linkTo, #visibleOutput {position: absolute; left: 120px;}</style>' +
+          '<label>링크할 대상</label> <input type="text" id="linkTo" placeholder="e.g. http://www.naver.com" /><br>' +
+          '<label>표시할 텍스트 (출력)</label> <input type="text" id="visibleOutput" placeholder="e.g. 구글" /><br>' +
+          '<h1 style="margin: 5px 0px 5px 0px; font-size: 20px;">아카이브</h1>' +
+          '동일한 주소의 아카이브를 자주 하다 보면 아까 했던 아카이브가 또 나올 수도 있습니다, 이런 경우엔 잠시 몇분정도 기다렸다가 하시면 됩니다.<br>'+
+          '<strong>참고</strong> : 기존의 아카이브들은 무시됩니다.<br>' +
+          '<strong style="color:red;">주의</strong> : 불안정한 기능입니다. 버그에 주의하세요.<br>'+
+          '<input type="checkbox" id="WayBack" /> <label><a href="https://archive.org/web/" target="_blank">WayBack Machine</a>으로 아카이브</label>(<input type="checkbox" id="WayBackMobi" /> 모바일 버전으로)<br>' +
+          '<input type="checkbox" id="archiveIs" /> <label><a href="https://archive.is/" target="_blank" checked>archive.is</a>에서 아카이브</label>';
+        refresh = function() {
+          linkTo = container.querySelector('#linkTo').value;
+          linkText = container.querySelector('#visibleOutput').value;
+          WayBack = container.querySelector('#WayBack').checked;
+          WayBackAsMobile = container.querySelector('#WayBackMobi').checked;
+          archiveIs = container.querySelector('#archiveIs').checked;
+        }
+      });
+      win.button("박제/삽입", function() {
+        refresh();
+        if (linkTo.indexOf('http://') != 0 && linkTo.indexOf('https://') != 0) {
+          alert('http:// 또는 https://로 시작하는 외부링크가 아닙니다!');
+        }
+        win.content(function(container) {
+          container.innerHTML = '박제중입니다....'
+        });
+
+        function finishLinking() {
+          var link = '[[' + linkTo + '|링크]]';
+          if (archiveLinks.length != 0) {
+            link += '(';
+            for (var i = 0; i < archiveLinks.length; i++) {
+              link += '[[' + archiveLinks[i] + '|아카이브' + (i + 1) + ']]';
+            }
+            link += ')';
+          }
+          TextProc.selectionText(link + TextProc.selectionText());
+          win.close();
+        }
+
+        function archiveOne() {
+          var archiveType;
+          if (WayBack) {
+            archiveType = 'wb';
+            WayBack = false;
+          } else if (archiveIs) {
+            archiveType = 'ai';
+            archiveIs = false;
+          } else {
+            finishLinking();
+            return;
+          }
+          var r = {};
+          if (archiveType == 'wb') {
+            // 'http://web.archive.org/save/'
+            // 1 -> Mobile Agent
+            r.method = "GET";
+            r.url = "http://web.archive.org/save/" + linkTo;
+            if (WayBackAsMobile) {
+              r.headers = {};
+              r.headers["User-Agent"] = "Mozilla/5.0 (iPhone; U; CPU iPhone OS 3_0 like Mac OS X; en-us) AppleWebKit/528.18 (KHTML, like Gecko) Version/4.0 Mobile/7A341 Safari/528.16";
+            }
+            r.onload = function(res) {
+              if (res.status == 403) {
+                alert('오류가 발생했습니다. 크롤링이 금지된 사이트일 수도 있습니다.');
+                setTimeout(archiveOne, 50);
+                return;
+              } else if (res.status != 200) {
+                alert('알 수 없는 오류가 발생했습니다.');
+                setTimeout(archiveOne, 50);
+                return;
+              }
+              var matches = /var redirUrl = \"(.+?)\";/.exec(res.responseText);
+              var archiveUrl = 'http://web.archive.org' + matches[1];
+              archiveLinks.push(archiveUrl);
+              setTimeout(archiveOne, 50);
+            };
+          } else if (archiveType == 'ai') {
+            // 'http://archive.is/submit/'
+            r.method = "POST";
+            r.url = "https://archive.is/submit/";
+            r.headers = {};
+            r.headers["Content-Type"] = "application/x-www-form-urlencoded";
+            r.data = "anyway=1&url=" + encodeURIComponent(linkTo);
+            r.onload = function(res) {
+              var matches = /document\.location\.replace\("(.+?)"\)/.exec(res.responseText);
+              if (matches == null) matches = /<meta property="og:url" content="(.+?)"/.exec(res.responseText);
+              var archiveUrl = matches[1];
+              archiveLinks.push(archiveUrl);
+              setTimeout(archiveOne, 50);
+            }
+          }
+          GM_xmlhttpRequest(r);
+        }
+        archiveOne();
+      });
+      win.button("닫기", win.close);
+    });
     if (ENV.IsEditing) {
       // Manager Class
       var tempsaveManager = new function() {
@@ -1454,20 +1565,20 @@ if (ENV.Discussing) {
     delete p;
   }
   if (typeof p !== 'undefined') document.querySelector("h1.title").parentNode.insertBefore(p, document.querySelector("h1.title").nextSibling);
-} else if (ENV.IsDiff){
-  setTimeout(function(){
-  try{
-  var diffTitle = document.querySelector('#diffoutput thead th.texttitle');
-  if(diffTitle == null) return;
-  var baseUri = ENV.IsSSL ? "https://namu.wiki" : "http://no-ssl.namu.wiki";
-  var newDifftitle = '<span style="font-weight:lighter;"><a href="{0}/diff/{1}?oldrev={2}&rev={3}">(r{2} vs r{3})</a></span> <a href="{0}/w/{1}?rev={3}" title="r{3} 버전 보기">r{3}</a> vs. <a href="{0}/w/{1}?rev={4}" title="r{4} 버전 보기">r{4}</a> <span style="font-weight:lighter;"><a href="{0}/diff/{1}?oldrev={4}&rev={5}">(r{4} vs r{5})</a></span> <span style="font-weight: lighter;"><a href="{0}/history/{1}">(이 문서의 역사)</a></span>'.format(
-    baseUri /*{0}*/, ENV.docTitle /*{1}*/,ENV.beforeRev-1 /*{2}*/,ENV.beforeRev /*{3}*/,ENV.afterRev /*{4}*/,ENV.afterRev+1 /*{5}*/
-  );
-  diffTitle.innerHTML = newDifftitle;
-} catch(err){
-  alert(err.message+'\n'+err.stack);
-}
-},500);
+} else if (ENV.IsDiff) {
+  setTimeout(function() {
+    try {
+      var diffTitle = document.querySelector('#diffoutput thead th.texttitle');
+      if (diffTitle == null) return;
+      var baseUri = ENV.IsSSL ? "https://namu.wiki" : "http://no-ssl.namu.wiki";
+      var newDifftitle = '<span style="font-weight:lighter;"><a href="{0}/diff/{1}?oldrev={2}&rev={3}">(r{2} vs r{3})</a></span> <a href="{0}/w/{1}?rev={3}" title="r{3} 버전 보기">r{3}</a> vs. <a href="{0}/w/{1}?rev={4}" title="r{4} 버전 보기">r{4}</a> <span style="font-weight:lighter;"><a href="{0}/diff/{1}?oldrev={4}&rev={5}">(r{4} vs r{5})</a></span> <span style="font-weight: lighter;"><a href="{0}/history/{1}">(이 문서의 역사)</a></span>'.format(
+        baseUri /*{0}*/ , ENV.docTitle /*{1}*/ , ENV.beforeRev - 1 /*{2}*/ , ENV.beforeRev /*{3}*/ , ENV.afterRev /*{4}*/ , ENV.afterRev + 1 /*{5}*/
+      );
+      diffTitle.innerHTML = newDifftitle;
+    } catch (err) {
+      alert(err.message + '\n' + err.stack);
+    }
+  }, 500);
 }
 if (Watcher.onoff())
   Watcher.runWorker();
