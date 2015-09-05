@@ -5,7 +5,7 @@
 // @include     http://no-ssl.namu.wiki/*
 // @include     http://namu.wiki/*
 // @include     https://namu.wiki/*
-// @version     150828.1
+// @version     150906.0
 // @namespace   http://litehell.info/
 // @downloadURL https://raw.githubusercontent.com/LiteHell/NamuFix/master/NamuFix.user.js
 // @require     https://raw.githubusercontent.com/LiteHell/NamuFix/master/FlexiColorPicker.js
@@ -71,20 +71,37 @@ function formatDateTime(t) {
   var d = new Date(t);
   return d.getFullYear() + '년 ' + (d.getMonth() + 1) + '월 ' + d.getDate() + '일 ' + d.getHours() + '시 ' + d.getMinutes() + '분 ' + d.getSeconds() + '초';
 }
-
+if(!String.prototype.format){
+  String.prototype.format=function(){
+    var newstr=this;
+    for(var i=0;i<arguments.length;i++){
+      var b='{'+i+'}';
+      var a=arguments[i];
+      while(newstr.indexOf(b)!=-1) newstr=newstr.replace(b,a);
+    }
+    return newstr;
+  }
+}
 var ENV = {};
+ENV.IsSSL = /^https/.test(location.href);
 ENV.IsEditing = /^https?:\/\/(?:no-ssl\.|)namu\.wiki\/edit\/(.+?)/.test(location.href);
 ENV.Discussing = /^https?:\/\/(?:no-ssl\.|)namu\.wiki\/topic\/([0-9]+?)/.test(location.href);
 ENV.IsDocument = /^https?:\/\/(?:no-ssl\.|)namu\.wiki\/w\/(.+)/.test(location.href); //&& document.querySelector('p.wiki-edit-date');
 ENV.IsSettings = /^https?:\/\/(?:no-ssl\.|)namu\.wiki\/settings/.test(location.href);
 ENV.IsUserPage = /^https?:\/\/(?:no-ssl\.|)namu\.wiki\/contribution\/(?:author|ip)\/.+\/(?:document|discuss)/.test(location.href);
 ENV.IsUploadPage = /^https?:\/\/namu\.wiki\/Upload$/.test(location.href);
+ENV.IsDiff = /^https?:\/\/namu\.wiki\/diff\/.+/.test(location.href);
 if (document.querySelector("input[name=section]"))
   ENV.section = document.querySelector("input[name=section]").value;
 if (ENV.IsEditing)
   ENV.docTitle = document.querySelector("h1.title > a").innerHTML;
 else if (ENV.IsDocument)
   ENV.docTitle = document.querySelector("h1.title").innerHTML;
+else if (ENV.IsDiff){
+  ENV.docTitle = /diff\/(.+?)\?/.exec(location.href)[1];
+  ENV.beforeRev = Number(/[\&\?]oldrev=([1-9]+)/.exec(location.href)[1]);
+  ENV.afterRev = Number(/[\&\?]rev=([1-9]+)/.exec(location.href)[1]);
+}
 if (nOu(ENV.section))
   ENV.section = -2;
 
@@ -934,8 +951,8 @@ if (ENV.IsEditing || ENV.Discussing) {
         win.content(function(el) {
           el.innerHTML = '<p>현재 편집중인 문단인 경우 문단 번호가 <strong>굵게</strong> 표시됩니다.<br>문단 번호가 -2인 경우는 문단 번호가 감지되지 않은 경우입니다.</p>';
           var divWithscrollbars = document.createElement("div");
-          divWithscrollbars.style.height = '500px';
-          divWithscrollbars.style.overflow = 'scroll';
+          divWithscrollbars.style.height = '300px';
+          divWithscrollbars.style.overflow = 'auto';
           var table = document.createElement("table");
           var headrow = document.createElement("tr");
           headrow.innerHTML = '<th>문단 번호</th><th>저장된 날짜와 시간</th><th>불려오기 버튼</th>';
@@ -976,8 +993,8 @@ if (ENV.IsEditing || ENV.Discussing) {
         win.content(function(el) {
           el.innerHTML = '<p>현재 편집중인 문단인 경우 문단 번호가 <strong>굵게</strong> 표시됩니다.<br>문단 번호가 -2인 경우는 문단 번호가 감지되지 않은 경우입니다.</p>';
           var divWithscrollbars = document.createElement("div");
-          divWithscrollbars.style.height = '500px';
-          divWithscrollbars.style.overflow = 'scroll';
+          divWithscrollbars.style.height = '300px';
+          divWithscrollbars.style.overflow = 'auto';
           var table = document.createElement("table");
           var headrow = document.createElement("tr");
           headrow.innerHTML = '<th>문단 번호</th><th>저장된 날짜와 시간</th><th>삭제 버튼</th>';
@@ -1643,6 +1660,20 @@ if (ENV.Discussing) {
     delete p;
   }
   if (typeof p !== 'undefined') document.querySelector("h1.title").parentNode.insertBefore(p, document.querySelector("h1.title").nextSibling);
+} else if (ENV.IsDiff){
+  setTimeout(function(){
+  try{
+  var diffTitle = document.querySelector('#diffoutput thead th.texttitle');
+  if(diffTitle == null) return;
+  var baseUri = ENV.IsSSL ? "https://namu.wiki" : "http://no-ssl.namu.wiki";
+  var newDifftitle = '<span style="font-weight:lighter;"><a href="{0}/diff/{1}?oldrev={2}&rev={3}">(r{2} vs r{3})</a></span> <a href="{0}/w/{1}?rev={3}" title="r{3} 버전 보기">r{3}</a> vs. <a href="{0}/w/{1}?rev={4}" title="r{4} 버전 보기">r{4}</a> <span style="font-weight:lighter;"><a href="{0}/diff/{1}?oldrev={4}&rev={5}">(r{4} vs r{5})</a></span> <span style="font-weight: lighter;"><a href="{0}/history/{1}">(이 문서의 역사)</a></span>'.format(
+    baseUri /*{0}*/, ENV.docTitle /*{1}*/,ENV.beforeRev-1 /*{2}*/,ENV.beforeRev /*{3}*/,ENV.afterRev /*{4}*/,ENV.afterRev+1 /*{5}*/
+  );
+  diffTitle.innerHTML = newDifftitle;
+} catch(err){
+  alert(err.message+'\n'+err.stack);
+}
+},500);
 }
 if (Watcher.onoff())
   Watcher.runWorker();
