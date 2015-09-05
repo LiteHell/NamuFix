@@ -867,7 +867,7 @@ if (ENV.IsEditing || ENV.Discussing) {
           '<label>링크할 대상</label> <input type="text" id="linkTo" placeholder="e.g. http://www.naver.com" /><br>' +
           '<label>표시할 텍스트 (출력)</label> <input type="text" id="visibleOutput" placeholder="e.g. 구글" /><br>' +
           '<h1 style="margin: 5px 0px 5px 0px; font-size: 20px;">아카이브</h1>' +
-          '동일한 주소의 아카이브를 자주 하다 보면 아까 했던 아카이브가 또 나올 수도 있습니다, 이런 경우엔 잠시 몇분정도 기다렸다가 하시면 됩니다.<br>'+
+          '<strong>참고</strong> : 동일한 주소의 아카이브를 자주 하다 보면 아까 했던 아카이브가 또 나올 수도 있습니다, 이런 경우엔 잠시 몇분정도 기다렸다가 하시면 됩니다.<br>'+
           '<strong>참고</strong> : 기존의 아카이브들은 무시됩니다.<br>' +
           '<strong style="color:red;">주의</strong> : 불안정한 기능입니다. 버그에 주의하세요.<br>'+
           '<input type="checkbox" id="WayBack" /> <label><a href="https://archive.org/web/" target="_blank">WayBack Machine</a>으로 아카이브</label>(<input type="checkbox" id="WayBackMobi" /> 모바일 버전으로)<br>' +
@@ -881,11 +881,13 @@ if (ENV.IsEditing || ENV.Discussing) {
         }
       });
       win.button("박제/삽입", function() {
+        var waitwin=NEWindow();
+        waitwin.title('박제중....');
         refresh();
         if (linkTo.indexOf('http://') != 0 && linkTo.indexOf('https://') != 0) {
           alert('http:// 또는 https://로 시작하는 외부링크가 아닙니다!');
         }
-        win.content(function(container) {
+        waitwin.content(function(container) {
           container.innerHTML = '박제중입니다....'
         });
 
@@ -895,10 +897,12 @@ if (ENV.IsEditing || ENV.Discussing) {
             link += '(';
             for (var i = 0; i < archiveLinks.length; i++) {
               link += '[[' + archiveLinks[i] + '|아카이브' + (i + 1) + ']]';
+              if(i!=archiveLinks.length-1) link+=',';
             }
             link += ')';
           }
           TextProc.selectionText(link + TextProc.selectionText());
+          waitwin.close();
           win.close();
         }
 
@@ -935,6 +939,11 @@ if (ENV.IsEditing || ENV.Discussing) {
                 return;
               }
               var matches = /var redirUrl = \"(.+?)\";/.exec(res.responseText);
+              if(matches == null){
+                alert('아카이브 주소를 얻는 데 실패했습니다.');
+                setTimeout(archiveOne, 50);
+                return;
+              }
               var archiveUrl = 'http://web.archive.org' + matches[1];
               archiveLinks.push(archiveUrl);
               setTimeout(archiveOne, 50);
@@ -949,6 +958,11 @@ if (ENV.IsEditing || ENV.Discussing) {
             r.onload = function(res) {
               var matches = /document\.location\.replace\("(.+?)"\)/.exec(res.responseText);
               if (matches == null) matches = /<meta property="og:url" content="(.+?)"/.exec(res.responseText);
+              if (matches == null){
+                alert('아카이브 주소를 얻는 데 실패했습니다.');
+                setTimeout(archiveOne, 50);
+                return;
+              }
               var archiveUrl = matches[1];
               archiveLinks.push(archiveUrl);
               setTimeout(archiveOne, 50);
