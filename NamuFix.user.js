@@ -99,8 +99,8 @@ else if (ENV.IsDocument)
   ENV.docTitle = document.querySelector("h1.title").innerHTML;
 else if (ENV.IsDiff){
   ENV.docTitle = /diff\/(.+?)\?/.exec(location.href)[1];
-  ENV.beforeRev = Number(/[\&\?]oldrev=([1-9]+)/.exec(location.href)[1]);
-  ENV.afterRev = Number(/[\&\?]rev=([1-9]+)/.exec(location.href)[1]);
+  ENV.beforeRev = Number(/[\&\?]oldrev=([0-9]+)/.exec(location.href)[1]);
+  ENV.afterRev = Number(/[\&\?]rev=([0-9]+)/.exec(location.href)[1]);
 }
 if (nOu(ENV.section))
   ENV.section = -2;
