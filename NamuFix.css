@@ -70,6 +70,8 @@ em {
   min-width: 40px;
   margin: 0px;
   padding-right: 10px;
+  overflow-y: scroll;
+  max-height: 400px;
 }
 div.NamaEditor.NEMenuButton {
   display: inline-block;

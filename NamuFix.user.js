@@ -5,12 +5,13 @@
 // @include     http://no-ssl.namu.wiki/*
 // @include     http://namu.wiki/*
 // @include     https://namu.wiki/*
-// @version     150906.0
+// @version     150908.0
 // @namespace   http://litehell.info/
 // @downloadURL https://raw.githubusercontent.com/LiteHell/NamuFix/master/NamuFix.user.js
 // @require     https://raw.githubusercontent.com/LiteHell/NamuFix/master/FlexiColorPicker.js
 // @require     https://raw.githubusercontent.com/Caligatio/jsSHA/v2.0.1/src/sha512.js
 // @require     https://github.com/zenozeng/color-hash/raw/master/dist/color-hash.js
+// @require     https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.3.0/katex.min.js
 // @grant       GM_addStyle
 // @grant       GM_xmlhttpRequest
 // @grant       GM_getValue
@@ -285,6 +286,223 @@ function getRAW(title, onfound, onnotfound) {
     }
   })
 }
+
+function createDesigner(buttonBar) {
+  var Designer = {};
+  Designer.button = function(txt) {
+    var btn = document.createElement('button');
+    btn.className = 'NamaEditor NEMenuButton';
+    btn.setAttribute('type', 'button');
+    btn.innerHTML = txt;
+
+    buttonBar.appendChild(btn);
+    var r = {
+      click: function(func) {
+        btn.addEventListener('click', func);
+        return r;
+      },
+      hoverMessage: function(msg) {
+        btn.setAttribute('title', msg);
+        return r;
+      },
+      right: function() {
+        btn.className += ' NEright';
+        return r;
+      },
+      active: function() {
+        btn.setAttribute('active', 'yes');
+        return r;
+      },
+      deactive: function() {
+        btn.removeAttribute('active')
+        return r;
+      },
+      remove: function() {
+        btn.parentNode.removeChild(btn);
+        return r;
+      },
+      use: function() {
+        buttonBar.appendChild(btn);
+        return r;
+      }
+    };
+    return r;
+  };
+  Designer.dropdown = function(txt) {
+    var dropdownButton = document.createElement("div");
+    var dropdown = document.createElement("div");
+    var dropdownList = document.createElement("ul");
+    dropdownButton.innerHTML = '<div class="NEDropdownButtonLabel NamaEditor">' + txt + '</div>';
+    dropdownButton.className = 'NamaEditor NEMenuButton';
+    dropdown.className = 'NamaEditor NEDropDown';
+    dropdown.appendChild(dropdownList);
+    dropdownButton.appendChild(dropdown);
+    buttonBar.appendChild(dropdownButton);
+
+    var dbHover = false,
+      dbBHover = false;
+    dropdownButton.addEventListener('mouseover', function() {
+      dbBHover = true;
+    });
+    dropdown.addEventListener('mouseover', function() {
+      dbHover = true;
+    });
+    dropdownButton.addEventListener('mouseleave', function() {
+      dbBHover = false;
+    });
+    dropdown.addEventListener('mouseleave', function() {
+      dbHover = false;
+    });
+    var shower = setInterval(function() {
+      if (dbHover || dbBHover) {
+        dropdownButton.setAttribute('hover', 'yes');
+        dropdown.style.display = '';
+      } else {
+        dropdownButton.removeAttribute('hover');
+        dropdown.style.display = 'none';
+      }
+    }, 50);
+
+    var hr = {
+      button: function(iconTxt, txt) {
+        var liTag = document.createElement('li');
+        liTag.innerHTML = '<span class="NEHeadIcon">' + iconTxt + '</span><span class="NEDescText">' + txt + '</span>'
+        liTag.addEventListener('click', function() {
+          dbHover = false;
+          dbBHover = false;
+        })
+        dropdownList.appendChild(liTag);
+        var r = {
+          icon: function(iconTxt) {
+            liTag.querySelector('.NEHeadIcon').innerHTML = iconTxt;
+            return r;
+          },
+          text: function(txt) {
+            liTag.querySElector('.NEDescText').innerHTML = txt;
+            return r;
+          },
+          hoverMessage: function(msg) {
+            liTag.setAttribute('title', msg);
+            return r;
+          },
+          click: function(handler) {
+            liTag.addEventListener('click', handler);
+            return r;
+          },
+          right: function() {
+            liTag.className += 'NEright';
+            return r;
+          },
+          remove: function() {
+            dropdownList.removeChild(liTag);
+            return r;
+          },
+          insert: function() {
+            dropdownList.appendChild(liTag);
+            return r;
+          },
+          backwalk: function() {
+            dropdownList.removeChild(ilTag);
+            dropdownList.appendChild(ilTag);
+            return r;
+          }
+        };
+        return r;
+      },
+      right: function() {
+        liTag.className += 'NEright';
+        return hr;
+      },
+      hoverMessage: function(txt) {
+        dropdownButton.setAttribute('title', txt);
+        return hr;
+      },
+      clear: function() {
+        dropdownList.innerHTML = '';
+        return hr;
+      }
+    };
+    return hr;
+  };
+  return Designer;
+}
+
+function createTextProcessor(txtarea) {
+  var r = {};
+  r.value = function() {
+    if (arguments.length == 0) return txtarea.value;
+    else txtarea.value = arguments[0];
+  };
+  r.selectionText = function() {
+    if (arguments.length == 0) return txtarea.value.substring(txtarea.selectionStart, txtarea.selectionEnd);
+    else {
+      var s = txtarea.selectionStart;
+      var t = txtarea.value.substring(0, txtarea.selectionStart);
+      t += arguments[0];
+      t += txtarea.value.substring(txtarea.selectionEnd);
+      txtarea.value = t;
+      txtarea.focus();
+      txtarea.selectionStart = s;
+      txtarea.selectionEnd = s + arguments[0].length;
+    }
+  };
+  r.selectionStart = function() {
+    if (arguments.length == 0) return txtarea.selectionStart;
+    else txtarea.selectionStart = arguments[0];
+  };
+  r.selectionTest = function(r) {
+    return this.selectionText().search(r) != -1;
+  };
+  r.valueTest = function(r) {
+    return this.value().search(r) != -1;
+  };
+  r.selectionEnd = function() {
+    if (arguments.length == 0) return txtarea.selectionEnd;
+    else txtarea.selectionEnd = arguments[0];
+  };
+  r.selectionLength = function() {
+    if (arguments.length == 0) return (txtarea.selectionEnd - txtarea.selectionStart);
+    else txtarea.selectionEnd = txtarea.selectionStart + arguments[0];
+  };
+  r.select = function(s, e) {
+    txtarea.focus();
+    txtarea.selectionStart = s;
+    if (typeof e !== 'undefined') txtarea.selectionEnd = e;
+  }
+  r.WrapSelection = function(l, r) {
+    if (arguments.length == 1) var r = l;
+    var t = this.selectionText();
+    if (typeof t === 'undefined' || t == null || t == '') t = '내용';
+    var s = this.selectionStart()
+    t = l + t + r;
+    this.selectionText(t);
+    this.select(s + l.length, s + t.length - r.length)
+  };
+  r.ToggleWrapSelection = function(l, r) {
+    function isWrapped(t) {
+      return t.indexOf(l) == 0 && t.lastIndexOf(r) == (t.length - r.length);
+    }
+    if (arguments.length == 1) var r = l;
+    var t = this.selectionText();
+    var t_m = this.value().substring(this.selectionStart() - l.length, this.selectionEnd() + r.length);
+    var wrappedInSelection = isWrapped(t);
+    var wrappedOutOfSelection = isWrapped(t_m);
+    if (wrappedInSelection) {
+      var s = this.selectionStart();
+      this.selectionText(t.substring(l.length, t.length - r.length));
+      this.select(s, s + t.length - l.length - r.length);
+    } else if (wrappedOutOfSelection) {
+      var s = this.selectionStart() - l.length;
+      this.selectionStart(s);
+      this.selectionEnd(s + t_m.length);
+      this.selectionText(t_m.substring(l.length, t_m.length - r.length));
+      this.select(s, s + t_m.length - l.length - r.length);
+    } else {
+      this.WrapSelection(l, r);
+    }
+  };
+  return r;
+}
 if (ENV.IsEditing || ENV.Discussing) {
   if (document.querySelectorAll("textarea").length == 1) {
     var rootDiv = document.createElement("div");
@@ -300,219 +518,10 @@ if (ENV.IsEditing || ENV.Discussing) {
     rootDiv.appendChild(txtarea);
 
     // Functions To Design
-    var Designer = {};
-    Designer.button = function(txt) {
-      var btn = document.createElement('button');
-      btn.className = 'NamaEditor NEMenuButton';
-      btn.setAttribute('type', 'button');
-      btn.innerHTML = txt;
-
-      buttonBar.appendChild(btn);
-      var r = {
-        click: function(func) {
-          btn.addEventListener('click', func);
-          return r;
-        },
-        hoverMessage: function(msg) {
-          btn.setAttribute('title', msg);
-          return r;
-        },
-        right: function() {
-          btn.className += ' NEright';
-          return r;
-        },
-        active: function() {
-          btn.setAttribute('active', 'yes');
-          return r;
-        },
-        deactive: function() {
-          btn.removeAttribute('active')
-          return r;
-        },
-        remove: function() {
-          btn.parentNode.removeChild(btn);
-          return r;
-        },
-        use: function() {
-          buttonBar.appendChild(btn);
-          return r;
-        }
-      };
-      return r;
-    };
-    Designer.dropdown = function(txt) {
-      var dropdownButton = document.createElement("div");
-      var dropdown = document.createElement("div");
-      var dropdownList = document.createElement("ul");
-      dropdownButton.innerHTML = '<div class="NEDropdownButtonLabel NamaEditor">' + txt + '</div>';
-      dropdownButton.className = 'NamaEditor NEMenuButton';
-      dropdown.className = 'NamaEditor NEDropDown';
-      dropdown.appendChild(dropdownList);
-      dropdownButton.appendChild(dropdown);
-      buttonBar.appendChild(dropdownButton);
-
-      var dbHover = false,
-        dbBHover = false;
-      dropdownButton.addEventListener('mouseover', function() {
-        dbBHover = true;
-      });
-      dropdown.addEventListener('mouseover', function() {
-        dbHover = true;
-      });
-      dropdownButton.addEventListener('mouseleave', function() {
-        dbBHover = false;
-      });
-      dropdown.addEventListener('mouseleave', function() {
-        dbHover = false;
-      });
-      var shower = setInterval(function() {
-        if (dbHover || dbBHover) {
-          dropdownButton.setAttribute('hover', 'yes');
-          dropdown.style.display = '';
-        } else {
-          dropdownButton.removeAttribute('hover');
-          dropdown.style.display = 'none';
-        }
-      }, 50);
-
-      var hr = {
-        button: function(iconTxt, txt) {
-          var liTag = document.createElement('li');
-          liTag.innerHTML = '<span class="NEHeadIcon">' + iconTxt + '</span><span class="NEDescText">' + txt + '</span>'
-          liTag.addEventListener('click', function() {
-            dbHover = false;
-            dbBHover = false;
-          })
-          dropdownList.appendChild(liTag);
-          var r = {
-            icon: function(iconTxt) {
-              liTag.querySelector('.NEHeadIcon').innerHTML = iconTxt;
-              return r;
-            },
-            text: function(txt) {
-              liTag.querySElector('.NEDescText').innerHTML = txt;
-              return r;
-            },
-            hoverMessage: function(msg) {
-              liTag.setAttribute('title', msg);
-              return r;
-            },
-            click: function(handler) {
-              liTag.addEventListener('click', handler);
-              return r;
-            },
-            right: function() {
-              liTag.className += 'NEright';
-              return r;
-            },
-            remove: function() {
-              dropdownList.removeChild(liTag);
-              return r;
-            },
-            insert: function() {
-              dropdownList.appendChild(liTag);
-              return r;
-            },
-            backwalk: function() {
-              dropdownList.removeChild(ilTag);
-              dropdownList.appendChild(ilTag);
-              return r;
-            }
-          };
-          return r;
-        },
-        right: function() {
-          liTag.className += 'NEright';
-          return hr;
-        },
-        hoverMessage: function(txt) {
-          dropdownButton.setAttribute('title', txt);
-          return hr;
-        },
-        clear: function() {
-          dropdownList.innerHTML = '';
-          return hr;
-        }
-      };
-      return hr;
-    };
+    var Designer = createDesigner(buttonBar);
 
     // Functions To Process
-    var TextProc = {};
-    (function(r, txtarea) {
-      r.value = function() {
-        if (arguments.length == 0) return txtarea.value;
-        else txtarea.value = arguments[0];
-      };
-      r.selectionText = function() {
-        if (arguments.length == 0) return txtarea.value.substring(txtarea.selectionStart, txtarea.selectionEnd);
-        else {
-          var s = txtarea.selectionStart;
-          var t = txtarea.value.substring(0, txtarea.selectionStart);
-          t += arguments[0];
-          t += txtarea.value.substring(txtarea.selectionEnd);
-          txtarea.value = t;
-          txtarea.focus();
-          txtarea.selectionStart = s;
-          txtarea.selectionEnd = s + arguments[0].length;
-        }
-      };
-      r.selectionStart = function() {
-        if (arguments.length == 0) return txtarea.selectionStart;
-        else txtarea.selectionStart = arguments[0];
-      };
-      r.selectionTest = function(r) {
-        return this.selectionText().search(r) != -1;
-      };
-      r.valueTest = function(r) {
-        return this.value().search(r) != -1;
-      };
-      r.selectionEnd = function() {
-        if (arguments.length == 0) return txtarea.selectionEnd;
-        else txtarea.selectionEnd = arguments[0];
-      };
-      r.selectionLength = function() {
-        if (arguments.length == 0) return (txtarea.selectionEnd - txtarea.selectionStart);
-        else txtarea.selectionEnd = txtarea.selectionStart + arguments[0];
-      };
-      r.select = function(s, e) {
-        txtarea.focus();
-        txtarea.selectionStart = s;
-        if (typeof e !== 'undefined') txtarea.selectionEnd = e;
-      }
-      r.WrapSelection = function(l, r) {
-        if (arguments.length == 1) var r = l;
-        var t = this.selectionText();
-        if (typeof t === 'undefined' || t == null || t == '') t = '내용';
-        var s = this.selectionStart()
-        t = l + t + r;
-        this.selectionText(t);
-        this.select(s + l.length, s + t.length - r.length)
-      };
-      r.ToggleWrapSelection = function(l, r) {
-        function isWrapped(t) {
-          return t.indexOf(l) == 0 && t.lastIndexOf(r) == (t.length - r.length);
-        }
-        if (arguments.length == 1) var r = l;
-        var t = this.selectionText();
-        var t_m = this.value().substring(this.selectionStart() - l.length, this.selectionEnd() + r.length);
-        var wrappedInSelection = isWrapped(t);
-        var wrappedOutOfSelection = isWrapped(t_m);
-        if (wrappedInSelection) {
-          var s = this.selectionStart();
-          this.selectionText(t.substring(l.length, t.length - r.length));
-          this.select(s, s + t.length - l.length - r.length);
-        } else if (wrappedOutOfSelection) {
-          var s = this.selectionStart() - l.length;
-          this.selectionStart(s);
-          this.selectionEnd(s + t_m.length);
-          this.selectionText(t_m.substring(l.length, t_m.length - r.length));
-          this.select(s, s + t_m.length - l.length - r.length);
-        } else {
-          this.WrapSelection(l, r);
-        }
-      };
-    })(TextProc, txtarea);
+    var TextProc = createTextProcessor(txtarea);
 
     // Some Basic MarkUp Functions
     function FontSizeChanger(isIncrease) {
@@ -867,9 +876,9 @@ if (ENV.IsEditing || ENV.Discussing) {
           '<label>링크할 대상</label> <input type="text" id="linkTo" placeholder="e.g. http://www.naver.com" /><br>' +
           '<label>표시할 텍스트 (출력)</label> <input type="text" id="visibleOutput" placeholder="e.g. 구글" /><br>' +
           '<h1 style="margin: 5px 0px 5px 0px; font-size: 20px;">아카이브</h1>' +
-          '<strong>참고</strong> : 동일한 주소의 아카이브를 자주 하다 보면 아까 했던 아카이브가 또 나올 수도 있습니다, 이런 경우엔 잠시 몇분정도 기다렸다가 하시면 됩니다.<br>'+
+          '<strong>참고</strong> : 동일한 주소의 아카이브를 자주 하다 보면 아까 했던 아카이브가 또 나올 수도 있습니다, 이런 경우엔 잠시 몇분정도 기다렸다가 하시면 됩니다.<br>' +
           '<strong>참고</strong> : 기존의 아카이브들은 무시됩니다.<br>' +
-          '<strong style="color:red;">주의</strong> : 불안정한 기능입니다. 버그에 주의하세요.<br>'+
+          '<strong style="color:red;">주의</strong> : 불안정한 기능입니다. 버그에 주의하세요.<br>' +
           '<input type="checkbox" id="WayBack" /> <label><a href="https://archive.org/web/" target="_blank">WayBack Machine</a>으로 아카이브</label>(<input type="checkbox" id="WayBackMobi" /> 모바일 버전으로)<br>' +
           '<input type="checkbox" id="archiveIs" /> <label><a href="https://archive.is/" target="_blank" checked>archive.is</a>에서 아카이브</label>';
         refresh = function() {
@@ -881,7 +890,7 @@ if (ENV.IsEditing || ENV.Discussing) {
         }
       });
       win.button("박제/삽입", function() {
-        var waitwin=NEWindow();
+        var waitwin = NEWindow();
         waitwin.title('박제중....');
         refresh();
         if (linkTo.indexOf('http://') != 0 && linkTo.indexOf('https://') != 0) {
@@ -897,7 +906,7 @@ if (ENV.IsEditing || ENV.Discussing) {
             link += '(';
             for (var i = 0; i < archiveLinks.length; i++) {
               link += '[[' + archiveLinks[i] + '|아카이브' + (i + 1) + ']]';
-              if(i!=archiveLinks.length-1) link+=',';
+              if (i != archiveLinks.length - 1) link += ',';
             }
             link += ')';
           }
@@ -939,7 +948,7 @@ if (ENV.IsEditing || ENV.Discussing) {
                 return;
               }
               var matches = /var redirUrl = \"(.+?)\";/.exec(res.responseText);
-              if(matches == null){
+              if (matches == null) {
                 alert('아카이브 주소를 얻는 데 실패했습니다.');
                 setTimeout(archiveOne, 50);
                 return;
@@ -958,7 +967,7 @@ if (ENV.IsEditing || ENV.Discussing) {
             r.onload = function(res) {
               var matches = /document\.location\.replace\("(.+?)"\)/.exec(res.responseText);
               if (matches == null) matches = /<meta property="og:url" content="(.+?)"/.exec(res.responseText);
-              if (matches == null){
+              if (matches == null) {
                 alert('아카이브 주소를 얻는 데 실패했습니다.');
                 setTimeout(archiveOne, 50);
                 return;
@@ -974,6 +983,97 @@ if (ENV.IsEditing || ENV.Discussing) {
       });
       win.button("닫기", win.close);
     });
+    /* Designer.button('Σ').hoverMessage('수식 수정/삽입').click(function() {
+      function createLaTeXEditor(LTXrootDiv) {
+        var buttonBar = document.createElement('div');
+        var txtarea = document.createElement('textarea');
+        buttonBar.className = 'NamaEditor NEMenu';
+        txtarea.className = 'NamaEditor NETextarea'
+        txtarea.name = document.querySelector("textarea").name;
+        txtarea.style.height = '200px';
+        LTXrootDiv.className += ' NamaEditor NERoot';
+        LTXrootDiv.appendChild(buttonBar);
+        LTXrootDiv.appendChild(txtarea);
+
+        var Designer = createDesigner(buttonBar);
+        var TextProc = createTextProcessor(txtarea);
+        TextProc.insert = function(txt) {
+          this.selectionText(txt + this.selectionText());
+        };
+        // katext rendering : katex.render("c = \\pm\\sqrt{a^2 + b^2}", element);
+        // Greek alphabats
+        Designer.button('α').hoverMessage('그리스 문자').click(function() {
+          var alphabats = NEWindow();
+          alphabats.title('그리스 문자 삽입');
+          var romans = [
+            'Gamma', 'Delta', 'Theta', 'Lambda', 'Xi', 'Pi', 'Sigma', 'Upsilon', 'Phi', 'Psi', 'Omega', 'alpha', 'beta', 'gamma',
+            'delta', 'epsilon', 'zeta', 'eta', 'theta', 'iota', 'kappa', 'lambda', 'mu', 'nu', 'xi', 'omicron', 'pi', 'rho', 'sigma',
+            'tau', 'upsilon', 'phi', 'chi', 'psi', 'omega', 'varepsilon', 'vartheta', 'varpi', 'varrho', 'varsigma', 'varphi'
+          ];
+          alphabats.content(function(container) {
+            var tableTag = document.createElement("table");
+            tableTag.style.margin = '0 auto';
+            for (var r = 0; r < 5; r++) {
+              var tableRow = document.createElement("tr");
+              for (var c = 0; c < (r != 4 ? 8 : 9); c++) {
+                //alert(romans.length + '\n' + r + ' ' + c);
+                var formu = '\\' + romans.pop();
+                var col = document.createElement("td");
+                col.style.padding = '5px';
+                col.dataset.formular = formu;
+                katex.render(formu, col);
+                var childs = col.querySelectorAll('*');
+                for (var i = 0; i < childs.length; i++) {
+                  childs[i].setAttribute("data-formular", formu);
+                }
+                col.addEventListener('click', function(evt) {
+                  var formu = evt.target.dataset.formular;
+                  TextProc.insert(formu);
+                  alphabats.close();
+                });
+                col.style.cursor = 'pointer';
+                tableRow.appendChild(col);
+              }
+              tableTag.appendChild(tableRow);
+            }
+            container.appendChild(tableTag);
+          });
+          alphabats.button('닫기', alphabats.close);
+        });
+
+        var decoTextDropdown = Designer.dropdown('<span class="ion-wand"></span>').hoverMessage('텍스트 꾸미기');
+
+        function insertFuncClosure(funcName) {
+          return function() {
+            if (TextProc.selectionText().length == 0) {
+              alert('선택한 문자열이 없습니다.');
+              TextProc.insert('\\' + funcName + '{\\alpha}');
+            } else {
+              TextProc.WrapSelection('\\' + funcName + '{', '}');
+            }
+          }
+        }
+        decoTextDropdown.button(katex.renderToString('\\sqrt{\\alpha}'), '루트 씌우기').click(insertFuncClosure('sqrt'));
+        decoTextDropdown.button(katex.renderToString('\\overline{\\alpha}'), '윗줄').click(insertFuncClosure('overline'));
+        return txtarea;
+      }
+      var fwin = NEWindow();
+      fwin.title('LaTeX 수식 수정/삽입');
+      fwin.content(function(container) {
+        container.innerHTML = '<p><a href="https://github.com/Khan/KaTeX/wiki/Function-Support-in-KaTeX/a196a05989c5d7737ee00036462bb6aeaac6ac23">KaTeX 함수 지원 a196a05판</a>에 포함되어 있는 함수/환경들만 있습니다.</p>' +
+          '<p style="margin-top: 10px;"><div id="mainFormular"></div></p>';
+        var mf = createLaTeXEditor(container.querySelector('#mainFormular'));
+
+      });
+      fwin.button('수정/삽입', function() {
+        alert('!');
+        fwin.close();
+      })
+      fwin.button('닫기', function() {
+        fwin.close();
+      })
+    });
+    */
     if (ENV.IsEditing) {
       // Manager Class
       var tempsaveManager = new function() {
@@ -1299,6 +1399,26 @@ if (ENV.IsEditing || ENV.Discussing) {
     if (redirectFrom != null && redirectFrom.trim().length != 0)
       location.href = 'https://namu.wiki/edit/' + redirectFrom + '?redirectTo=' + ENV.docTitle;
   });
+
+  // 리다이렉트로 왔을 시 그 라디이렉트 문서 편집/삭제 링크 추가
+  if (document.querySelector('div.top-doc-desc a.document') && document.querySelector('div.top-doc-desc').innerHTML.indexOf('에서 넘어옴') != -1) {
+    function insertLinkinto(link, element, label, color) {
+      var aTag = document.createElement('a');
+      aTag.href = link;
+      aTag.innerHTML = label;
+      if (typeof color !== 'undefined') aTag.style.color = color;
+      element.appendChild(aTag);
+    }
+    var rdTag = document.querySelector('div.top-doc-desc a.document');
+    var rdDocumentName = decodeURIComponent(/\/w\/(.+?)\?noredirect=1/.exec(rdTag.href)[1]);
+    var editUrl = '/edit/' + rdDocumentName;
+    var deleteUrl = '/delete/' + rdDocumentName;
+
+    var sup = document.createElement("sup");
+    rdTag.parentNode.insertBefore(sup, rdTag.nextSibling);
+    insertLinkinto(editUrl, sup, '(편집)');
+    insertLinkinto(deleteUrl, sup, '(삭제)', 'red');
+  }
   // 상위 문서로의 링크
   if (ENV.docTitle.indexOf('/') != -1) {
     function spSplit(a, b) {
