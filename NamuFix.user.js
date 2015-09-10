@@ -5,7 +5,7 @@
 // @include     http://no-ssl.namu.wiki/*
 // @include     http://namu.wiki/*
 // @include     https://namu.wiki/*
-// @version     150908.0
+// @version     150910.0
 // @namespace   http://litehell.info/
 // @downloadURL https://raw.githubusercontent.com/LiteHell/NamuFix/master/NamuFix.user.js
 // @require     https://raw.githubusercontent.com/LiteHell/NamuFix/master/FlexiColorPicker.js
@@ -90,16 +90,17 @@ ENV.Discussing = /^https?:\/\/(?:no-ssl\.|)namu\.wiki\/topic\/([0-9]+?)/.test(lo
 ENV.IsDocument = /^https?:\/\/(?:no-ssl\.|)namu\.wiki\/w\/(.+)/.test(location.href); //&& document.querySelector('p.wiki-edit-date');
 ENV.IsSettings = /^https?:\/\/(?:no-ssl\.|)namu\.wiki\/settings/.test(location.href);
 ENV.IsUserPage = /^https?:\/\/(?:no-ssl\.|)namu\.wiki\/contribution\/(?:author|ip)\/.+\/(?:document|discuss)/.test(location.href);
-ENV.IsUploadPage = /^https?:\/\/namu\.wiki\/Upload$/.test(location.href);
-ENV.IsDiff = /^https?:\/\/namu\.wiki\/diff\/.+/.test(location.href);
+ENV.IsUploadPage = /^https?:\/\/(?:no-ssl\.|)namu\.wiki\/Upload$/.test(location.href);
+ENV.IsDiff = /^https?:\/\/(?:no-ssl\.|)namu\.wiki\/diff\/.+/.test(location.href);
 if (document.querySelector("input[name=section]"))
   ENV.section = document.querySelector("input[name=section]").value;
-if (ENV.IsEditing)
+if (document.querySelector("h1.title > a"))
   ENV.docTitle = document.querySelector("h1.title > a").innerHTML;
-else if (ENV.IsDocument)
+else if (document.querySelector("h1.title"))
   ENV.docTitle = document.querySelector("h1.title").innerHTML;
-else if (ENV.IsDiff) {
-  ENV.docTitle = /diff\/(.+?)\?/.exec(location.href)[1];
+
+if (ENV.IsDiff) {
+  //ENV.docTitle = /diff\/(.+?)\?/.exec(location.href)[1];
   ENV.beforeRev = Number(/[\&\?]oldrev=([0-9]+)/.exec(location.href)[1]);
   ENV.afterRev = Number(/[\&\?]rev=([0-9]+)/.exec(location.href)[1]);
 }
@@ -1366,6 +1367,12 @@ if (ENV.IsEditing || ENV.Discussing) {
         }
       }
     }
+  } else if (ENV.IsEditing && document.querySelectorAll('article div.wiki-content h2').length == 1) {
+    var content = document.querySelector('article div.wiki-content');
+    getRAW(ENV.docTitle, function(resText) {
+      content.innerHTML += '<div style="padding: 10px; background: red; border: 4px solid darkred; border-radius: 5px; margin-bottom: 10px;">편집은 불가능한 거 같지만, 위키텍스트를 볼 수는 있습니다.</div><p><textarea style="width: 100%; height: 600px; background: orange;" id="NFSource" readonly></textarea></p>';
+      content.querySelector('#NFSource').value = resText;
+    }, function() {});
   }
 } else if (ENV.IsDocument) {
   // 버튼 추가 함수
