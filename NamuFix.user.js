@@ -138,10 +138,6 @@ var SET = new function() {
 SET.load();
 
 function INITSET() { // Storage INIT
-  if (nOu(SET.dwHashes))
-    SET.dwHashes = {};
-  if (nOu(SET.dwEnabled))
-    SET.dwEnabled = false;
   if (nOu(SET.tempsaves))
     SET.tempsaves = {};
   if (nOu(SET.recentlyUsedTemplates))
@@ -210,74 +206,6 @@ var NEWindow = function() {
   return r;
 }
 NEWindow.WrappingCount = 0;
-var Watcher = new function() {
-  var docs = Object.keys(SET.dwHashes);
-  docs = docs.sort();
-  var docIndex = 0;
-
-  function SHA512(str) {
-    var shaObj = new jsSHA("SHA-512", "TEXT");
-    shaObj.update(str);
-    return shaObj.getHash("HEX");
-  }
-  this.runWorker = function(r) {
-    SET.load();
-    var workerFunc = function() {
-      if (!SET.dwEnabled) return;
-      if (docs.length <= docIndex) {
-        SET.load();
-        docs = Object.keys(SET.dwHashes);
-        docs = docs.sort();
-        docIndex = 0;
-      }
-      var dNow = docs[docIndex++];
-      GM_xmlhttpRequest({
-        url: 'https://namu.wiki/raw/' + dNow,
-        method: "GET",
-        onload: function(res) {
-          var dcNow = 'ERR';
-          if (res.status == 404) {
-            dcNow = '--NOTFOUND';
-          } else {
-            dcNow = SHA512(res.responseText);
-          }
-          SET.load();
-          if (SET.dwHashes[dNow] != dcNow) {
-            if (dcNow != '--NOTFOUND') showNotification('변경 사항 감지됨 : ' + dNow);
-            else showNotification('문서가 삭제됨(또는 존재하지 않음) : ' + dNow);
-            SET.dwHashes[dNow] = dcNow;
-            SET.save();
-          }
-        }
-      });
-    };
-    setInterval(workerFunc, 5000);
-  };
-  this.add = function(r) {
-    SET.load();
-    if (Object.keys(SET.dwHashes).indexOf(r) == -1)
-      SET.dwHashes[r] = '';
-    SET.save();
-  };
-  this.remove = function(r) {
-    SET.load();
-    if (Object.keys(SET.dwHashes).indexOf(r) != -1)
-      delete SET.dwHashes[r];
-    SET.save();
-  };
-  this.contains = function(r) {
-    SET.load();
-    return Object.keys(SET.dwHashes).indexOf(r) != -1;
-  }
-  this.onoff = function(op) {
-    if (typeof op !== "undefined") {
-      SET.dwEnabled = op;
-      SET.save();
-    } else {
-      return SET.dwEnabled;
-    }
-  }
-};
 
 function getRAW(title, onfound, onnotfound) {
   GM_xmlhttpRequest({
@@ -1392,19 +1320,6 @@ if (ENV.IsEditing || ENV.Discussing) {
     document.querySelector('ul.tab_bar').appendChild(btn);
   };
 
-  // 주시 버튼 추가
-  if (Watcher.onoff()) {
-    addButton(Watcher.contains(ENV.docTitle) ? '주시해제' : '주시', function(evt) {
-      if (Watcher.contains(ENV.docTitle)) {
-        Watcher.remove(ENV.docTitle);
-        evt.target.innerHTML = '주시';
-      } else {
-        Watcher.add(ENV.docTitle);
-        evt.target.innerHTML = '주시해제';
-      }
-    });
-  }
-
   // 리다이렉트 버튼 추가
   addButton('리다이렉트', function(evt) {
     var redirectFrom = prompt('어느 문서에서 지금 이문서로 리다이렉트?');
@@ -1523,8 +1438,7 @@ if (ENV.IsEditing || ENV.Discussing) {
     win.title('NamuFix 설정');
     SET.load();
     win.content(function(el) {
-      el.innerHTML = '<input type="checkbox" id="enableDw"></input> 문서주시기능 활성화<br>' +
-        '<style>h1.wsmall{font-size: 14pt;}</style>' +
+      el.innerHTML = '<style>h1.wsmall{font-size: 14pt;}</style>' +
         '<h1 class="wsmall">토론 아이덴티콘</h1>' +
         '<input type="radio" name="discussIdenti" data-setname="discussIdenti" data-setvalue="icon">디시라이트 갤러콘 방식<br>' +
         '<input type="radio" name="discussIdenti" data-setname="discussIdenti" data-setvalue="headBg">스레딕 헬퍼 방식<br>' +
@@ -1532,8 +1446,6 @@ if (ENV.IsEditing || ENV.Discussing) {
         '<h1 class="wsmall">토론 아이덴티콘 명도</h1>' +
         '<p>스레딕 헬퍼 방식을 사용하는 경우에만 적용됩니다.</p>' +
         '<label for="discussIdentiLightness">명도</label><input name="discussIdentiLightness" data-setname="discussIdentiLightness" type="range" max="1" min="0" step="0.01">';
-      el.querySelector('#enableDw').checked = Watcher.onoff();
-      elems['enableDw'] = el.querySelector('#enableDw');
       var optionTags = document.querySelectorAll('[data-setname]');
       SET.load();
       for (var i = 0; i < optionTags.length; i++) {
@@ -1566,7 +1478,6 @@ if (ENV.IsEditing || ENV.Discussing) {
         }
       }
       SET.save();
-      Watcher.onoff(elems['enableDw'].checked);
       win.close();
     });
   });
@@ -1726,5 +1637,3 @@ if (ENV.Discussing) {
     }
   }, 500);
 }
-if (Watcher.onoff())
-  Watcher.runWorker();
