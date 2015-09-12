@@ -5,6 +5,7 @@
 // @include     http://no-ssl.namu.wiki/*
 // @include     http://namu.wiki/*
 // @include     https://namu.wiki/*
+// @include     http://issue.namu.wiki/*
 // @version     150910.0
 // @namespace   http://litehell.info/
 // @downloadURL https://raw.githubusercontent.com/LiteHell/NamuFix/master/NamuFix.user.js
@@ -39,6 +40,10 @@ along with NamuFix.  If not, see <http://www.gnu.org/licenses/>.
 Copyright (C) 2015 Litehell
 If you want to contact me, send an email to asdf1234d@gmail.com
 */
+if(/^http:\/\/issue\.namu\.wiki/.test(location.href)){
+  location.href = location.href.replace(/^http:\/\//, 'https://');
+}
+
 var showNotification = function(text) {
   if (!("Notification" in unsafeWindow)) {
     alert(text);
