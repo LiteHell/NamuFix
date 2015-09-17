@@ -19,6 +19,7 @@
 // @grant       GM_setValue
 // @grant       GM_deleteValue
 // @grant       GM_listValues
+// @grant       GM_info
 // @run-at      document-end
 // ==/UserScript==
 /*
@@ -212,6 +213,28 @@ var NEWindow = function() {
   return r;
 }
 NEWindow.WrappingCount = 0;
+
+// 업데이트 확인
+GM_xmlhttpRequest({
+  method: "GET",
+  url: "https://api.github.com/repos/LiteHell/NamuFix/releases/latest",
+  onload: function(res) {
+    var obj = JSON.parse(res.responseText);
+    if (obj.tag_name != GM_info.script.version) {
+      var scriptUrl = 'https://github.com/LiteHell/NamuFix/raw/' + obj.tag_name + '/NamuFix.user.js';
+      alert('업데이트가 있습니다. 변경된 사항은 다음과 같습니다.\n\n' + obj.body);
+      var win = NEWindow();
+      win.title('새버전 설치');
+      win.content(function(element) {
+        element.innerHTML = '<a href="' + scriptUrl + '">여기</a>을 눌러 새로운 버전을 설치하신 후, 새로고침하시면 됩니다.';
+      });
+      win.button('새로고침', function() {
+        location.reload();
+      });
+
+    }
+  }
+})
 
 function getRAW(title, onfound, onnotfound) {
   GM_xmlhttpRequest({
@@ -1580,18 +1603,18 @@ if (ENV.Discussing) {
         contTotalBytes -= contributedBytes;
       else
         contTotalBytes += contributedBytes;
-      if (row.querySelector('i')){
+      if (row.querySelector('i')) {
         var italicText = row.querySelector('i').innerHTML;
-        if(italicText == '(새 문서)') createdDocuments++;
-        else if(italicText == '(삭제)') deletedDocuments++;
+        if (italicText == '(새 문서)') createdDocuments++;
+        else if (italicText == '(삭제)') deletedDocuments++;
       }
     }
     p.innerHTML = '총 기여 수 : ' + contCount +
-    '<br>총 기여한 바이트 수 : ' + contTotalBytes +
-    '<br>총 기여한 문서 (ACL 변경, 문서 이동 포함) : ' + documents.length +
-    '<br>문서 삭제 횟수 : ' + deletedDocuments +
-    '<br>새 문서 생성 횟수 : ' + createdDocuments +
-    '<br>한 문서당 평균 기여 바이트 수 : ' + (contTotalBytes / documents.length);
+      '<br>총 기여한 바이트 수 : ' + contTotalBytes +
+      '<br>총 기여한 문서 (ACL 변경, 문서 이동 포함) : ' + documents.length +
+      '<br>문서 삭제 횟수 : ' + deletedDocuments +
+      '<br>새 문서 생성 횟수 : ' + createdDocuments +
+      '<br>한 문서당 평균 기여 바이트 수 : ' + (contTotalBytes / documents.length);
   } else if (/\/discuss$/.test(location.href)) {
     function standardDeviation(numbers) {
       var total = 0;
