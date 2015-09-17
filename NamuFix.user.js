@@ -444,7 +444,7 @@ function createTextProcessor(txtarea) {
   return r;
 }
 if (ENV.IsEditing || ENV.Discussing) {
-  if (document.querySelectorAll("textarea").length == 1) {
+  if (document.querySelectorAll("textarea").length == 1 && !document.querySelector("textarea").hasAttribute("readonly")) {
     var rootDiv = document.createElement("div");
 
     // Init (Add Elements)
@@ -1306,12 +1306,6 @@ if (ENV.IsEditing || ENV.Discussing) {
         }
       }
     }
-  } else if (ENV.IsEditing && document.querySelectorAll('article div.wiki-content h2').length == 1) {
-    var content = document.querySelector('article div.wiki-content');
-    getRAW(ENV.docTitle, function(resText) {
-      content.innerHTML += '<div style="padding: 10px; background: red; border: 4px solid darkred; border-radius: 5px; margin-bottom: 10px;">편집은 불가능한 거 같지만, 위키텍스트를 볼 수는 있습니다.</div><p><textarea style="width: 100%; height: 600px; background: orange;" id="NFSource" readonly></textarea></p>';
-      content.querySelector('#NFSource').value = resText;
-    }, function() {});
   }
 } else if (ENV.IsDocument) {
   // 버튼 추가 함수
