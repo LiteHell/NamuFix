@@ -1562,7 +1562,9 @@ if (ENV.Discussing) {
     var rows = document.querySelectorAll('table tr');
     var contCount = 0,
       contTotalBytes = 0,
-      contDocuments = 0;
+      contDocuments = 0,
+      deletedDocuments = 0,
+      createdDocuments = 0;
     var documents = [];
     for (var i = 0; i < rows.length; i++) {
       var row = rows[i];
@@ -1578,8 +1580,18 @@ if (ENV.Discussing) {
         contTotalBytes -= contributedBytes;
       else
         contTotalBytes += contributedBytes;
+      if (row.querySelector('i')){
+        var italicText = row.querySelector('i').innerHTML;
+        if(italicText == '(새 문서)') createdDocuments++;
+        else if(italicText == '(삭제)') deletedDocuments++;
+      }
     }
-    p.innerHTML = '총 기여 수 : ' + contCount + '<br>총 기여한 바이트 수 : ' + contTotalBytes + '<br>총 기여한 문서 (ACL 변경, 문서 이동 포함) : ' + documents.length + '<br>한 문서당 평균 기여 바이트 수 : ' + (contTotalBytes / documents.length);
+    p.innerHTML = '총 기여 수 : ' + contCount +
+    '<br>총 기여한 바이트 수 : ' + contTotalBytes +
+    '<br>총 기여한 문서 (ACL 변경, 문서 이동 포함) : ' + documents.length +
+    '<br>문서 삭제 횟수 : ' + deletedDocuments +
+    '<br>새 문서 생성 횟수 : ' + createdDocuments +
+    '<br>한 문서당 평균 기여 바이트 수 : ' + (contTotalBytes / documents.length);
   } else if (/\/discuss$/.test(location.href)) {
     function standardDeviation(numbers) {
       var total = 0;
