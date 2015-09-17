@@ -40,7 +40,7 @@ along with NamuFix.  If not, see <http://www.gnu.org/licenses/>.
 Copyright (C) 2015 Litehell
 If you want to contact me, send an email to asdf1234d@gmail.com
 */
-if(/^http:\/\/issue\.namu\.wiki/.test(location.href)){
+if (/^http:\/\/issue\.namu\.wiki/.test(location.href)) {
   location.href = location.href.replace(/^http:\/\//, 'https://');
 }
 
@@ -103,6 +103,10 @@ if (document.querySelector("h1.title > a"))
   ENV.docTitle = document.querySelector("h1.title > a").innerHTML;
 else if (document.querySelector("h1.title"))
   ENV.docTitle = document.querySelector("h1.title").innerHTML;
+if (ENV.Discussing) {
+  ENV.topicNo = /^https?:\/\/(?:no-ssl\.|)namu\.wiki\/topic\/([0-9]+)/.exec(location.href)[1];
+  ENV.topicTitle = document.querySelector('article > h2').innerHTML;
+}
 
 if (ENV.IsDiff) {
   //ENV.docTitle = /diff\/(.+?)\?/.exec(location.href)[1];
@@ -148,6 +152,8 @@ function INITSET() { // Storage INIT
     SET.discussIdenti = 'icon'; // icon, headBg, none
   if (nOu(SET.discussIdentiLightness))
     SET.discussIdentiLightness = 0.7;
+  if (nOu(SET.favorites))
+    SET.favorites = [];
   SET.save();
 }
 INITSET();
@@ -1637,3 +1643,67 @@ if (ENV.Discussing) {
     }
   }, 500);
 }
+/*
+if (document.querySelector('.nav-controls')) {
+  (function() {
+    var favoriteManager = function() {
+      function internalAdd(typeText, target, name, openAsPopup, tags) {
+        if (typeof tags === "undefined") var tags = [];
+        if (tags.indexOf('태그 없음') != -1) tags = tags.splice(tags.indexOf('태그 없음'), 1);
+        SET.favorites.push({
+          type: typeText,
+          target: target,
+          name: name,
+          openAsPopup: openAsPopup,
+          tags: tags
+        });
+      }
+      return {
+        getFavorites: function() {
+          return SET.favorites;
+        },
+        addFavorite: internalAdd,
+        contains: function(type, target) {
+          var favs = this.getFavorites();
+          for (var i = 0; i < favs.length; i++) {
+            var fav = favs[i];
+            if (fav.type == type && fav.target == target) return true;
+          }
+          return false;
+        }
+      };
+    };
+    var list = document.querySelector('.nav-controls');
+    var favoriteThis = document.createElement('li');
+    var favoriteList = document.createElement('li');
+    favoriteThis.innerHTML = '<a href="#NothingToLink"><span class="ion-star" title="이 문서 즐겨찾기 추가/해제"></span></a>';
+    favoriteList.innerHTML = '<a href="#NothingToLink"><span class="ion-ios-bookmarks" title="즐겨찾기 목록"></span></a>';
+
+    var typeNow, targetNow, defaultTitleNow;
+    if (ENV.IsDocument) {
+      typeNow = 'doc';
+      targetNow = ENV.docTitle;
+      defaultTitleNow = ENV.docTitle;
+    } else if (ENV.Discussing) {
+      typeNow = 'topic';
+      targetNow = ENV.topicNo;
+      defaultTitleNow = ENV.topicTitle;
+    } else {
+      typeNow = 'url';
+      targetNow = location.href;
+      defaultTitleNow = document.title;
+    }
+    if (favoriteManager.contains(typeNow, targetNow)) {
+      favorteThis.querySelector('span.ion-star').style.color = 'gold';
+    }
+    favoriteThis.querySelector('a').addEventListener('click', function(evt) {
+      var win = NEWindow();
+      win.title('즐겨찾기 추가');
+      win.button('닫기', win.close);
+    });
+
+    list.appendChild(favoriteThis);
+    list.appendChild(favoriteList);
+  })();
+}
+*/
