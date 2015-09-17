@@ -6,7 +6,7 @@
 // @include     http://namu.wiki/*
 // @include     https://namu.wiki/*
 // @include     http://issue.namu.wiki/*
-// @version     150910.0
+// @version     150917.0
 // @namespace   http://litehell.info/
 // @downloadURL https://raw.githubusercontent.com/LiteHell/NamuFix/master/NamuFix.user.js
 // @require     https://raw.githubusercontent.com/LiteHell/NamuFix/master/FlexiColorPicker.js
