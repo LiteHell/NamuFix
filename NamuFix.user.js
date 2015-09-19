@@ -466,6 +466,14 @@ function createTextProcessor(txtarea) {
   };
   return r;
 }
+
+// 기부 버튼 추가
+if (document.querySelector('header.nav_top')) {
+  var headerMenu = document.querySelector('header.nav_top > ul');
+  var li = document.createElement("li");
+  li.innerHTML = '<a title="기부" href="javascript:alert(\'다음 비트코인 주소로 기부하세요.\\n1namugv5YiXPdjBx7RoHpWCGuMnjLZEh6\')"><span class="icon ion-heart"></span><span class="icon-title">&nbsp;&nbsp;기부</span></a>';
+  headerMenu.appendChild(li);
+}
 if (ENV.IsEditing || ENV.Discussing) {
   if (document.querySelectorAll("textarea").length == 1 && !document.querySelector("textarea").hasAttribute("readonly")) {
     var rootDiv = document.createElement("div");
@@ -1675,20 +1683,24 @@ if (ENV.Discussing) {
 /*
 if (document.querySelector('.nav-controls')) {
   (function() {
-    var favoriteManager = function() {
-      function internalAdd(typeText, target, name, openAsPopup, tags) {
-        if (typeof tags === "undefined") var tags = [];
+    var favoriteManager = (function() {
+      function internalAdd(typeText, target, name, tags) {
+        if (typeof tags === "undefined" || (tags.length == 1 && tags[0].length == 0)) tags = [];
         if (tags.indexOf('태그 없음') != -1) tags = tags.splice(tags.indexOf('태그 없음'), 1);
+        if (tags.length == 0) tags.push('태그 없음');
+        SET.load();
         SET.favorites.push({
           type: typeText,
           target: target,
           name: name,
-          openAsPopup: openAsPopup,
-          tags: tags
+          tags: tags,
+          id: Date.now() + Math.floor(Math.random() * 18561586981)
         });
+        SET.save();
       }
       return {
         getFavorites: function() {
+          SET.load();
           return SET.favorites;
         },
         addFavorite: internalAdd,
@@ -1699,10 +1711,19 @@ if (document.querySelector('.nav-controls')) {
             if (fav.type == type && fav.target == target) return true;
           }
           return false;
+        },
+        remove: function(type, target) {
+          SET.load();
+          var favs = this.getFavorites();
+          for (var i = 0; i < favs.length; i++) {
+            var fav = favs[i];
+            if (fav.type == type && fav.target == target) favs = favs.splice(i, 1);
+          }
+          SET.save();
         }
       };
-    };
-    var list = document.querySelector('.nav-controls');
+    })();
+    var list = document.querySelectorAll('.nav-controls');
     var favoriteThis = document.createElement('li');
     var favoriteList = document.createElement('li');
     favoriteThis.innerHTML = '<a href="#NothingToLink"><span class="ion-star" title="이 문서 즐겨찾기 추가/해제"></span></a>';
@@ -1723,16 +1744,114 @@ if (document.querySelector('.nav-controls')) {
       defaultTitleNow = document.title;
     }
     if (favoriteManager.contains(typeNow, targetNow)) {
-      favorteThis.querySelector('span.ion-star').style.color = 'gold';
+      favoriteThis.querySelector('span.ion-star').style.color = 'gold';
     }
+
     favoriteThis.querySelector('a').addEventListener('click', function(evt) {
+      if (favoriteManager.contains(typeNow, targetNow)) {
+        favoriteManager.remove(typeNow, targetNow);
+        favoriteThis.querySelector('span.ion-star').style.color = '';
+        return;
+      }
       var win = NEWindow();
       win.title('즐겨찾기 추가');
+      win.content(function(element) {
+        element.innerHTML = '<style>.nfLabel{width: 300px;}</style>' +
+          '<label class="nfLabel">이름</label><input type="text" id="favName"></input><br>' +
+          '<label class="nfLabel">대상</label><input type="text" id="favTarget"></input><br>' +
+          '<label class="nfLabel">유형</label>' +
+          '<input type="radio" name="favType" id="favType_doc"> <label for="favType_doc">문서</label> ' +
+          '<input type="radio" name="favType" id="favType_topic"> <label for="favType_topic">토론(토픽)</label> ' +
+          '<input type="radio" name="favType" id="favType_url"> <label for="favType_url">외부 URL</label><br> ' +
+          '<label class="nfLabel">태그</label><input type="text" placeholder=",로 태그 구별" id="favTags"></input>'
+        '<p><strong style="color: red;">주의</strong> : 밑 유형이 문서라면, 대상에는 그 문서의 이름을, 유형이 토론(토픽)이라면 그 토론의 번호를, 외부 URL이라면 그냥 외부주소를 입력하세요.</p>';
+        element.querySelector('#favType_' + typeNow).checked = true;
+        element.querySelector('#favTarget').value = targetNow;
+        element.querySelector('#favName').value = defaultTitleNow;
+      });
+      win.button('추가', function() {
+        win.content(function(element) {
+          var availableTypes = ['doc', 'topic', 'url'];
+          var selectedType = 'url';
+          for (var i = 0; i < availableTypes.length; i++) {
+            if (element.querySelector('#favType_' + availableTypes[i]).checked) {
+              selectedType = availableTypes[i];
+            }
+          }
+
+          var favName = element.querySelector('#favName').value;
+          var favTarget = element.querySelector('#favTarget').value;
+          var favTags = element.querySelector('#favTags').value.split(',');
+          for (var i = 0; i < favTags.length; i++) {
+            favTags[i] = favTags[i].trim();
+          }
+          favoriteManager.addFavorite(selectedType, favTarget, favName, favTags);
+          favoriteThis.querySelector('span.ion-star').style.color = 'gold';
+          console.log(JSON.stringify(favoriteManager.getFavorites()));
+          win.close();
+        });
+      });
       win.button('닫기', win.close);
     });
+    favoriteList.querySelector('a').addEventListener('click', function(evt) {
+      var win = NEWindow();
+      win.title('즐겨찾기 목록');
+      win.content(function(element) {
+        element.style.maxHeight = '600px';
+        element.style.maxWidth = '800px';
+        element.style.overflow = 'auto';
+        var allTags = [];
+        var tafaDic = {};
+        var favs = favoriteManager.getFavorites();
+        for (var i = 0; i < favs.length; i++) {
+          for (var ti = 0; ti < favs[i].tags.length; ti++) {
+            var tagNow = favs[i].tags[ti];
+            if (allTags.indexOf(tagNow) < 0) allTags.push(tagNow);
+            if (typeof tafaDic[tagNow] === 'undefined') tafaDic[tagNow] = [];
+            tafaDic[tagNow].push(favs[i]);
+          }
+        }
+        GM_addStyle('' +
+          '.NamuFix.bookmarkHeader { cursor: pointer; font-size: 17px; font-family: sans-serif; padding-bottom: 4px; padding-left: 8px; border-bottom: 3px solid black; user-select: none;}' +
+          '.NamuFix.bookmarkHeader:hover:not(.toggle) { text-shadow: 1px 1px gray; }' +
+          '.NamuFix.bookmarkHeader > span.toggle {font-size: 12px; margin-left: 10px; color: gray;}');
 
-    list.appendChild(favoriteThis);
-    list.appendChild(favoriteList);
+        for (var i = 0; i < allTags.length; i++) {
+          var tagNow = allTags[i];
+          var groupElement = document.createElement("div");
+          groupElement.innerHTML = '<div class="NamuFix bookmarkHeader"></div><div class="NamuFix bookmarks" style="display: none;"><ul></ul></div>';
+          groupElement.querySelector('.NamuFix.bookmarkHeader').textContent = tagNow;
+          groupElement.querySelector('.NamuFix.bookmarkHeader').innerHTML += '<span class="toggle">Click to hide or show</span>';
+          groupElement.querySelector('.NamuFix.bookmarkHeader').addEventListener('click', function() {
+            var bs = groupElement.querySelector('.NamuFix.bookmarks');
+            if (bs.style.display == 'none') bs.style.display = '';
+            else bs.style.display = 'none';
+          })
+          var ul = groupElement.querySelector('.NamuFix.bookmarks > ul');
+          for (var i = 0; i < tafaDic[tagNow].length; i++) {
+            var booNow = tafaDic[tagNow][i];
+            var li = document.createElement("li");
+            var aTag = document.createElement("a");
+            if (booNow.type == "url") {
+              aTag.href = booNow.target;
+            } else if (booNow.type == "topic") {
+              aTag.href = "https://namu.wiki/topic/" + booNow.target;
+            } else if (booNow.type == "doc") {
+              aTag.href = "https://namu.wiki/w/" + booNow.target;
+            }
+            aTag.textContent = booNow.name;
+            li.appendChild(aTag);
+            ul.appendChild(li);
+          }
+          element.appendChild(groupElement);
+        }
+      });
+      win.button('닫기', win.close);
+    });
+    for (var i = 0; i < list.length; i++) {
+      list[i].appendChild(favoriteThis);
+      list[i].appendChild(favoriteList);
+    }
   })();
 }
 */
