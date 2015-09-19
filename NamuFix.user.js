@@ -1565,7 +1565,7 @@ if (ENV.Discussing) {
     return shaObj.getHash("HEX");
   }
   setInterval(function() {
-    var messages = document.querySelectorAll('.res');
+    var messages = document.querySelectorAll('.res:not([data-nfbeauty])');
     var isIcon = SET.discussIdenti == 'icon';
     var isThreadicLike = SET.discussIdenti == 'headBg';
     var isIdenticon = SET.discussIdenti == 'identicon';
@@ -1574,7 +1574,7 @@ if (ENV.Discussing) {
       saturation: Number(SET.discussIdentiSaturation)
     }) : new ColorHash();
     if (isIdenticon) {
-      GM_addStyle('div.nf-identicon { border: 1px solid #808080; width: 64px;} .res[data-nfbeauty] .r-body {min-height: 40px; margin-left: 65px; position: relative; top: -66px;}')
+      GM_addStyle('div.nf-identicon { border: 1px solid #808080; margin: 10px; width: 64px; border: 1px black solid; background: white;} .res[data-nfbeauty] {margin-left: 88px; position: relative; top: -76px;}')
     }
     for (var i = 0; i < messages.length; i++) {
       var message = messages[i];
@@ -1619,16 +1619,16 @@ if (ENV.Discussing) {
         a.appendChild(nonColoredSpan);
         a.appendChild(span);
       } else if (isIdenticon) {
-
         var identicon = document.createElement("div");
         identicon.className = "nf-identicon";
         identicon.innerHTML = '<img style="width: 64px; height: 64px;"></img>';
         var identiconImage = new Identicon(nHash, 64).toString();
         identicon.querySelector('img').src = "data:image/png;base64," + identiconImage;
-        message.insertBefore(identicon, message.querySelector('.r-body'));
+        message.parentNode.insertBefore(identicon, message);
 
         if(message.parentNode.dataset.id != 1){
-          message.style.marginTop = '-66px';
+          message.parentNode.style.marginTop = '-76px';
+          identicon.style.marginTop = '-66px';
         }
       }
       message.querySelector('.r-head > a').dataset.nfbeauty = true;
