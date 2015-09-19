@@ -1559,6 +1559,7 @@ if (ENV.IsEditing || ENV.Discussing) {
 }
 if (ENV.Discussing) {
   var colorDictionary = {}, hashDictionary={};
+  var identiconCSSAdded = false;
   function SHA512(text) {
     var shaObj = new jsSHA("SHA-512", "TEXT");
     shaObj.update(text);
@@ -1573,8 +1574,9 @@ if (ENV.Discussing) {
       lightness: Number(SET.discussIdentiLightness),
       saturation: Number(SET.discussIdentiSaturation)
     }) : new ColorHash();
-    if (isIdenticon) {
+    if (isIdenticon && !identiconCSSAdded) {
       GM_addStyle('div.nf-identicon { border: 1px solid #808080; margin: 10px; width: 64px; border: 1px black solid; background: white;} .res[data-nfbeauty] {margin-left: 88px; position: relative; top: -76px;}')
+      identiconCSSAdded = true;
     }
     for (var i = 0; i < messages.length; i++) {
       var message = messages[i];
