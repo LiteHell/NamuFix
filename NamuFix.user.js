@@ -13,7 +13,7 @@
 // @require     https://raw.githubusercontent.com/Caligatio/jsSHA/v2.0.1/src/sha512.js
 // @require     https://github.com/zenozeng/color-hash/raw/master/dist/color-hash.js
 // @require     http://www.xarg.org/download/pnglib.js
-// @require     http://
+// @require     https://raw.githubusercontent.com/stewartlord/identicon.js/master/identicon.js
 // @require     https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.3.0/katex.min.js
 // @grant       GM_addStyle
 // @grant       GM_xmlhttpRequest
