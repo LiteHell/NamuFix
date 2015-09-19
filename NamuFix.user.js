@@ -153,6 +153,8 @@ function INITSET() { // Storage INIT
     SET.discussIdenti = 'icon'; // icon, headBg, none
   if (nOu(SET.discussIdentiLightness))
     SET.discussIdentiLightness = 0.7;
+  if (nOu(SET.discussIdentiSaturation))
+    SET.discussIdentiSaturation = 0.5;
   if (nOu(SET.favorites))
     SET.favorites = [];
   SET.save();
@@ -1476,7 +1478,8 @@ if (ENV.IsEditing || ENV.Discussing) {
         '<input type="radio" name="discussIdenti" data-setname="discussIdenti" data-setvalue="none">사용 안함' +
         '<h1 class="wsmall">토론 아이덴티콘 명도</h1>' +
         '<p>스레딕 헬퍼 방식을 사용하는 경우에만 적용됩니다.</p>' +
-        '<label for="discussIdentiLightness">명도</label><input name="discussIdentiLightness" data-setname="discussIdentiLightness" type="range" max="1" min="0" step="0.01">';
+        '<label for="discussIdentiLightness">명도</label><input name="discussIdentiLightness" data-setname="discussIdentiLightness" type="range" max="1" min="0" step="0.01"><br>' +
+        '<label for="discussIdentiSaturation">순도</label><input name="discussIdentiSaturation" data-setname="discussIdentiSaturation" type="range" max="1" min="0" step="0.01">';
       var optionTags = document.querySelectorAll('[data-setname]');
       SET.load();
       for (var i = 0; i < optionTags.length; i++) {
@@ -1552,7 +1555,8 @@ if (ENV.Discussing) {
     var isIcon = SET.discussIdenti == 'icon';
     var isThreadicLike = SET.discussIdenti == 'headBg';
     var colorHash = isThreadicLike ? new ColorHash({
-      lightness: Number(SET.discussIdentiLightness)
+      lightness: Number(SET.discussIdentiLightness),
+      saturation: Number(SET.discussIdentiSaturation)
     }) : new ColorHash();
     for (var i = 0; i < messages.length; i++) {
       var message = messages[i];
