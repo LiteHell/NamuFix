@@ -1482,11 +1482,12 @@ if (ENV.IsEditing || ENV.Discussing) {
         '<h1 class="wsmall">토론 아이덴티콘</h1>' +
         '<input type="radio" name="discussIdenti" data-setname="discussIdenti" data-setvalue="icon">디시라이트 갤러콘 방식<br>' +
         '<input type="radio" name="discussIdenti" data-setname="discussIdenti" data-setvalue="headBg">스레딕 헬퍼 방식<br>' +
-        '<input type="radio" name="discussIdenti" data-setname="discussIdenti" data-setvalue="none">사용 안함' +
-        '<h1 class="wsmall">토론 아이덴티콘 명도</h1>' +
-        '<p>스레딕 헬퍼 방식을 사용하는 경우에만 적용됩니다.</p>' +
-        '<label for="discussIdentiLightness">명도</label><input name="discussIdentiLightness" data-setname="discussIdentiLightness" type="range" max="1" min="0" step="0.01"><br>' +
-        '<label for="discussIdentiSaturation">순도</label><input name="discussIdentiSaturation" data-setname="discussIdentiSaturation" type="range" max="1" min="0" step="0.01">';
+        '<input type="radio" name="discussIdenti" data-setname="discussIdenti" data-setvalue="identicon">아이덴티콘<br>' +
+      '<input type="radio" name="discussIdenti" data-setname="discussIdenti" data-setvalue="none">사용 안함' +
+      '<h1 class="wsmall">토론 아이덴티콘 명도</h1>' +
+      '<p>스레딕 헬퍼 방식을 사용하는 경우에만 적용됩니다.</p>' +
+      '<label for="discussIdentiLightness">명도</label><input name="discussIdentiLightness" data-setname="discussIdentiLightness" type="range" max="1" min="0" step="0.01"><br>' +
+      '<label for="discussIdentiSaturation">순도</label><input name="discussIdentiSaturation" data-setname="discussIdentiSaturation" type="range" max="1" min="0" step="0.01">';
       var optionTags = document.querySelectorAll('[data-setname]');
       SET.load();
       for (var i = 0; i < optionTags.length; i++) {
@@ -1557,14 +1558,24 @@ if (ENV.IsEditing || ENV.Discussing) {
   pages.appendChild(page);
 }
 if (ENV.Discussing) {
+  var colorDictionary = {}, hashDictionary={};
+  function SHA512(text) {
+    var shaObj = new jsSHA("SHA-512", "TEXT");
+    shaObj.update(text);
+    return shaObj.getHash("HEX");
+  }
   setInterval(function() {
     var messages = document.querySelectorAll('.res');
     var isIcon = SET.discussIdenti == 'icon';
     var isThreadicLike = SET.discussIdenti == 'headBg';
+    var isIdenticon = SET.discussIdenti == 'identicon';
     var colorHash = isThreadicLike ? new ColorHash({
       lightness: Number(SET.discussIdentiLightness),
       saturation: Number(SET.discussIdentiSaturation)
     }) : new ColorHash();
+    if (isIdenticon) {
+      GM_addStyle('div.nf-identicon { border: 1px solid #808080; width: 64px;} .res[data-nfbeauty] .r-body {min-height: 40px; margin-left: 65px; position: relative; top: -66px;}')
+    }
     for (var i = 0; i < messages.length; i++) {
       var message = messages[i];
       if (isIcon && message.querySelector('.first-author')) continue;
@@ -1577,10 +1588,23 @@ if (ENV.Discussing) {
         // IP
         n = '!IP!' + n;
       }
-      console.log('n : ' + colorHash.hex(n));
+
+      var nColor, nHash;
+      if(typeof colorDictionary[n] === 'undefined'){
+        nColor = colorHash.hex(n);
+        colorDictionary[n] = nColor;
+      }else{
+        nColor = colorDictionary[n];
+      }
+      if(typeof hashDictionary[n] === 'undefined'){
+        nHash = SHA512(n);
+        hashDictionary[n] = nHash;
+      }else{
+        nHash = hashDictionary[n];
+      }
 
       if (isThreadicLike) {
-        message.querySelector('.r-head').style.background = colorHash.hex(n);
+        message.querySelector('.r-head').style.background = nColor;
         message.querySelector('.r-head').style.color = 'white';
         message.querySelector('.r-head > a').style.color = 'white';
         message.querySelector('.r-head .num a').style.color = 'white';
@@ -1589,13 +1613,26 @@ if (ENV.Discussing) {
         var nonColoredSpan = document.createElement("span");
         nonColoredSpan.innerHTML = '　';
         var span = document.createElement("span");
-        span.style.background = colorHash.hex(n);
-        span.style.color = colorHash.hex(n);
+        span.style.background = nColor;
+        span.style.color = nColor;
         span.innerHTML = '__';
         a.appendChild(nonColoredSpan);
         a.appendChild(span);
+      } else if (isIdenticon) {
+
+        var identicon = document.createElement("div");
+        identicon.className = "nf-identicon";
+        identicon.innerHTML = '<img style="width: 64px; height: 64px;"></img>';
+        var identiconImage = new Identicon(nHash, 64).toString();
+        identicon.querySelector('img').src = "data:image/png;base64," + identiconImage;
+        message.insertBefore(identicon, message.querySelector('.r-body'));
+
+        if(message.parentNode.dataset.id != 1){
+          message.style.marginTop = '-66px';
+        }
       }
       message.querySelector('.r-head > a').dataset.nfbeauty = true;
+      message.dataset.nfbeauty = true;
     }
   }, 200);
 } else if (ENV.IsUserPage) {
