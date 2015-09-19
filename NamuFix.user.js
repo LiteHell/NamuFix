@@ -6,7 +6,7 @@
 // @include     http://namu.wiki/*
 // @include     https://namu.wiki/*
 // @include     http://issue.namu.wiki/*
-// @version     150919.3
+// @version     150919.4
 // @namespace   http://litehell.info/
 // @downloadURL https://raw.githubusercontent.com/LiteHell/NamuFix/master/NamuFix.user.js
 // @require     https://raw.githubusercontent.com/LiteHell/NamuFix/master/FlexiColorPicker.js
@@ -164,6 +164,8 @@ function INITSET() { // Storage INIT
     SET.discussIdentiSaturation = 0.5;
   if (nOu(SET.favorites))
     SET.favorites = [];
+  if (nOu(SET.ignoreNewUpdate))
+    SET.ignoreNewUpdate = 0;
   SET.save();
 }
 INITSET();
@@ -228,19 +230,47 @@ GM_xmlhttpRequest({
   method: "GET",
   url: "https://api.github.com/repos/LiteHell/NamuFix/releases/latest",
   onload: function(res) {
+    if (Date.now() - SET.ignoreNewUpdate < 3600000) return;
     var obj = JSON.parse(res.responseText);
-    if (obj.tag_name != GM_info.script.version) {
-      var scriptUrl = 'https://github.com/LiteHell/NamuFix/raw/' + obj.tag_name + '/NamuFix.user.js';
-      alert('업데이트가 있습니다. 변경된 사항은 다음과 같습니다.\n\n' + obj.body);
+    var currentVersion = GM_info.script.version;
+    var latestVersion = obj.tag_name;
+    if (currentVersion != latestVersion) {
+      var scriptUrl = 'https://github.com/LiteHell/NamuFix/raw/' + latestVersion + '/NamuFix.user.js';
       var win = NEWindow();
       win.title('새버전 설치');
       win.content(function(element) {
-        element.innerHTML = '<a href="' + scriptUrl + '">여기</a>을 눌러 새로운 버전을 설치하신 후, 새로고침하시면 됩니다.';
+        // 변경 사항 : obj.body
+        element.innerHTML = '업데이트가 있습니다.<br><br>현재 사용중인 버전 : ' + currentVersion + '<br>' +
+          '현재 최신 버전 : ' + latestVersion + '<br><br>' +
+          latestVersion + '버전에서의 변경 사항<div style="border-left: 6px solid green; padding: 10px; font-size: 13px; font-family: sans-family;" id="changeLog"></div>' +
+          '<p><a href="' + scriptUrl + '" style="text-decoration: none;"><button type="button" style="display: block; margin: 0 auto;">최신 버전 설치</button></a></p>' +
+          '설치 후 새로고침을 해야 적용됩니다.';
+        element.querySelector('#changeLog').textContent = obj.body;
       });
+
+      win.button('닫기(1시간동안 보지 않음)', function() {
+        for (var i = 0; i < 10; i++) {
+          var rnd = Math.floor(Math.random() * 1000);
+          var negativeQuestion;
+          if (rnd > 500) negativeQuestion = true;
+          else negativeQuestion = false;
+          var Question = negativeQuestion ? '정말로 1시간동안 업데이트를 보지 않겠습니까?' : '정말로 닫기 버튼을 누른듯 그냥 창만 닫겠습니까?';
+          Question += ' (' + (i + 1) + '/10)'
+          var yesClicked = confirm(Question);
+          if (yesClicked != negativeQuestion) { // xor
+            win.close();
+            return;
+          }
+        }
+        SET.load();
+        SET.ignoreNewUpdate = Date.now();
+        SET.save();
+        win.close();
+      })
+      win.button('닫기', win.close);
       win.button('새로고침', function() {
         location.reload();
       });
-
     }
   }
 })
@@ -1483,11 +1513,11 @@ if (ENV.IsEditing || ENV.Discussing) {
         '<input type="radio" name="discussIdenti" data-setname="discussIdenti" data-setvalue="icon">디시라이트 갤러콘 방식<br>' +
         '<input type="radio" name="discussIdenti" data-setname="discussIdenti" data-setvalue="headBg">스레딕 헬퍼 방식<br>' +
         '<input type="radio" name="discussIdenti" data-setname="discussIdenti" data-setvalue="identicon">아이덴티콘<br>' +
-      '<input type="radio" name="discussIdenti" data-setname="discussIdenti" data-setvalue="none">사용 안함' +
-      '<h1 class="wsmall">토론 아이덴티콘 명도</h1>' +
-      '<p>스레딕 헬퍼 방식을 사용하는 경우에만 적용됩니다.</p>' +
-      '<label for="discussIdentiLightness">명도</label><input name="discussIdentiLightness" data-setname="discussIdentiLightness" type="range" max="1" min="0" step="0.01"><br>' +
-      '<label for="discussIdentiSaturation">순도</label><input name="discussIdentiSaturation" data-setname="discussIdentiSaturation" type="range" max="1" min="0" step="0.01">';
+        '<input type="radio" name="discussIdenti" data-setname="discussIdenti" data-setvalue="none">사용 안함' +
+        '<h1 class="wsmall">토론 아이덴티콘 명도</h1>' +
+        '<p>스레딕 헬퍼 방식을 사용하는 경우에만 적용됩니다.</p>' +
+        '<label for="discussIdentiLightness">명도</label><input name="discussIdentiLightness" data-setname="discussIdentiLightness" type="range" max="1" min="0" step="0.01"><br>' +
+        '<label for="discussIdentiSaturation">순도</label><input name="discussIdentiSaturation" data-setname="discussIdentiSaturation" type="range" max="1" min="0" step="0.01">';
       var optionTags = document.querySelectorAll('[data-setname]');
       SET.load();
       for (var i = 0; i < optionTags.length; i++) {
@@ -1558,8 +1588,10 @@ if (ENV.IsEditing || ENV.Discussing) {
   pages.appendChild(page);
 }
 if (ENV.Discussing) {
-  var colorDictionary = {}, hashDictionary={};
+  var colorDictionary = {},
+    hashDictionary = {};
   var identiconCSSAdded = false;
+
   function SHA512(text) {
     var shaObj = new jsSHA("SHA-512", "TEXT");
     shaObj.update(text);
@@ -1592,16 +1624,16 @@ if (ENV.Discussing) {
       }
 
       var nColor, nHash;
-      if(typeof colorDictionary[n] === 'undefined'){
+      if (typeof colorDictionary[n] === 'undefined') {
         nColor = colorHash.hex(n);
         colorDictionary[n] = nColor;
-      }else{
+      } else {
         nColor = colorDictionary[n];
       }
-      if(typeof hashDictionary[n] === 'undefined'){
+      if (typeof hashDictionary[n] === 'undefined') {
         nHash = SHA512(n);
         hashDictionary[n] = nHash;
-      }else{
+      } else {
         nHash = hashDictionary[n];
       }
 
@@ -1628,7 +1660,7 @@ if (ENV.Discussing) {
         identicon.querySelector('img').src = "data:image/png;base64," + identiconImage;
         message.parentNode.insertBefore(identicon, message);
 
-        if(message.parentNode.dataset.id != 1){
+        if (message.parentNode.dataset.id != 1) {
           message.parentNode.style.marginTop = '-76px';
           identicon.style.marginTop = '-66px';
         }
