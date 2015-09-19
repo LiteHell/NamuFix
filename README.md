@@ -13,4 +13,4 @@ If you want to contant me, asdf1234d@gmail.com
 자세한 사항은 위키(추후 추가 예정)를 참고해주세요.
 
 # 라이선스
-이 유저스크립트는 AGPL로 배포됩니다.
+이 유저스크립트는 MIT 라이선스로 배포됩니다.
