@@ -6,7 +6,7 @@
 // @include     http://namu.wiki/*
 // @include     https://namu.wiki/*
 // @include     http://issue.namu.wiki/*
-// @version     150919.4
+// @version     150920.0
 // @namespace   http://litehell.info/
 // @downloadURL https://raw.githubusercontent.com/LiteHell/NamuFix/master/NamuFix.user.js
 // @require     https://raw.githubusercontent.com/LiteHell/NamuFix/master/FlexiColorPicker.js
@@ -1588,6 +1588,10 @@ if (ENV.IsEditing || ENV.Discussing) {
   pages.appendChild(page);
 }
 if (ENV.Discussing) {
+  // 아이덴티콘 설정들과 변수들
+  var isIcon = SET.discussIdenti == 'icon';
+  var isThreadicLike = SET.discussIdenti == 'headBg';
+  var isIdenticon = SET.discussIdenti == 'identicon';
   var colorDictionary = {},
     hashDictionary = {};
   var identiconCSSAdded = false;
@@ -1597,11 +1601,49 @@ if (ENV.Discussing) {
     shaObj.update(text);
     return shaObj.getHash("HEX");
   }
+
+  // #[0-9]+ 엥커 미리보기
+  setInterval(function() {
+    var anchors = document.querySelectorAll('.res .r-body .wiki-link-anchor:not([data-nf-title-processed])');
+    for (var i = 0; i < anchors.length; i++) {
+      var anchor = anchors[i];
+      if (!/#[0-9]+$/.test(anchor.href) || anchor.title != ENV.docTitle + '#' + /#([0-9]+)$/.exec(anchor.href)[1]) {
+        continue;
+      }
+      var anchorTarget = document.querySelector('.r-head .num a[id=\'' + /#([0-9]+)$/.exec(anchor.href)[1] + '\']').parentNode.parentNode.parentNode;
+      var obj = {
+        talker: anchorTarget.querySelector('.r-head > a').textContent,
+        message: anchorTarget.querySelector('.r-body').innerHTML
+      };
+      anchor.dataset.targetMessage = JSON.stringify(obj);
+      anchor.addEventListener('mouseenter', function(evt) {
+        var obj = JSON.parse(evt.target.dataset.targetMessage);
+        var elem = document.createElement("div");
+        elem.className = 'nfTopicMessage';
+        elem.innerHTML = '<div style="font-size: 15pt; font-weight: 500; font-family: sans-serif; color: white;">{0}</div><div style="margin-top: 8px; background: white; color: black;">{1}</div>'.format(obj.talker, obj.message);
+        elem.style.position = 'absolute';
+        elem.style.padding = '20px';
+        elem.style.borderRadius = '8px';
+        elem.style.background = 'black';
+        elem.style.zIndex = 3;
+        evt.target.appendChild(elem);
+        evt.target.title = '';
+      });
+      anchor.addEventListener('mouseleave', function(evt) {
+        //var obj = JSON.parse(evt.target.dataset.targetMessage);
+        if (evt.target.querySelector('.nfTopicMessage')) {
+          var elemToRemove = evt.target.querySelector('.nfTopicMessage');
+          elemToRemove.parentNode.removeChild(elemToRemove);
+        }
+      });
+
+      anchor.dataset.nfTitleProcessed = true;
+    }
+  }, 200);
+
+  // 아이덴티콘
   setInterval(function() {
     var messages = document.querySelectorAll('.res:not([data-nfbeauty])');
-    var isIcon = SET.discussIdenti == 'icon';
-    var isThreadicLike = SET.discussIdenti == 'headBg';
-    var isIdenticon = SET.discussIdenti == 'identicon';
     var colorHash = isThreadicLike ? new ColorHash({
       lightness: Number(SET.discussIdentiLightness),
       saturation: Number(SET.discussIdentiSaturation)
