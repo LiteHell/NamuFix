@@ -6,7 +6,7 @@
 // @include     http://namu.wiki/*
 // @include     https://namu.wiki/*
 // @include     http://issue.namu.wiki/*
-// @version     150920.0
+// @version     150920.1
 // @namespace   http://litehell.info/
 // @downloadURL https://raw.githubusercontent.com/LiteHell/NamuFix/master/NamuFix.user.js
 // @require     https://raw.githubusercontent.com/LiteHell/NamuFix/master/FlexiColorPicker.js
@@ -15,6 +15,7 @@
 // @require     http://www.xarg.org/download/pnglib.js
 // @require     https://raw.githubusercontent.com/stewartlord/identicon.js/master/identicon.js
 // @require     https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.3.0/katex.min.js
+// @require     https://raw.githubusercontent.com/LiteHell/TooSimplePopupLib/master/TooSimplePopupLib.js
 // @grant       GM_addStyle
 // @grant       GM_xmlhttpRequest
 // @grant       GM_getValue
@@ -52,30 +53,17 @@ if (/^http:\/\/issue\.namu\.wiki/.test(location.href)) {
   location.href = location.href.replace(/^http:\/\//, 'https://');
 }
 
-var showNotification = function(text) {
-  if (!("Notification" in unsafeWindow)) {
-    alert(text);
-    return;
-  }
-  var makeNoti = function(permission) {
-    if (permission === "granted") {
-      var notification = new Notification(text);
+function insertCSS(url) {
+  GM_xmlhttpRequest({
+    method: "GET",
+    url: url,
+    onload: function(res) {
+      GM_addStyle(res.responseText);
     }
-  };
-  if (Notification.permission === "granted") {
-    makeNoti("granted");
-  } else if (Notification.permission !== 'denied') {
-    Notification.requestPermission(makeNoti);
-  }
+  });
 }
-GM_addStyle("em{font-style: italic;}");
-GM_xmlhttpRequest({
-  method: "GET",
-  url: "https://raw.githubusercontent.com/LiteHell/NamuFix/master/NamuFix.css",
-  onload: function(res) {
-    GM_addStyle(res.responseText);
-  }
-});
+insertCSS("https://raw.githubusercontent.com/LiteHell/NamuFix/master/NamuFix.css");
+insertCSS("https://raw.githubusercontent.com/LiteHell/TooSimplePopupLib/master/TooSimplePopupLib.css");
 
 function nOu(a) {
   return typeof a === 'undefined' || a == null;
@@ -169,61 +157,6 @@ function INITSET() { // Storage INIT
   SET.save();
 }
 INITSET();
-var NEWindow = function() {
-  var wi = document.createElement('div');
-  var wiHead = document.createElement('div');
-  var wiContainer = document.createElement('div');
-  var wiFoot = document.createElement('div');
-
-  wi.className = 'NamaEditor NEWindowRoot';
-  wiHead.className = 'NamaEditor NEWindowHead';
-  wiContainer.className = 'NamaEditor NEWindowContainer';
-  wiFoot.className = 'NamaEditor NEWindowFoot';
-
-  wi.appendChild(wiHead);
-  wi.appendChild(wiContainer);
-  wi.appendChild(wiFoot);
-
-  var wrapper = document.createElement('div');
-  wrapper.style.background = 'rgba(0,0,0,0.5)';
-  wrapper.style.zIndex = '9999' + NEWindow.WrappingCount++;
-  wrapper.style.position = 'fixed';
-  wrapper.style.left = '0px';
-  wrapper.style.top = '0px';
-  wrapper.style.height = '100%';
-  wrapper.style.width = '100%';
-
-  wrapper.appendChild(wi);
-  document.body.appendChild(wrapper);
-  var r = {
-    title: function(text) {
-      wiHead.innerHTML = text;
-      return r;
-    },
-    content: function(callback) {
-      callback(wiContainer);
-      return r;
-    },
-    foot: function(callback) {
-      callback(wiFoot);
-      return r;
-    },
-    button: function(label, onclick) {
-      var btn = document.createElement('button');
-      btn.setAttribute('type', 'button');
-      btn.innerHTML = label;
-      btn.addEventListener('click', onclick);
-      wiFoot.appendChild(btn);
-      return r;
-    },
-    close: function() {
-      wrapper.parentNode.removeChild(wrapper);
-      return undefined;
-    }
-  };
-  return r;
-}
-NEWindow.WrappingCount = 0;
 
 // 업데이트 확인
 GM_xmlhttpRequest({
@@ -236,7 +169,7 @@ GM_xmlhttpRequest({
     var latestVersion = obj.tag_name;
     if (currentVersion != latestVersion) {
       var scriptUrl = 'https://github.com/LiteHell/NamuFix/raw/' + latestVersion + '/NamuFix.user.js';
-      var win = NEWindow();
+      var win = TooSimplePopup();
       win.title('새버전 설치');
       win.content(function(element) {
         // 변경 사항 : obj.body
@@ -570,7 +503,7 @@ if (ENV.IsEditing || ENV.Discussing) {
         // 텍스트 선택됨
         text = TextProc.selectionText();
       }
-      var w = window.NEWindow();
+      var w = window.TooSimplePopup();
       var c = w.close;
       w.title('색 지정').content(function(e) {
         var pickerWrapper = document.createElement('div');
@@ -649,7 +582,7 @@ if (ENV.IsEditing || ENV.Discussing) {
           alert('선택된 파일이 없습니다.');
           return;
         }
-        var win = NEWindow();
+        var win = TooSimplePopup();
         win.title('Imgur 업로드');
         win.content(function(el) {
           el.innerHTML = '<span id="msg">진행중입니다. 잠시만 기다려주세요....</span><br>이미지 삭제 주소는 <a href="https://namu.wiki/settings" target="_blank">NamuFix 설정 페이지</a>를 참고하세요.'
@@ -708,7 +641,7 @@ if (ENV.IsEditing || ENV.Discussing) {
 
     // Insertable Media Functions
     function InsertYouTube() {
-      var win = NEWindow();
+      var win = TooSimplePopup();
       win.title('YouTube 동영상 삽입');
       win.content(function(el) {
         el.innerHTML = '<p style="background: cyan; box-shadow: 2px 2px 2px gray; color:white; padding: 8px; border-radius: 3px; margin-bottom: 5px;">YouTube 동영상을 검색하거나 동영상 주소를 입력하여 YouTube 동영상을 삽입할 수 있습니다.</p>' +
@@ -781,7 +714,7 @@ if (ENV.IsEditing || ENV.Discussing) {
                   '</div>';
                 li.querySelector('[name="preview"]').parentNode.dataset.videoId = vidNow.id.videoId;
                 li.querySelector('[name="preview"]').addEventListener('click', function(evt) {
-                  var previewWin = NEWindow();
+                  var previewWin = TooSimplePopup();
                   previewWin.title('미리보기');
                   previewWin.content(function(el) {
                     var iframe = document.createElement("iframe");
@@ -816,7 +749,7 @@ if (ENV.IsEditing || ENV.Discussing) {
 
     function MapMacro() {
       // title(text), content(callback), foot(callback), button(text,onclick), close
-      var win = NEWindow();
+      var win = TooSimplePopup();
       win.title("지도 삽입");
       win.content(function(el) {
         var mapDiv = document.createElement("div");
@@ -870,7 +803,7 @@ if (ENV.IsEditing || ENV.Discussing) {
     insertablesDropDown.button('<span class="ion-ios-play-outline" style="color: Aqua;"></span>', '다음 TV팟 동영상').click(DaumTVPotMarkUp);
 
     Designer.button('<span class="ion-ios-timer-outline"></span>').hoverMessage('아카이브하고 외부링크 삽입').click(function() {
-      var win = NEWindow();
+      var win = TooSimplePopup();
       win.title("아카이브 한후 외부링크 삽입");
       var linkTo = "",
         linkText = "",
@@ -900,7 +833,7 @@ if (ENV.IsEditing || ENV.Discussing) {
         }
       });
       win.button("박제/삽입", function() {
-        var waitwin = NEWindow();
+        var waitwin = TooSimplePopup();
         waitwin.title('박제중....');
         refresh();
         if (linkTo.indexOf('http://') != 0 && linkTo.indexOf('https://') != 0) {
@@ -1013,7 +946,7 @@ if (ENV.IsEditing || ENV.Discussing) {
         // katext rendering : katex.render("c = \\pm\\sqrt{a^2 + b^2}", element);
         // Greek alphabats
         Designer.button('α').hoverMessage('그리스 문자').click(function() {
-          var alphabats = NEWindow();
+          var alphabats = TooSimplePopup();
           alphabats.title('그리스 문자 삽입');
           var romans = [
             'Gamma', 'Delta', 'Theta', 'Lambda', 'Xi', 'Pi', 'Sigma', 'Upsilon', 'Phi', 'Psi', 'Omega', 'alpha', 'beta', 'gamma',
@@ -1067,7 +1000,7 @@ if (ENV.IsEditing || ENV.Discussing) {
         decoTextDropdown.button(katex.renderToString('\\overline{\\alpha}'), '윗줄').click(insertFuncClosure('overline'));
         return txtarea;
       }
-      var fwin = NEWindow();
+      var fwin = TooSimplePopup();
       fwin.title('LaTeX 수식 수정/삽입');
       fwin.content(function(container) {
         container.innerHTML = '<p><a href="https://github.com/Khan/KaTeX/wiki/Function-Support-in-KaTeX/a196a05989c5d7737ee00036462bb6aeaac6ac23">KaTeX 함수 지원 a196a05판</a>에 포함되어 있는 함수/환경들만 있습니다.</p>' +
@@ -1180,7 +1113,7 @@ if (ENV.IsEditing || ENV.Discussing) {
       });
       tempsaveDropdown.button('<span class="ion-filing"></span>', '임시저장 불려오기').click(function() {
         // title(text), content(callback), foot(callback), button(text,onclick), close
-        var win = NEWindow();
+        var win = TooSimplePopup();
         win.title('임시저장 불려오기')
         var tempsaveList = tempsaveManager.getByTitle(ENV.docTitle);
         win.content(function(el) {
@@ -1222,7 +1155,7 @@ if (ENV.IsEditing || ENV.Discussing) {
       });
       tempsaveDropdown.button('<span class="ion-trash-a" style="color:orange;"></span>', '특정 임시저장만 삭제').click(function() {
         // title(text), content(callback), foot(callback), button(text,onclick), close
-        var win = NEWindow();
+        var win = TooSimplePopup();
         var tempsaveList = tempsaveManager.getByTitle(ENV.docTitle);
         win.title('임시저장 삭제');
         win.content(function(el) {
@@ -1503,7 +1436,7 @@ if (ENV.IsEditing || ENV.Discussing) {
     page.appendChild(document.createElement("br"));
   }
   appendButton("NamuFix 설정", function() {
-    var win = NEWindow();
+    var win = TooSimplePopup();
     var elems = {};
     win.title('NamuFix 설정');
     SET.load();
@@ -1555,7 +1488,7 @@ if (ENV.IsEditing || ENV.Discussing) {
   });
   appendButton("Imgur 이미지 삭제 주소들", function() {
     SET.load();
-    var win = NEWindow();
+    var win = TooSimplePopup();
     var divWithScrolls = document.createElement("div");
     divWithScrolls.style.overflow = 'scroll';
     divWithScrolls.style.maxHeight = '800px';
@@ -1877,7 +1810,7 @@ if (document.querySelector('.nav-controls')) {
         favoriteThis.querySelector('span.ion-star').style.color = '';
         return;
       }
-      var win = NEWindow();
+      var win = TooSimplePopup();
       win.title('즐겨찾기 추가');
       win.content(function(element) {
         element.innerHTML = '<style>.nfLabel{width: 300px;}</style>' +
@@ -1918,7 +1851,7 @@ if (document.querySelector('.nav-controls')) {
       win.button('닫기', win.close);
     });
     favoriteList.querySelector('a').addEventListener('click', function(evt) {
-      var win = NEWindow();
+      var win = TooSimplePopup();
       win.title('즐겨찾기 목록');
       win.content(function(element) {
         element.style.maxHeight = '600px';
