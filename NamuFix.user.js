@@ -1526,13 +1526,17 @@ if (ENV.Discussing) {
   var isThreadicLike = SET.discussIdenti == 'headBg';
   var isIdenticon = SET.discussIdenti == 'identicon';
   var colorDictionary = {},
-    hashDictionary = {};
+    hashDictionary = {},
+    identiconDictionary = {};
   var identiconCSSAdded = false;
 
   function SHA512(text) {
-    var shaObj = new jsSHA("SHA-512", "TEXT");
-    shaObj.update(text);
-    return shaObj.getHash("HEX");
+    if (typeof hashDictionary[text] === 'undefined') {
+      var shaObj = new jsSHA("SHA-512", "TEXT");
+      shaObj.update(text);
+      hashDictionary[text] = shaObj.getHash("HEX");
+    }
+    return hashDictionary[text];
   }
 
   // #[0-9]+ 엥커 미리보기
@@ -1597,19 +1601,14 @@ if (ENV.Discussing) {
         // IP
         n = '!IP!' + n;
       }
+      n = SHA512(n);
 
-      var nColor, nHash;
+      var nColor;
       if (typeof colorDictionary[n] === 'undefined') {
         nColor = colorHash.hex(n);
         colorDictionary[n] = nColor;
       } else {
         nColor = colorDictionary[n];
-      }
-      if (typeof hashDictionary[n] === 'undefined') {
-        nHash = SHA512(n);
-        hashDictionary[n] = nHash;
-      } else {
-        nHash = hashDictionary[n];
       }
 
       if (isThreadicLike) {
@@ -1631,7 +1630,9 @@ if (ENV.Discussing) {
         var identicon = document.createElement("div");
         identicon.className = "nf-identicon";
         identicon.innerHTML = '<img style="width: 64px; height: 64px;"></img>';
-        var identiconImage = new Identicon(nHash, 64).toString();
+        if (typeof identiconDictionary[n] === 'undefined')
+          identiconDictionary[n] = new Identicon(n, 64).toString();
+        var identiconImage = identiconDictionary[n];
         identicon.querySelector('img').src = "data:image/png;base64," + identiconImage;
         message.parentNode.insertBefore(identicon, message);
 
