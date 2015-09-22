@@ -1527,6 +1527,29 @@ if (ENV.IsEditing || ENV.Discussing) {
     });
     win.title('이미지 삭제 주소들');
     win.button('닫기', win.close);
+  });
+  appendButton('설정 백업/복업', function() {
+    if (!confirm('경고 : 이 기능은 불안정합니다.\n그래도 진행하시겠습니까?'))
+      return;
+    if (confirm('백업입니까?')) {
+      var keys = GM_listValues();
+      var obj = {};
+      for (var i = 0; i < keys.length; i++) {
+        var ke = keys[i];
+        obj[ke] = GM_getValue(ke);
+      }
+      prompt('복사해서 어딘가에 보관해두세요.', JSON.stringify(obj));
+    } else if (confirm('그러면 복원입니까?')) {
+      var obj = prompt('**원문 그대로** 복사하세요.');
+      obj = JSON.stringify(obj);
+      var keys = Object.keys(obj);
+      for (var i = 0; i < keys.length; i++) {
+        var ke = keys[i];
+        GM_setValue(ke, obj[ke]);
+      }
+    } else {
+      alert('취소됨.');
+    }
   })
   pages.appendChild(page);
 }
