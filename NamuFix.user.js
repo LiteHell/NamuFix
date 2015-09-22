@@ -154,6 +154,8 @@ function INITSET() { // Storage INIT
     SET.favorites = [];
   if (nOu(SET.ignoreNewUpdate))
     SET.ignoreNewUpdate = 0;
+  if (nOu(SET.customIdenticons))
+    SET.customIdenticons = {};
   SET.save();
 }
 INITSET();
@@ -439,6 +441,19 @@ function createTextProcessor(txtarea) {
   return r;
 }
 
+function getFile(callback) {
+  var elm = document.createElement("input");
+  elm.setAttribute("type", "file");
+  elm.style.visibility = "hidden";
+  elm.setAttribute("accept", "image/*");
+  document.body.appendChild(elm);
+  elm.addEventListener('change', function(evt) {
+    callback(evt.target.files, function() {
+      document.body.removeChild(elm);
+    })
+  });
+  elm.click();
+}
 // 기부 버튼 추가
 if (document.querySelector('header.nav_top')) {
   var headerMenu = document.querySelector('header.nav_top > ul');
@@ -568,18 +583,14 @@ if (ENV.IsEditing || ENV.Discussing) {
 
     // Insertable Media Functions
     function ImgurUpload() {
-      var elm = document.createElement("input");
-      elm.setAttribute("type", "file");
-      elm.style.visibility = "hidden";
-      elm.setAttribute("accept", "image/*");
-      document.body.appendChild(elm);
-      // http://jsfiddle.net/eliseosoto/JHQnk/ 이용
-      elm.addEventListener("change", function(evt) {
-        if (evt.target.files.length > 1) {
+      getFile(function(files, finish) {
+        if (files.length > 1) {
           alert('한개의 파일만 업로드하실 수 있습니다.');
+          finish();
           return;
-        } else if (evt.target.files.length < 0) {
+        } else if (files.length < 0) {
           alert('선택된 파일이 없습니다.');
+          finish();
           return;
         }
         var win = TooSimplePopup();
@@ -593,7 +604,7 @@ if (ENV.IsEditing || ENV.Discussing) {
             });
           }
           // imgur Client ID : 60a43baebed658a
-        var file = evt.target.files[0];
+        var file = files[0];
         if (file) {
           setMsg('전송중입니다. 잠시만 기다려주세요.....');
           var reader = new FileReader();
@@ -629,13 +640,12 @@ if (ENV.IsEditing || ENV.Discussing) {
                 }
               }
             });
-            document.body.removeChild(elm);
+            finish();
           };
           setMsg('진행중입니다. 파일을 읽고있습니다....');
           reader.readAsDataURL(file);
         }
       });
-      elm.click();
       // imgur Client ID : 60a43baebed658a
     };
 
@@ -1629,11 +1639,53 @@ if (ENV.Discussing) {
       } else if (isIdenticon) {
         var identicon = document.createElement("div");
         identicon.className = "nf-identicon";
-        identicon.innerHTML = '<img style="width: 64px; height: 64px;"></img>';
+        identicon.innerHTML = '<a><img style="width: 64px; height: 64px;"></img></a>';
+        identicon.querySelector("img").dataset.hash = n;
+        identicon.querySelector("a").dataset.hash = n;
+        identicon.querySelector("a").href = "#NothingToLink";
+        identicon.querySelector("a").addEventListener('click', function(evt) {
+          SET.load();
+          var h = evt.target.dataset.hash;
+          if (typeof SET.customIdenticons[h] !== 'undefined') {
+            // custom identicon exists
+            if (confirm('이미 이미지가 설정되어 있습니다. 제거할까요?')) {
+              delete SET.customIdenticons[h];
+              SET.save();
+            }
+          } else {
+            if (!confirm('이 아이디 또는 닉네임에 기존 아이덴티콘 대신 다른 이미지를 설정할 수 있습니다.\n설정할까요?')) return;
+            // doesn't exists
+            getFile(function(files, finish) {
+              if (files.length < 0) {
+                alert('선택된 파일이 없습니다.')
+                finish();
+                return;
+              }
+              if (files.length > 1) {
+                alert('한 개의 파일만 선택해주세요.');
+                finish();
+                return;
+              }
+              var file = files[0];
+              if (file) {
+                var reader = new FileReader();
+                reader.onload = function(evt) {
+                  SET.customIdenticons[h] = reader.result;
+                  SET.save();
+                  alert('설정됐습니다.');
+                  finish();
+                };
+                reader.readAsDataURL(file);
+              }
+            });
+          }
+        });
+        if (typeof identiconDictionary[n] === 'undefined' && typeof SET.customIdenticons[n] !== 'undefined')
+          identiconDictionary[n] = SET.customIdenticons[n];
         if (typeof identiconDictionary[n] === 'undefined')
-          identiconDictionary[n] = new Identicon(n, 64).toString();
+          identiconDictionary[n] = "data:image/png;base64," + new Identicon(n, 64).toString();
         var identiconImage = identiconDictionary[n];
-        identicon.querySelector('img').src = "data:image/png;base64," + identiconImage;
+        identicon.querySelector('img').src = identiconImage;
         message.parentNode.insertBefore(identicon, message);
 
         if (message.parentNode.dataset.id != 1) {
