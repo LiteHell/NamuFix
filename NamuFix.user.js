@@ -180,7 +180,7 @@ GM_xmlhttpRequest({
           latestVersion + '버전에서의 변경 사항<div style="border-left: 6px solid green; padding: 10px; font-size: 13px; font-family: sans-family;" id="changeLog"></div>' +
           '<p><a href="' + scriptUrl + '" style="text-decoration: none;"><button type="button" style="display: block; margin: 0 auto;">최신 버전 설치</button></a></p>' +
           '설치 후 새로고침을 해야 적용됩니다.';
-        element.querySelector('#changeLog').textContent = obj.body;
+        element.querySelector('#changeLog').innerHTML = obj.body.replace(/\r\n/g, '<br>').replace(/\n/g, '<br>');
       });
 
       win.button('닫기(1시간동안 보지 않음)', function() {
