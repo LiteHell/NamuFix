@@ -78,3 +78,8 @@ BSD 라이선스로 배포됨.
 Copyright (c) 2015 Khan Academy
 
 MIT 라이선스로 배포됨.
+
+## TooSimplePopupLib
+Copyright (c) 2015 LiteHell
+
+MIT 라이선스로 배포됨.
