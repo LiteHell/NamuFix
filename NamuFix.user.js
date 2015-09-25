@@ -1800,7 +1800,7 @@ if (ENV.Discussing) {
   }
   var p = document.createElement("p");
   p.innerHTML += '<style>#contInfo { border-collapse: collapse; border: 1px solid black; padding: 2px;} #contInfo td {padding: 3px;} #contInfo td:nth-child(2) {border-left: 1px solid black;}</style>';
-  if (/\/document$/.test(location.href)) {
+  if (/\/document(?:#.+|)$/.test(location.href)) {
     var rows = document.querySelectorAll('table tr');
     var contCount = 0,
       contTotalBytes = 0,
@@ -1849,7 +1849,7 @@ if (ENV.Discussing) {
       });
       win.button('닫기', win.close);
     })
-  } else if (/\/discuss$/.test(location.href)) {
+  } else if (/\/discuss(?:#.+|)$/.test(location.href)) {
     function standardDeviation(numbers) {
       var total = 0;
       for (var i = 0; i < numbers.length; i++) {
