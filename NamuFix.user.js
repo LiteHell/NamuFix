@@ -1843,7 +1843,7 @@ if (ENV.Discussing) {
       '</table>').format(contCount, contTotalBytes, documents.length, deletedDocuments.length, createdDocuments.length, (contTotalBytes / documents.length));
     p.querySelector('a#punch').addEventListener('click', function() {
       var win = TooSimplePopup();
-      win.title('활동 시간대');
+      win.title('활동 시간대(문서 기여)');
       win.content(function(element) {
         element.appendChild(makeHeatTable(contributedAt));
       });
@@ -1899,7 +1899,7 @@ if (ENV.Discussing) {
       '</table>').format(totalTalks, discussCount, avgTalks, standardDeviation(Talks));
     p.querySelector('a#punch').addEventListener('click', function() {
       var win = TooSimplePopup();
-      win.title('활동 시간대');
+      win.title('활동 시간대(토론)');
       win.content(function(container) {
         container.appendChild(makeHeatTable(talkedAt));
       });
