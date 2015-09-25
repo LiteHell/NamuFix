@@ -100,7 +100,11 @@ div.NamaEditor.NEMenuButton {
 }
 .NamaEditor.NEDropDown ul li > span.NEHeadIcon {
   font-family: 'Nanum Myeongjo' !important;
-  font-size: 20pt;
+  font-size: 30px;
+  line-height: 40px;
+  text-align: center;
+  width: 35px;
+  display: inline-block;
 }
 .NamaEditor.NEDropDown ul li > span.NEDescText {
   font-family: 'Nanum Gothic' !important;
