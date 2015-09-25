@@ -11,7 +11,7 @@
 // @downloadURL https://raw.githubusercontent.com/LiteHell/NamuFix/master/NamuFix.user.js
 // @require     https://raw.githubusercontent.com/LiteHell/NamuFix/master/FlexiColorPicker.js
 // @require     https://raw.githubusercontent.com/Caligatio/jsSHA/v2.0.1/src/sha512.js
-// @require     https://github.com/zenozeng/color-hash/raw/master/dist/color-hash.js
+// @require     https://raw.githubusercontent.com/zenozeng/color-hash/master/dist/color-hash.js
 // @require     http://www.xarg.org/download/pnglib.js
 // @require     https://raw.githubusercontent.com/stewartlord/identicon.js/master/identicon.js
 // @require     https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.3.0/katex.min.js
