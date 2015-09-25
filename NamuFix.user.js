@@ -93,6 +93,31 @@ ENV.IsSettings = /^https?:\/\/(?:no-ssl\.|)namu\.wiki\/settings/.test(location.h
 ENV.IsUserPage = /^https?:\/\/(?:no-ssl\.|)namu\.wiki\/contribution\/(?:author|ip)\/.+\/(?:document|discuss)/.test(location.href);
 ENV.IsUploadPage = /^https?:\/\/(?:no-ssl\.|)namu\.wiki\/Upload$/.test(location.href);
 ENV.IsDiff = /^https?:\/\/(?:no-ssl\.|)namu\.wiki\/diff\/.+/.test(location.href);
+ENV.IsLoggedIn = document.querySelectorAll('.logged-in').length == 1;
+if (ENV.IsLoggedIn) {
+  ENV.UserName = document.querySelector('#memberMenu li a span').textContent.trim();
+}
+GM_xmlhttpRequest({
+  method: "GET",
+  url: "https://wtfismyip.com/json",
+  onload: function(res) {
+    var obj = JSON.parse(res.responseText);
+    var ip = obj.YourFuckingIPAddress;
+    if (!ENV.IsLoggedIn) ENV.UserName = ip;
+    ENV.IPAddress = ip;
+
+    // 내 기여 버튼 추가
+    if (document.querySelector('header.nav_top')) {
+      var memberMenu = document.querySelector('ul#memberMenu');
+
+      memberMenu.innerHTML += ('<li class="f_r"><a style="padding: 0;">|</a></li>' +
+        '<li class="f_r"><a id="myContributions" title="내 기여" href="{0}" rel="nofollow">내 기여</a></li>').format(
+        '/contribution/{0}/{1}/document'.format(ENV.IsLoggedIn ? 'author' : 'ip', ENV.UserName)
+      );
+    }
+  }
+})
+
 if (document.querySelector("input[name=section]"))
   ENV.section = document.querySelector("input[name=section]").value;
 if (document.querySelector("h1.title > a"))
