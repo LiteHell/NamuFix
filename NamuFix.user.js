@@ -1722,6 +1722,7 @@ if (ENV.Discussing) {
   }, 200);
 } else if (ENV.IsUserPage) {
   var p = document.createElement("p");
+  p.innerHTML += '<style>#contInfo { border-collapse: collapse; border: 1px solid black; padding: 2px;} #contInfo td {padding: 3px;} #contInfo td:nth-child(2) {border-left: 1px solid black;}</style>';
   if (/\/document$/.test(location.href)) {
     var rows = document.querySelectorAll('table tr');
     var contCount = 0,
@@ -1757,13 +1758,13 @@ if (ENV.Discussing) {
         contributedAt.push(Date.parse(time));
       }
     }
-    p.innerHTML = '총 기여 수 : ' + contCount +
-      '<br>총 기여한 바이트 수 : ' + contTotalBytes +
-      '<br>총 기여한 문서 (ACL 변경, 문서 이동 포함) : ' + documents.length +
-      '<br>삭제한 문서 수 : ' + deletedDocuments.length +
-      '<br>새로 만든 문서 수 : ' + createdDocuments.length +
-      '<br>한 문서당 평균 기여 바이트 수 : ' + (contTotalBytes / documents.length);
-
+    p.innerHTML += ('<table id="contInfo">' +
+      '<tr><td>총 기여 횟수</td><td>{0}</td></tr>' +
+      '<tr><td>총 기여한 문서 (ACL 변경, 문서 이동 포함)</td><td>{1}</td></tr>' +
+      '<tr><td>삭제한 문서 수</td><td>{2}</td></tr>' +
+      '<tr><td>새로 만든 문서 수</td><td>{3}</td></tr>' +
+      '<tr><td>한 문서당 평균 기여 바이트 수</td><td>{4}</td></tr>' +
+      '</table>').format(contCount, contTotalBytes, documents.length, deletedDocuments.length, createdDocuments.length, (contTotalBytes / documents.length));
   } else if (/\/discuss$/.test(location.href)) {
     function standardDeviation(numbers) {
       var total = 0;
@@ -1801,7 +1802,12 @@ if (ENV.Discussing) {
     }
     discussCount = Object.keys(docuAndTalks).length;
     avgTalks = totalTalks / discussCount;
-    p.innerHTML = '총 발언 수 : ' + totalTalks + '<br>참여한 토론 수 : ' + discussCount + '<br>한 토론당 평균 발언 수 : ' + avgTalks + '<br>한 토론당 발언 수 표준편차 : ' + standardDeviation(Talks);
+    p.innerHTML += ('<table id="contInfo">' +
+      '<tr><td>총 발언 수</td><td>{0}</td></tr>' +
+      '<tr><td>참여한 토론 수</td><td>{1}</td></tr>' +
+      '<tr><td>한(1) 토론당 평균 발언 수</td><td>{2}</td></tr>' +
+      '<tr><td>한(1) 토론당 발언 수 표준편차</td><td>{3}</td></tr>' +
+      '</table>').format(totalTalks, discussCount, avgTalks, standardDeviation(Talks));
   } else {
     delete p;
   }
