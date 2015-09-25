@@ -1721,6 +1721,58 @@ if (ENV.Discussing) {
     }
   }, 200);
 } else if (ENV.IsUserPage) {
+  function makeHeatTable(times) {
+    try {
+      // 가공
+      var maps = {}; // { day: {0: int, 1: int}, .... }
+      var maxValue = 0;
+      for (var i = 0; i < 7; i++) {
+        maps[i] = {};
+        for (var ii = 0; ii < 24; ii++) {
+          maps[i][ii] = 0;
+        }
+      }
+      for (var i = 0; i < times.length; i++) {
+        var ti = times[i];
+        var v = ++maps[ti.getDay()][ti.getHours()];
+        if (maxValue < v) maxValue = v;
+      }
+
+      // 표 생성
+      var table = document.createElement("table");
+      var headTr = document.createElement("tr");
+      headTr.innerHTML = '<th>요일</th>';
+      table.appendChild(headTr);
+      var dayNames = ['일', '월', '화', '수', '목', '금', '토'];
+      for (var i = 0; i < 7; i++) {
+        var tr = document.createElement("tr");
+        tr.innerHTML += '<th>{0}</th>'.format(dayNames[i]);
+        for (var ii = 0; ii < 24; ii++) {
+          var td = document.createElement("td");
+          td.innerHTML = '&nbsp;'
+          td.style.background = 'rgba(61,0,61,{0})'.format(maps[i][ii] / maxValue);
+          if (i == 0) {
+            function twoDigits(a) {
+              var p = String(a);
+              return p.length == 1 ? '0' + p : p;
+            }
+            headTr.innerHTML += '<th>{0}:00 ~ {1}:00</th>'.format(twoDigits(ii), twoDigits(ii + 1))
+          }
+          tr.appendChild(td);
+        }
+        table.appendChild(tr);
+      }
+      return table;
+    } catch (err) {
+      alert(err.message);
+    }
+  }
+
+  function namuDTParse(v) {
+    var time = v.trim().replace(' ', 'T');
+    time += '+09:00';
+    return new Date(Date.parse(time));
+  }
   var p = document.createElement("p");
   p.innerHTML += '<style>#contInfo { border-collapse: collapse; border: 1px solid black; padding: 2px;} #contInfo td {padding: 3px;} #contInfo td:nth-child(2) {border-left: 1px solid black;}</style>';
   if (/\/document$/.test(location.href)) {
@@ -1753,9 +1805,7 @@ if (ENV.Discussing) {
       }
 
       if (row.querySelector('td:nth-child(3)')) {
-        var time = row.querySelector('td:nth-child(3)').innerHTML.trim().replace(' ', 'T');
-        time += '+09:00';
-        contributedAt.push(Date.parse(time));
+        contributedAt.push(namuDTParse(row.querySelector('td:nth-child(3)').innerHTML));
       }
     }
     p.innerHTML += ('<table id="contInfo">' +
@@ -1764,7 +1814,16 @@ if (ENV.Discussing) {
       '<tr><td>삭제한 문서 수</td><td>{2}</td></tr>' +
       '<tr><td>새로 만든 문서 수</td><td>{3}</td></tr>' +
       '<tr><td>한 문서당 평균 기여 바이트 수</td><td>{4}</td></tr>' +
+      '<tr><td>활동 시간대(문서 기여)</td><td><a href="#NothingToLink" id="punch">여기를 눌러 확인</a></td></tr>' +
       '</table>').format(contCount, contTotalBytes, documents.length, deletedDocuments.length, createdDocuments.length, (contTotalBytes / documents.length));
+    p.querySelector('a#punch').addEventListener('click', function() {
+      var win = TooSimplePopup();
+      win.title('활동 시간대');
+      win.content(function(element) {
+        element.appendChild(makeHeatTable(contributedAt));
+      });
+      win.button('닫기', win.close);
+    })
   } else if (/\/discuss$/.test(location.href)) {
     function standardDeviation(numbers) {
       var total = 0;
@@ -1781,6 +1840,7 @@ if (ENV.Discussing) {
     }
     var rows = document.querySelectorAll('table tr');
     var docuAndTalks = {};
+    var talkedAt = [];
     for (var i = 0; i < rows.length; i++) {
       var row = rows[i];
       if (row.querySelectorAll('a').length == 0) continue;
@@ -1790,6 +1850,9 @@ if (ENV.Discussing) {
         docuAndTalks[docuNow]++;
       } else {
         docuAndTalks[docuNow] = 1;
+      }
+      if (row.querySelector('td:nth-child(3)')) {
+        talkedAt.push(namuDTParse(row.querySelector('td:nth-child(3)').innerHTML));
       }
     }
     var totalTalks = 0,
@@ -1807,7 +1870,16 @@ if (ENV.Discussing) {
       '<tr><td>참여한 토론 수</td><td>{1}</td></tr>' +
       '<tr><td>한(1) 토론당 평균 발언 수</td><td>{2}</td></tr>' +
       '<tr><td>한(1) 토론당 발언 수 표준편차</td><td>{3}</td></tr>' +
+      '<tr><td>활동 시간대(토론)</td><td><a href="#NothingToLink" id="punch">여기를 눌러 확인</a></td></tr>' +
       '</table>').format(totalTalks, discussCount, avgTalks, standardDeviation(Talks));
+    p.querySelector('a#punch').addEventListener('click', function() {
+      var win = TooSimplePopup();
+      win.title('활동 시간대');
+      win.content(function(container) {
+        container.appendChild(makeHeatTable(talkedAt));
+      });
+      win.button('닫기', win.close);
+    })
   } else {
     delete p;
   }
