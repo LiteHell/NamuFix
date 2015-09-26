@@ -1746,6 +1746,43 @@ if (ENV.Discussing) {
       message.dataset.nfbeauty = true;
     }
   }, 200);
+
+  // IP 국가 조회
+  setInterval(function() {
+    var message = document.querySelector('.res:not([data-nf-with-ip-country-mark]):not([data-nf-not-ip-user])');
+    if (message == null) return;
+    var contributor = message.querySelector('.r-head > a');
+    var pattern = /\/contribution\/ip\/([0-9\.]+|[a-zA-Z0-9:]+)\/(?:document|discuss)$/;
+    if (!pattern.test(contributor.href)) {
+      message.dataset.nfNotIpUser = true;
+      return;
+    } else {
+      var ip = pattern.exec(contributor.href)[1];
+    }
+    message.dataset.nfWithIpCountryMark = true;
+    GM_xmlhttpRequest({
+      method: "GET",
+      url: "http://ip-api.com/json/{0}".format(ip),
+      onload: function(res) {
+        var resObj = JSON.parse(res.responseText);
+        var country = resObj.countryCode;
+        var countryName = resObj.country;
+        var isp = resObj.isp;
+        var imgUrl = 'http://www.geonames.org/flags/x/{0}.gif'.format(country.toLowerCase());
+
+        var imgTag = document.createElement("img");
+        imgTag.style.width = '15px';
+        imgTag.style.height = '12px';
+        imgTag.style.display = 'inline';
+        imgTag.style.marginRight = '3px';
+        imgTag.style.marginLeft = '3px';
+        imgTag.title = '국가 : {0}, ISP : {1}'.format(countryName, isp);
+        imgTag.src = imgUrl;
+        contributor.insertBefore(imgTag, contributor.firstChild);
+      }
+    });
+
+  }, 300);
 } else if (ENV.IsUserPage) {
   function makeHeatTable(times) {
     try {
