@@ -16,14 +16,7 @@ If you want to contant me, LiteHell@openmailbox.org
 이 유저스크립트는 MIT 라이선스로 배포됩니다.
 
 # 사용된 라이브러리들
-```
-// @require     https://raw.githubusercontent.com/LiteHell/NamuFix/master/FlexiColorPicker.js
-// @require     https://raw.githubusercontent.com/Caligatio/jsSHA/v2.0.1/src/sha512.js
-// @require     https://github.com/zenozeng/color-hash/raw/master/dist/color-hash.js
-// @require     http://www.xarg.org/download/pnglib.js
-// @require     https://raw.githubusercontent.com/stewartlord/identicon.js/master/identicon.js
-// @require     https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.3.0/katex.min.js
-```
+NamuFix는 많은 수의 라이브러리들을 사용합니다.
 ## FlexiColorPicker
 Copyright (c) 2011 - 2012 David Durman
 
