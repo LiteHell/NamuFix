@@ -69,10 +69,6 @@ function nOu(a) {
   return typeof a === 'undefined' || a == null;
 }
 
-function formatDateTime(t) {
-  var d = new Date(t);
-  return d.getFullYear() + '년 ' + (d.getMonth() + 1) + '월 ' + d.getDate() + '일 ' + d.getHours() + '시 ' + d.getMinutes() + '분 ' + d.getSeconds() + '초';
-}
 if (!String.prototype.format) {
   String.prototype.format = function() {
     var newstr = this;
@@ -84,6 +80,12 @@ if (!String.prototype.format) {
     return newstr;
   }
 }
+
+function formatDateTime(t) {
+  var d = new Date(t);
+  return '{0}년 {1}월 {2}일 {6} {3}시 {4}분 {5}초'.format(d.getFullYear(), d.getMonth() + 1, d.getDate(), d.getHours() - (d.getHours() > 12 ? 12 : 0), d.getMinutes(), d.getSeconds(), d.getHours() > 12 ? '오후' : '오전');
+}
+
 var ENV = {};
 ENV.IsSSL = /^https/.test(location.href);
 ENV.IsEditing = /^https?:\/\/(?:no-ssl\.|)namu\.wiki\/edit\/(.+?)/.test(location.href);
@@ -97,6 +99,24 @@ ENV.IsLoggedIn = document.querySelectorAll('.logged-in').length == 1;
 if (ENV.IsLoggedIn) {
   ENV.UserName = document.querySelector('#memberMenu li a span').textContent.trim();
 }
+if (document.querySelector("input[name=section]"))
+  ENV.section = document.querySelector("input[name=section]").value;
+if (document.querySelector("h1.title > a"))
+  ENV.docTitle = document.querySelector("h1.title > a").innerHTML;
+else if (document.querySelector("h1.title"))
+  ENV.docTitle = document.querySelector("h1.title").innerHTML;
+if (ENV.Discussing) {
+  ENV.topicNo = /^https?:\/\/(?:no-ssl\.|)namu\.wiki\/topic\/([0-9]+)/.exec(location.href)[1];
+  ENV.topicTitle = document.querySelector('article > h2').innerHTML;
+}
+if (ENV.IsDiff) {
+  //ENV.docTitle = /diff\/(.+?)\?/.exec(location.href)[1];
+  ENV.beforeRev = Number(/[\&\?]oldrev=([0-9]+)/.exec(location.href)[1]);
+  ENV.afterRev = Number(/[\&\?]rev=([0-9]+)/.exec(location.href)[1]);
+}
+if (nOu(ENV.section))
+  ENV.section = -2;
+
 GM_xmlhttpRequest({
   method: "GET",
   url: "https://wtfismyip.com/json",
@@ -116,26 +136,7 @@ GM_xmlhttpRequest({
       );
     }
   }
-})
-
-if (document.querySelector("input[name=section]"))
-  ENV.section = document.querySelector("input[name=section]").value;
-if (document.querySelector("h1.title > a"))
-  ENV.docTitle = document.querySelector("h1.title > a").innerHTML;
-else if (document.querySelector("h1.title"))
-  ENV.docTitle = document.querySelector("h1.title").innerHTML;
-if (ENV.Discussing) {
-  ENV.topicNo = /^https?:\/\/(?:no-ssl\.|)namu\.wiki\/topic\/([0-9]+)/.exec(location.href)[1];
-  ENV.topicTitle = document.querySelector('article > h2').innerHTML;
-}
-
-if (ENV.IsDiff) {
-  //ENV.docTitle = /diff\/(.+?)\?/.exec(location.href)[1];
-  ENV.beforeRev = Number(/[\&\?]oldrev=([0-9]+)/.exec(location.href)[1]);
-  ENV.afterRev = Number(/[\&\?]rev=([0-9]+)/.exec(location.href)[1]);
-}
-if (nOu(ENV.section))
-  ENV.section = -2;
+});
 
 var SET = new function() {
   var discards = ['save', 'load'];
