@@ -480,12 +480,17 @@ function getFile(callback) {
   });
   elm.click();
 }
-// 기부 버튼 추가
-if (document.querySelector('header.nav_top')) {
-  var headerMenu = document.querySelector('header.nav_top > ul');
-  var li = document.createElement("li");
-  li.innerHTML = '<a title="기부" href="javascript:alert(\'다음 비트코인 주소로 기부하세요.\\n1namugv5YiXPdjBx7RoHpWCGuMnjLZEh6\')"><span class="icon ion-heart"></span><span class="icon-title">&nbsp;&nbsp;기부</span></a>';
-  headerMenu.appendChild(li);
+// 기부 문구 추가
+if (document.querySelector('footer')) {
+  let bitcoinAddress = '1namugv5YiXPdjBx7RoHpWCGuMnjLZEh6';
+  let footer = document.querySelector('footer');
+  let div = document.createElement("div");
+  div.style.textAlign = 'left';
+  div.style.marginTop = '5px';
+  div.innerHTML = ('<img src="//i.imgur.com/0F2zZM9.png" style="height: 40px; width: 116.7px; float:left; display: inline; margin-right: 10px;"></img>' +
+    '나무위키에 특별한 사랑을 표현해주세요! 사라지지 않는 특별한 사랑은 곧 잊혀지지 않는 기여, 그 이름은 기부입니다.<br>' +
+    '비트코인 주소 : {0}').format(bitcoinAddress);
+  footer.appendChild(div);
 }
 if (ENV.IsEditing || ENV.Discussing) {
   if (document.querySelectorAll("textarea").length == 1 && !document.querySelector("textarea").hasAttribute("readonly")) {
