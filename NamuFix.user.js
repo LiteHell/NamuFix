@@ -488,7 +488,7 @@ if (document.querySelector('footer')) {
   div.style.textAlign = 'left';
   div.style.marginTop = '5px';
   div.innerHTML = ('<img src="//i.imgur.com/0F2zZM9.png" style="height: 40px; width: 116.7px; float:left; display: inline; margin-right: 10px;"></img>' +
-    '나무위키에 특별한 사랑을 표현해주세요! 사라지지 않는 특별한 사랑은 곧 잊혀지지 않는 기여, 그 이름은 기부입니다.<br>' +
+    '오늘같은 날 나무위키에 줄 수 있는 특별한 사랑은 무엇일까요? 특별한 사랑이란 잊혀지지 않는 사랑, 그 이름은 기부입니다.<br>' +
     '비트코인 주소 : {0}').format(bitcoinAddress);
   footer.appendChild(div);
 }
