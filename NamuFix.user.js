@@ -6,7 +6,7 @@
 // @include     http://namu.wiki/*
 // @include     https://namu.wiki/*
 // @include     http://issue.namu.wiki/*
-// @version     150926.1
+// @version     150928.0
 // @namespace   http://litehell.info/
 // @downloadURL https://raw.githubusercontent.com/LiteHell/NamuFix/master/NamuFix.user.js
 // @require     https://raw.githubusercontent.com/LiteHell/NamuFix/master/FlexiColorPicker.js
@@ -182,6 +182,10 @@ function INITSET() { // Storage INIT
     SET.ignoreNewUpdate = 0;
   if (nOu(SET.customIdenticons))
     SET.customIdenticons = {};
+  if (nOu(SET.hideDeletedWhenDiscussing))
+    SET.hideDeletedWhenDiscussing = 0;
+  else if (typeof SET.hideDeletedWhenDiscussing !== "Number")
+    SET.hideDeletedWhenDiscussing = Number(SET.hideDeletedWhenDiscussing);
   SET.save();
 }
 INITSET();
@@ -482,15 +486,15 @@ function getFile(callback) {
 }
 // 기부 문구 추가
 if (document.querySelector('footer')) {
-  let bitcoinAddress = '1namugv5YiXPdjBx7RoHpWCGuMnjLZEh6';
-  let footer = document.querySelector('footer');
-  let div = document.createElement("div");
-  div.style.textAlign = 'right';
-  div.style.marginTop = '5px';
-  div.innerHTML = ('<img src="//i.imgur.com/0F2zZM9.png" style="height: 40px; width: 116.7px; float:right; display: inline; margin-left: 10px;"></img>' +
+  var bitcoinAddress = '1namugv5YiXPdjBx7RoHpWCGuMnjLZEh6';
+  var footer = document.querySelector('footer');
+  var dontaionDiv = document.createElement("div");
+  dontaionDiv.style.textAlign = 'right';
+  dontaionDiv.style.marginTop = '5px';
+  dontaionDiv.innerHTML = ('<img src="//i.imgur.com/0F2zZM9.png" style="height: 40px; width: 116.7px; float:right; display: inline; margin-left: 10px;"></img>' +
     '오늘같은 날 나무위키에 줄 수 있는 특별한 사랑은 무엇일까요? 특별한 사랑이란 잊혀지지 않는 사랑, 그 이름은 기부입니다.<br>' +
     '비트코인 주소 : {0}').format(bitcoinAddress);
-  footer.appendChild(div);
+  footer.appendChild(dontaionDiv);
 }
 if (ENV.IsEditing || ENV.Discussing) {
   if (document.querySelectorAll("textarea").length == 1 && !document.querySelector("textarea").hasAttribute("readonly")) {
@@ -1491,7 +1495,11 @@ if (ENV.IsEditing || ENV.Discussing) {
         '<h1 class="wsmall">토론 아이덴티콘 명도</h1>' +
         '<p>스레딕 헬퍼 방식을 사용하는 경우에만 적용됩니다.</p>' +
         '<label for="discussIdentiLightness">명도</label><input name="discussIdentiLightness" data-setname="discussIdentiLightness" type="range" max="1" min="0" step="0.01"><br>' +
-        '<label for="discussIdentiSaturation">순도</label><input name="discussIdentiSaturation" data-setname="discussIdentiSaturation" type="range" max="1" min="0" step="0.01">';
+        '<label for="discussIdentiSaturation">순도</label><input name="discussIdentiSaturation" data-setname="discussIdentiSaturation" type="range" max="1" min="0" step="0.01">' +
+        '<h1 class="wsmall">토론시 취소선</h1>' +
+        '<input type="radio" name="hideDeletedWhenDiscussing" data-setname="hideDeletedWhenDiscussing" data-setvalue="0">표시<br>' +
+        '<input type="radio" name="hideDeletedWhenDiscussing" data-setname="hideDeletedWhenDiscussing" data-setvalue="0.5">반숨김<br>' +
+        '<input type="radio" name="hideDeletedWhenDiscussing" data-setname="hideDeletedWhenDiscussing" data-setvalue="1">숨기기<br>';
       var optionTags = document.querySelectorAll('[data-setname]');
       SET.load();
       for (var i = 0; i < optionTags.length; i++) {
@@ -1751,6 +1759,16 @@ if (ENV.Discussing) {
       message.dataset.nfbeauty = true;
     }
   }, 200);
+
+  // 취소선 숨기기
+  switch (hideDeletedWhenDiscussing) {
+    case 1:
+      GM_addStyle('.res .r-body del {display: none;}');
+      break;
+    case 0.5:
+      GM_addStyle('.res .r-body del {color: transparent; background: transparent; border: dotted 1px red;}');
+      break;
+  }
 } else if (ENV.IsUserPage) {
   function makeHeatTable(times) {
     try {
