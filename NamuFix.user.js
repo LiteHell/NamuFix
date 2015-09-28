@@ -1746,44 +1746,6 @@ if (ENV.Discussing) {
       message.dataset.nfbeauty = true;
     }
   }, 200);
-
-  // IP 국가 조회
-  setInterval(function() {
-    var message = document.querySelector('.res:not([data-nf-ip-flag-processed]):not([data-nf-not-ip-user])');
-    if (message == null) return;
-    else message.dataset.nfIpFlagProcessed = true;
-    var contributor = message.querySelector('.r-head > a');
-    var pattern = /\/contribution\/ip\/([0-9\.]+|[a-zA-Z0-9:]+)\/(?:document|discuss)$/;
-    if (!pattern.test(contributor.href)) {
-      message.dataset.nfNotIpUser = true;
-      return;
-    } else {
-      var ip = pattern.exec(contributor.href)[1];
-    }
-
-    GM_xmlhttpRequest({
-      method: "GET",
-      url: "http://ip-api.com/json/{0}".format(ip),
-      onload: function(res) {
-        var resObj = JSON.parse(res.responseText);
-        var country = resObj.countryCode;
-        var countryName = resObj.country;
-        var isp = resObj.isp;
-        var imgUrl = 'http://www.geonames.org/flags/x/{0}.gif'.format(country.toLowerCase());
-
-        var imgTag = document.createElement("img");
-        imgTag.style.width = '20px';
-        imgTag.style.height = '14px';
-        imgTag.style.display = 'inline';
-        imgTag.style.marginRight = '3px';
-        imgTag.style.marginLeft = '3px';
-        imgTag.title = '국가 : {0}, ISP : {1}'.format(countryName, isp);
-        imgTag.src = imgUrl;
-        contributor.insertBefore(imgTag, contributor.firstChild);
-      }
-    });
-
-  }, 100);
 } else if (ENV.IsUserPage) {
   function makeHeatTable(times) {
     try {
@@ -1873,11 +1835,12 @@ if (ENV.Discussing) {
       }
     }
     p.innerHTML += ('<table id="contInfo">' +
-      '<tr><td>총 기여 횟수</td><td>{0}</td></tr>' +
-      '<tr><td>총 기여한 문서 (ACL 변경, 문서 이동 포함)</td><td>{1}</td></tr>' +
-      '<tr><td>삭제한 문서 수</td><td>{2}</td></tr>' +
-      '<tr><td>새로 만든 문서 수</td><td>{3}</td></tr>' +
-      '<tr><td>한 문서당 평균 기여 바이트 수</td><td>{4}</td></tr>' +
+      '<tr><td>총 기여 횟수</td><td>{0}회</td></tr>' +
+      '<tr><td>기여한 바이트 총합</td><td>{1}bytes</td></tr>' +
+      '<tr><td>총 기여한 문서 (ACL 변경, 문서 이동 포함) 수</td><td>{2}개</td></tr>' +
+      '<tr><td>삭제한 문서 수</td><td>{3}개</td></tr>' +
+      '<tr><td>새로 만든 문서 수</td><td>{4}개</td></tr>' +
+      '<tr><td>한 문서당 평균 기여 바이트</td><td>{5}bytes</td></tr>' +
       '<tr><td>시간대별 기여/활동 횟수 총합(문서 기여)</td><td><a href="#NothingToLink" id="punch">여기를 눌러 확인</a></td></tr>' +
       '</table>').format(contCount, contTotalBytes, documents.length, deletedDocuments.length, createdDocuments.length, (contTotalBytes / documents.length));
     p.querySelector('a#punch').addEventListener('click', function() {
