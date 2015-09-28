@@ -1761,7 +1761,7 @@ if (ENV.Discussing) {
   }, 200);
 
   // 취소선 숨기기
-  switch (hideDeletedWhenDiscussing) {
+  switch (SET.hideDeletedWhenDiscussing) {
     case 1:
       GM_addStyle('.res .r-body del {display: none;}');
       break;
