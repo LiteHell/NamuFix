@@ -488,13 +488,21 @@ function getFile(callback) {
 if (document.querySelector('footer')) {
   var bitcoinAddress = '1namugv5YiXPdjBx7RoHpWCGuMnjLZEh6';
   var footer = document.querySelector('footer');
-  var dontaionDiv = document.createElement("div");
-  dontaionDiv.style.textAlign = 'right';
-  dontaionDiv.style.marginTop = '5px';
-  dontaionDiv.innerHTML = ('<img src="//i.imgur.com/0F2zZM9.png" style="height: 40px; width: 116.7px; float:right; display: inline; margin-left: 10px;"></img>' +
+  var donationDiv = document.createElement("div");
+  donationDiv.style.textAlign = 'right';
+  donationDiv.style.marginTop = '5px';
+  donationDiv.innerHTML = ('<img src="//i.imgur.com/0F2zZM9.png" style="height: 40px; width: 116.7px; float:right; display: inline; margin-left: 10px;"></img>' +
     '오늘같은 날 나무위키에 줄 수 있는 특별한 사랑은 무엇일까요? 특별한 사랑이란 잊혀지지 않는 사랑, 그 이름은 기부입니다.<br>' +
-    '비트코인 주소 : {0}').format(bitcoinAddress);
-  footer.appendChild(dontaionDiv);
+    '비트코인 주소 : {0} <a href="#NothingToLink" id="showQR">(QR 코드 확인)</a>').format(bitcoinAddress);
+  donationDiv.querySelector('#showQR').addEventListener('click', function() {
+    var win = TooSimplePopup();
+    win.title('QR코드');
+    win.content(function(container) {
+      container.innerHTML = '<img src="//i.imgur.com/DDsEsTo.png" style="max-width: calc(100vw - 50px);"></img>';
+    });
+    win.button('닫기', win.close);
+  })
+  footer.appendChild(donationDiv);
 }
 if (ENV.IsEditing || ENV.Discussing) {
   if (document.querySelectorAll("textarea").length == 1 && !document.querySelector("textarea").hasAttribute("readonly")) {
