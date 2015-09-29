@@ -1697,13 +1697,13 @@ if (ENV.Discussing) {
       }
       var anchorDirection = document.querySelector('.r-head .num a[id=\'' + /#([0-9]+)$/.exec(anchor.href)[1] + '\']');
       var obj = {};
-      if(anchorDirection == null){
+      if (anchorDirection == null) {
         obj = {
           talker: "?????????",
           message: "존재하지 않는 메세지입니다.",
-          notExists : true
+          notExists: true
         }
-      }else{
+      } else {
         var anchorTarget = anchorDirection.parentNode.parentNode.parentNode;
         obj = {
           talker: anchorTarget.querySelector('.r-head > a').textContent,
@@ -1717,9 +1717,10 @@ if (ENV.Discussing) {
         var obj = JSON.parse(evt.target.dataset.targetMessage);
         var elem = document.createElement("div");
         elem.className = 'nfTopicMessage';
-        elem.innerHTML = '<div style="font-size: 15px; font-weight: 500; font-family: sans-serif; color: white; height: 15px;">{0}</div><div style="margin-top: 8px; background: white; color: black;">{1}</div>'.format(obj.talker, obj.message);
+        elem.innerHTML = '<div style="font-size: 18px; font-weight: 500; font-family: sans-serif; height: 18px;">{0}</div><div style="margin-top: 15px;">{1}</div>'.format(obj.talker, obj.message);
         elem.style.position = 'absolute';
-        elem.style.padding = '5px';
+        elem.style.padding = '10px';
+        elem.style.color = 'white';
         elem.style.borderRadius = '4px';
         elem.style.background = obj.notExists ? 'red' : 'black';
         elem.style.zIndex = 3;

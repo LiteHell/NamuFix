@@ -142,3 +142,7 @@ div.NamaEditor.NEMenuButton {
   margin-top: 35px;
   /* Bug Fix */
 }
+.nfTopicMessage blockquote.wiki-quote {
+  /* Bug Fix */
+  color: black;
+}
