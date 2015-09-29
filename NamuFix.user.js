@@ -240,6 +240,74 @@ GM_xmlhttpRequest({
   }
 })
 
+function modifyDocument(title, content, log, callback) {
+  var editUrl = "https://namu.wiki/edit/{0}".format(title);
+  GM_xmlhttpRequest({
+    method: "GET",
+    url: editUrl,
+    onload: function(res) {
+      var doc = (new DOMParser()).parseFromString(res.responseText, "text/html");
+      var data = new FormData();
+      data.append("baserev", doc.querySelector("form#editForm input[name=baserev]").value)
+      data.append("text", content);
+      data.append("log", arguments.length == 4 ? log : 'via NamuFix');
+
+      function Finish() {
+        GM_xmlhttpRequest({
+          method: "POST",
+          url: editUrl,
+          data: data,
+          onload: function(res) {
+            if (res.status == 200) // reCAPTCHA 오류 떠도 200임.
+              callback();
+          }
+        });
+      }
+      if (doc.querySelector('.g-recaptcha')) {
+        /* var orgWidget = doc.querySelector('.g-recaptcha');
+        var win = TooSimplePopup();
+
+        win.title("reCAPTCHA");
+        win.button('닫기(디버그용)', win.close);
+        win.content(function(container) {
+          // add reCAPTCHA script
+          var script = document.createElement("script");
+          script.src = "//www.google.com/recaptcha/api.js";
+          container.appendChild(script);
+
+          // add reCAPTCHA
+          var hiddenBtn = document.createElement("button");
+          hiddenBtn.id = "nfCommunicate";
+          hiddenBtn.setAttribute("type", "button");
+          hiddenBtn.style.display = 'none';
+          hiddenBtn.addEventListener('click', function() {
+            win.close();
+            setTimeout(Finish, 500);
+          });
+          container.appendChild(hiddenBtn);
+
+          // add Script block
+          var script1 = document.createElement("script");
+          script1.innerHTML = 'function reCallback(){document.querySelector("#nfCommunicate").click();}';
+          container.appendChild(script1);
+
+          // add Widget
+          var widget = document.createElement("div");
+          widget.className = "g-recaptcha";
+          widget.dataset.sitekey = orgWidget.dataset.sitekey;
+          widget.dataset.callback = "reCallback";
+          container.appendChild(widget);
+        }); */
+
+        // ㅅㅂ 왜 안되고 지랄이야
+        alert('오류 : reCATPCHA가 감지됬습니다.');
+      } else {
+        Finish();
+      }
+    }
+  });
+}
+
 function getRAW(title, onfound, onnotfound) {
   GM_xmlhttpRequest({
     method: 'GET',
@@ -1866,6 +1934,10 @@ if (ENV.Discussing) {
       }
     }
     p.innerHTML += ('<table id="contInfo">' +
+      '<tfoot>' +
+      '<tr><td colspan="2" style="border-top: 1px solid black;">최근 30일간의 데이터만 반영되었으므로, 최근 30일 간의 기여 정보입니다.</td></tr>' +
+      '</foot>' +
+      '<tbody>' +
       '<tr><td>총 기여 횟수</td><td>{0}회</td></tr>' +
       '<tr><td>기여한 바이트 총합</td><td>{1}bytes</td></tr>' +
       '<tr><td>총 기여한 문서 (ACL 변경, 문서 이동 포함) 수</td><td>{2}개</td></tr>' +
@@ -1873,6 +1945,7 @@ if (ENV.Discussing) {
       '<tr><td>새로 만든 문서 수</td><td>{4}개</td></tr>' +
       '<tr><td>한 문서당 평균 기여 바이트</td><td>{5}bytes</td></tr>' +
       '<tr><td>시간대별 기여/활동 횟수 총합(문서 기여)</td><td><a href="#NothingToLink" id="punch">여기를 눌러 확인</a></td></tr>' +
+      '</tbody>' +
       '</table>').format(contCount, contTotalBytes, documents.length, deletedDocuments.length, createdDocuments.length, (contTotalBytes / documents.length));
     p.querySelector('a#punch').addEventListener('click', function() {
       var win = TooSimplePopup();
@@ -1924,11 +1997,16 @@ if (ENV.Discussing) {
     discussCount = Object.keys(docuAndTalks).length;
     avgTalks = totalTalks / discussCount;
     p.innerHTML += ('<table id="contInfo">' +
+      '<tfoot>' +
+      '<tr><td colspan="2" style="border-top: 1px solid black;">최근 30일 간의 토론 정보만 반영되었으므로, 최근 30일 간의 토론 정보입니다.</td></tr>' +
+      '</tfoot>' +
+      '<tbody>' +
       '<tr><td>총 발언 수</td><td>{0}</td></tr>' +
       '<tr><td>참여한 토론 수</td><td>{1}</td></tr>' +
       '<tr><td>한(1) 토론당 평균 발언 수</td><td>{2}</td></tr>' +
       '<tr><td>한(1) 토론당 발언 수 표준편차</td><td>{3}</td></tr>' +
       '<tr><td>시간대별 기여/활동 횟수 총합(토론)</td><td><a href="#NothingToLink" id="punch">여기를 눌러 확인</a></td></tr>' +
+      '</tbody>' +
       '</table>').format(totalTalks, discussCount, avgTalks, standardDeviation(Talks));
     p.querySelector('a#punch').addEventListener('click', function() {
       var win = TooSimplePopup();
