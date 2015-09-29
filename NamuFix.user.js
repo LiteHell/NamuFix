@@ -1695,21 +1695,33 @@ if (ENV.Discussing) {
       if (!/#[0-9]+$/.test(anchor.href) || anchor.title != ENV.docTitle + '#' + /#([0-9]+)$/.exec(anchor.href)[1]) {
         continue;
       }
-      var anchorTarget = document.querySelector('.r-head .num a[id=\'' + /#([0-9]+)$/.exec(anchor.href)[1] + '\']').parentNode.parentNode.parentNode;
-      var obj = {
-        talker: anchorTarget.querySelector('.r-head > a').textContent,
-        message: anchorTarget.querySelector('.r-body').innerHTML
-      };
+      var anchorDirection = document.querySelector('.r-head .num a[id=\'' + /#([0-9]+)$/.exec(anchor.href)[1] + '\']');
+      var obj = {};
+      if(anchorDirection == null){
+        obj = {
+          talker: "?????????",
+          message: "존재하지 않는 메세지입니다.",
+          notExists : true
+        }
+      }else{
+        var anchorTarget = anchorDirection.parentNode.parentNode.parentNode;
+        obj = {
+          talker: anchorTarget.querySelector('.r-head > a').textContent,
+          message: anchorTarget.querySelector('.r-body').innerHTML,
+          notExists: false
+        };
+      }
+
       anchor.dataset.targetMessage = JSON.stringify(obj);
       anchor.addEventListener('mouseenter', function(evt) {
         var obj = JSON.parse(evt.target.dataset.targetMessage);
         var elem = document.createElement("div");
         elem.className = 'nfTopicMessage';
-        elem.innerHTML = '<div style="font-size: 15pt; font-weight: 500; font-family: sans-serif; color: white;">{0}</div><div style="margin-top: 8px; background: white; color: black;">{1}</div>'.format(obj.talker, obj.message);
+        elem.innerHTML = '<div style="font-size: 15px; font-weight: 500; font-family: sans-serif; color: white; height: 15px;">{0}</div><div style="margin-top: 8px; background: white; color: black;">{1}</div>'.format(obj.talker, obj.message);
         elem.style.position = 'absolute';
-        elem.style.padding = '20px';
-        elem.style.borderRadius = '8px';
-        elem.style.background = 'black';
+        elem.style.padding = '5px';
+        elem.style.borderRadius = '4px';
+        elem.style.background = obj.notExists ? 'red' : 'black';
         elem.style.zIndex = 3;
         evt.target.appendChild(elem);
         evt.target.title = '';
