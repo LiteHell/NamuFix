@@ -117,26 +117,31 @@ if (ENV.IsDiff) {
 if (nOu(ENV.section))
   ENV.section = -2;
 
-GM_xmlhttpRequest({
-  method: "GET",
-  url: "https://wtfismyip.com/json",
-  onload: function(res) {
-    var obj = JSON.parse(res.responseText);
-    var ip = obj.YourFuckingIPAddress;
-    if (!ENV.IsLoggedIn) ENV.UserName = ip;
-    ENV.IPAddress = ip;
+function addContributionLink() {
+  if (document.querySelector('header.nav_top')) {
+    var memberMenu = document.querySelector('ul#memberMenu');
 
-    // 내 기여 버튼 추가
-    if (document.querySelector('header.nav_top')) {
-      var memberMenu = document.querySelector('ul#memberMenu');
-
-      memberMenu.innerHTML += ('<li class="f_r"><a style="padding: 0;">|</a></li>' +
-        '<li class="f_r"><a id="myContributions" title="내 기여" href="{0}" rel="nofollow">내 기여</a></li>').format(
-        '/contribution/{0}/{1}/document'.format(ENV.IsLoggedIn ? 'author' : 'ip', ENV.UserName)
-      );
-    }
+    memberMenu.innerHTML += ('<li class="f_r"><a style="padding: 0;">|</a></li>' +
+      '<li class="f_r"><a id="myContributions" title="내 기여" href="{0}" rel="nofollow">내 기여</a></li>').format(
+      '/contribution/{0}/{1}/document'.format(ENV.IsLoggedIn ? 'author' : 'ip', ENV.UserName)
+    );
   }
-});
+}
+if (ENV.IsLoggedIn) {
+  addContributionLink();
+} else {
+  GM_xmlhttpRequest({
+    method: "GET",
+    url: "https://api.ipify.org/?format=json",
+    onload: function(res) {
+      var ip = JSON.parse(res.responseText).ip;
+      if (!ENV.IsLoggedIn) ENV.UserName = ip;
+      ENV.IPAddress = ip;
+      addContributionLink();
+    }
+  });
+}
+
 
 var SET = new function() {
   var discards = ['save', 'load'];
