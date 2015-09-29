@@ -1762,14 +1762,12 @@ if (ENV.Discussing) {
         message.querySelector('.r-head .num a').style.color = 'white';
       } else if (isIcon) {
         var a = message.querySelector('.r-head > a');
-        var nonColoredSpan = document.createElement("span");
-        nonColoredSpan.innerHTML = '　';
         var span = document.createElement("span");
         span.style.background = nColor;
         span.style.color = nColor;
+        span.style.marginLeft = '1em';
         span.innerHTML = '__';
-        a.appendChild(nonColoredSpan);
-        a.appendChild(span);
+        a.parentNode.insertBefore(span, a.nextSibling);
       } else if (isIdenticon) {
         var identicon = document.createElement("div");
         identicon.className = "nf-identicon";
