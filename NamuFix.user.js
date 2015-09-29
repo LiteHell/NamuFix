@@ -1836,7 +1836,7 @@ if (ENV.Discussing) {
       GM_addStyle('.res .r-body del {display: none;}');
       break;
     case 0.5:
-      GM_addStyle('.res .r-body del {color: transparent; background: transparent; border: dotted 1px red;}');
+      GM_addStyle('.res .r-body del, .res .r-body del a {color: transparent; background: transparent;} .res .r-body del {border: dotted 1px red;}');
       break;
   }
 } else if (ENV.IsUserPage) {
