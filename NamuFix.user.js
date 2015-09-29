@@ -183,8 +183,6 @@ function INITSET() { // Storage INIT
     SET.discussIdentiSaturation = 0.5;
   if (nOu(SET.favorites))
     SET.favorites = [];
-  if (nOu(SET.ignoreNewUpdate))
-    SET.ignoreNewUpdate = 0;
   if (nOu(SET.customIdenticons))
     SET.customIdenticons = {};
   if (nOu(SET.hideDeletedWhenDiscussing))
@@ -200,7 +198,6 @@ GM_xmlhttpRequest({
   method: "GET",
   url: "https://api.github.com/repos/LiteHell/NamuFix/releases/latest",
   onload: function(res) {
-    if (Date.now() - SET.ignoreNewUpdate < 3600000) return;
     var obj = JSON.parse(res.responseText);
     var currentVersion = GM_info.script.version;
     var latestVersion = obj.tag_name;
@@ -214,29 +211,10 @@ GM_xmlhttpRequest({
           '현재 최신 버전 : ' + latestVersion + '<br><br>' +
           latestVersion + '버전에서의 변경 사항<div style="border-left: 6px solid green; padding: 10px; font-size: 13px; font-family: sans-family;" id="changeLog"></div>' +
           '<p><a href="' + scriptUrl + '" style="text-decoration: none;"><button type="button" style="display: block; margin: 0 auto;">최신 버전 설치</button></a></p>' +
-          '설치 후 새로고침을 해야 적용됩니다.';
+          '설치 후 새로고침을 해야 적용됩니다.<br>버그 신고 및 건의는 <a href="https://github.com/LiteHell/NamuFix/issues">이슈 트래커</a>에서 해주시면 감사하겠습니다.';
         element.querySelector('#changeLog').innerHTML = obj.body.replace(/\r\n/g, '<br>').replace(/\n/g, '<br>');
       });
 
-      win.button('닫기(1시간동안 보지 않음)', function() {
-        for (var i = 0; i < 10; i++) {
-          var rnd = Math.floor(Math.random() * 1000);
-          var negativeQuestion;
-          if (rnd > 500) negativeQuestion = true;
-          else negativeQuestion = false;
-          var Question = negativeQuestion ? '정말로 1시간동안 업데이트를 보지 않겠습니까?' : '정말로 닫기 버튼을 누른듯 그냥 창만 닫겠습니까?';
-          Question += ' (' + (i + 1) + '/10)'
-          var yesClicked = confirm(Question);
-          if (yesClicked != negativeQuestion) { // xor
-            win.close();
-            return;
-          }
-        }
-        SET.load();
-        SET.ignoreNewUpdate = Date.now();
-        SET.save();
-        win.close();
-      })
       win.button('닫기', win.close);
       win.button('새로고침', function() {
         location.reload();
