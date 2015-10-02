@@ -1699,25 +1699,25 @@ if (ENV.Discussing) {
         continue;
       }
       var anchorDirection = document.querySelector('.r-head .num a[id=\'' + /#([0-9]+)$/.exec(anchor.href)[1] + '\']');
-      var obj = {};
-      if (anchorDirection == null) {
-        obj = {
-          talker: "?????????",
-          message: "존재하지 않는 메세지입니다.",
-          notExists: true
-        }
-      } else {
-        var anchorTarget = anchorDirection.parentNode.parentNode.parentNode;
-        obj = {
-          talker: anchorTarget.querySelector('.r-head > a').textContent,
-          message: anchorTarget.querySelector('.r-body').innerHTML,
-          notExists: false
-        };
-      }
 
-      anchor.dataset.targetMessage = JSON.stringify(obj);
+      anchor.dataset.target = (anchorDirection) ? anchorDirection.id : "";
       anchor.addEventListener('mouseenter', function(evt) {
-        var obj = JSON.parse(evt.target.dataset.targetMessage);
+        var anchorDirection = document.getElementById(evt.target.dataset.target);
+        var obj = {};
+        if (anchorDirection == null) {
+          obj = {
+            talker: "?????????",
+            message: "존재하지 않는 메세지입니다.",
+            notExists: true
+          }
+        } else {
+          var anchorTarget = anchorDirection.parentNode.parentNode.parentNode;
+          obj = {
+            talker: anchorTarget.querySelector('.r-head > a').textContent,
+            message: anchorTarget.querySelector('.r-body').innerHTML,
+            notExists: false
+          };
+        }
         var elem = document.createElement("div");
         elem.className = 'nfTopicMessage';
         elem.innerHTML = '<div style="font-size: 18px; font-weight: 500; font-family: sans-serif; height: 18px;">{0}</div><div style="margin-top: 15px;">{1}</div>'.format(obj.talker, obj.message);
