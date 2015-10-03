@@ -1352,10 +1352,14 @@ if (ENV.IsEditing || ENV.Discussing) {
         container.appendChild(p);
       });
       win.button('삽입', function() {
-        var postData = "code={0}&lexer={1}".format(
+        var postData = "code=".concat(
           encodeURIComponent(document.getElementById("nfCodeToBeautify").value),
+          "&lexer=",
           encodeURIComponent(document.getElementById("nfCodeLanguage").value)
         );
+        var waiting = TooSimplePopup();
+        waiting.title("진행중입니다.");
+        waiting.content(function(container){container.innerHTML = "잠시만 기다려주세요...."});
         GM_xmlhttpRequest({
           method: "POST",
           url: "http://hilite.me/api",
@@ -1364,8 +1368,9 @@ if (ENV.IsEditing || ENV.Discussing) {
             "Content-Type": "application/x-www-form-urlencoded"
           },
           onload: function(res) {
-            TextProc.selectionText(TextProc.selectionText() + "{{{#!html {0}}}}".format(res.responseText));
+            TextProc.selectionText(TextProc.selectionText() + "{{{#!html ".concat(res.responseText, "}}}"));
             win.close();
+            waiting.close();
           }
         });
       });
