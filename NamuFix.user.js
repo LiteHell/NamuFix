@@ -2200,9 +2200,10 @@ if (ENV.Discussing) {
   setInterval(function() {
     getVPNGateIPList(function(result) {
       vpngateIP = result;
-      if(checkWorker == null) checkWorker = setInterval(checkVPN, 50);
+      if (checkWorker == null) checkWorker = setInterval(checkVPN, 50);
     })
   }, 200);
+
   function checkVPN() {
     var message = document.querySelector(".res:not([data-vpngate-checked])");
     if (message) {
@@ -2232,6 +2233,11 @@ if (ENV.Discussing) {
       break;
   }
 } else if (ENV.IsUserPage) {
+  function insertBeforeTitle(element) {
+    var title = document.querySelector("h1.title");
+    title.parentNode.insertBefore(element, title.nextSibling);
+  }
+
   function makeHeatTable(times) {
     try {
       // 가공
@@ -2285,7 +2291,48 @@ if (ENV.Discussing) {
     return new Date(Date.parse(time));
   }
   var p = document.createElement("p");
-  p.innerHTML += '<style>#contInfo { border-collapse: collapse; border: 1px solid black; padding: 2px;} #contInfo td {padding: 3px;} #contInfo td:nth-child(2) {border-left: 1px solid black;}</style>';
+  p.innerHTML += '<style>.contInfo { border-collapse: collapse; border: 1px solid black; padding: 2px;} #contInfo td {padding: 3px;} #contInfo td:nth-child(2) {border-left: 1px solid black;}</style>';
+  var ipPattern = /\/ip\/([a-zA-Z0-9:\.]+)\/(?:document|discuss)(?:#.+|)$/;
+  if (ipPattern.test(location.href)) {
+    // ip
+    // insert CSS if not exists
+    if (document.querySelector('link[href$="flag-icon.min.css"]') == null) {
+      var link = document.createElement("link");
+      link.href = "/css/lib/flag-icon-css/css/flag-icon.min.css";
+      link.setAttribute("rel", "stylesheet");
+      document.head.appendChild(link);
+    }
+    // check ip
+    var ip = ipPattern.exec(location.href)[1];
+    var ipInfo = document.createElement("p");
+    ipInfo.innerHTML = '<div style="border: 1px black solid; padding: 2px;">IP 관련 정보를 조회중입니다. 잠시만 기다려주세요.</div>'
+    insertBeforeTitle(ipInfo);
+    getVPNGateIPList(function(result) {
+      GM_xmlhttpRequest({
+        method: "GET",
+        url: "http://ip-api.com/json/{0}".format(ip),
+        onload: function(res) {
+          var resObj = JSON.parse(res.responseText);
+          var country = resObj.countryCode;
+          var countryName = resObj.country;
+          var isp = resObj.isp;
+          ipInfo.innerHTML = (
+            "<table class=\"contInfo\">" +
+            "<tbody>" +
+            "<tr><td>국가</td><td><span class=\"flag-icon flag-icon-{0}\"></span> {1}</td></tr>" + // {0} : cotunry, {1} : countryName
+            "<tr><td>통신사</td><td>{2}</td></tr>" +
+            "<tr><td>VPNGATE?</td><td>{3}</td></tr>" +
+            "</tbody>" +
+            '<tfoot>' +
+            '<tr><td colspan="2" style="border-top: 1px solid black;">기술적인 한계로, VPNGATE 여부는 "현재 VPNGATE VPN인가?"의 여부이지, "작성 당시에 VPNGATE VPN인가?"의 여부가 아닙니다.</td></tr>' +
+            '</foot>' +
+            "</table>"
+          ).format(country.toLowerCase(), countryName, isp, result.indexOf(ip) != -1 ? "Y" : "N");
+        }
+      });
+    });
+  }
+
   if (/\/document(?:#.+|)$/.test(location.href)) {
     var rows = document.querySelectorAll('table tr');
     var contCount = 0,
@@ -2319,7 +2366,7 @@ if (ENV.Discussing) {
         contributedAt.push(namuDTParse(row.querySelector('td:nth-child(3)').innerHTML));
       }
     }
-    p.innerHTML += ('<table id="contInfo">' +
+    p.innerHTML += ('<table class="contInfo">' +
       '<tfoot>' +
       '<tr><td colspan="2" style="border-top: 1px solid black;">최근 30일간의 데이터만 반영되었으므로, 최근 30일 간의 기여 정보입니다.</td></tr>' +
       '</foot>' +
@@ -2382,7 +2429,7 @@ if (ENV.Discussing) {
     }
     discussCount = Object.keys(docuAndTalks).length;
     avgTalks = totalTalks / discussCount;
-    p.innerHTML += ('<table id="contInfo">' +
+    p.innerHTML += ('<table class="contInfo">' +
       '<tfoot>' +
       '<tr><td colspan="2" style="border-top: 1px solid black;">최근 30일 간의 토론 정보만 반영되었으므로, 최근 30일 간의 토론 정보입니다.</td></tr>' +
       '</tfoot>' +
@@ -2405,7 +2452,7 @@ if (ENV.Discussing) {
   } else {
     delete p;
   }
-  if (typeof p !== 'undefined') document.querySelector("h1.title").parentNode.insertBefore(p, document.querySelector("h1.title").nextSibling);
+  if (typeof p !== 'undefined') insertBeforeTitle(p);
 } else if (ENV.IsDiff) {
   setTimeout(function() {
     try {
