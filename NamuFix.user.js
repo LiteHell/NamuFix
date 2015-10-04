@@ -2211,9 +2211,7 @@ if (ENV.Discussing) {
       var ipPattern = /\/contribution\/ip\/([a-zA-Z0-9\.:]+)\/(?:document|discuss)$/;
       if (ipPattern.test(ipLink.href)) {
         var ip = ipPattern.exec(ipLink.href)[1];
-        console.log("Extracted : " + ip);
         if (vpngateIP.indexOf(ip) != -1) {
-          console.log("VPNGATE : " + ip);
           var span = document.createElement("span");
           span.style.marginLeft = "1em";
           span.style.color = "red";
