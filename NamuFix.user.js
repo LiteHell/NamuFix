@@ -311,6 +311,22 @@ function modifyDocument(title, content, log, callback) {
   });
 }
 
+function getVPNGateIPList(callback) {
+  GM_xmlhttpRequest({
+    method: "GET",
+    url: "http://www.vpngate.net/api/iphone/",
+    onload: function(res) {
+      var lines = res.responseText.split('\n');
+      var result = [];
+      for (var i = 0; i < lines.length; i++) {
+        if (!/^[\*#]/.test(lines[i]))
+          result.push(lines[i].split(',')[1]);
+      }
+      callback(result);
+    }
+  })
+}
+
 function getRAW(title, onfound, onnotfound) {
   GM_xmlhttpRequest({
     method: 'GET',
@@ -1359,7 +1375,9 @@ if (ENV.IsEditing || ENV.Discussing) {
         );
         var waiting = TooSimplePopup();
         waiting.title("진행중입니다.");
-        waiting.content(function(container){container.innerHTML = "잠시만 기다려주세요...."});
+        waiting.content(function(container) {
+          container.innerHTML = "잠시만 기다려주세요...."
+        });
         GM_xmlhttpRequest({
           method: "POST",
           url: "http://hilite.me/api",
@@ -2175,6 +2193,36 @@ if (ENV.Discussing) {
       message.dataset.nfbeauty = true;
     }
   }, 200);
+
+  // vpngate IP 확인
+  var vpngateIP = [];
+  var checkWorker = null;
+  setInterval(function() {
+    getVPNGateIPList(function(result) {
+      vpngateIP = result;
+      if(checkWorker == null) checkWorker = setInterval(checkVPN, 50);
+    })
+  }, 200);
+  function checkVPN() {
+    var message = document.querySelector(".res:not([data-vpngate-checked])");
+    if (message) {
+      message.dataset.vpngateChecked = true;
+      var ipLink = message.querySelector(".r-head > a");
+      var ipPattern = /\/contribution\/ip\/([a-zA-Z0-9\.:]+)\/(?:document|discuss)$/;
+      if (ipPattern.test(ipLink.href)) {
+        var ip = ipPattern.exec(ipLink.href)[1];
+        console.log("Extracted : " + ip);
+        if (vpngateIP.indexOf(ip) != -1) {
+          console.log("VPNGATE : " + ip);
+          var span = document.createElement("span");
+          span.style.marginLeft = "1em";
+          span.style.color = "red";
+          span.innerHTML = "VPNGATE";
+          ipLink.parentNode.insertBefore(span, ipLink.nextSibling);
+        }
+      }
+    }
+  }
 
   // 취소선 숨기기
   switch (SET.hideDeletedWhenDiscussing) {
