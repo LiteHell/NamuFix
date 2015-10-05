@@ -779,11 +779,11 @@ if (ENV.IsEditing || ENV.Discussing) {
       win.title('YouTube 동영상 삽입');
       win.content(function(el) {
         el.innerHTML = '<p style="background: cyan; box-shadow: 2px 2px 2px gray; color:white; padding: 8px; border-radius: 3px; margin-bottom: 5px;">YouTube 동영상을 검색하거나 동영상 주소를 입력하여 YouTube 동영상을 삽입할 수 있습니다.</p>' +
-          '<p><label for="vidUrl" style="width: 120px; display: inline-block;">YouTube 동영상 주소</label><input type="text" name="vidUrl" id="vidUrl" style="width:620px;"></input><button id="insertUrl">삽입</button></p>' +
+          '<p><label for="vidUrl" style="width: 120px; display: inline-block;">YouTube 동영상 주소</label><input type="text" name="vidUrl" id="vidUrl" style="width:620px; max-width: 100vw;"></input><button id="insertUrl">삽입</button></p>' +
           '<hr>' +
           '<div>' +
-          '<label for="vidQuery" style="width: 120px; display: inline-block;">검색어</label><input type="text" name="vidQuery" id="vidQuery" style="width:620px;"></input><button id="searchVids">검색</button>' +
-          '<div id="results" style="overflow-y: scroll; overflow-x: hidden; width: 820px; min-width: 820px; height: 400px;"><span style="color:red">검색 결과가 없습니다.</span></div>' +
+          '<label for="vidQuery" style="width: 120px; display: inline-block;">검색어</label><input type="text" name="vidQuery" id="vidQuery" style="width:620px; max-width: 100vw;"></input><button id="searchVids">검색</button>' +
+          '<div id="results" style="overflow-y: scroll; overflow-x: hidden; width: 820px; max-width: 100vw; height: 400px; max-height: calc(100vh - 300px);"><span style="color:red">검색 결과가 없습니다.</span></div>' +
           '</div>';
       })
       var finish = function(vid) {
@@ -843,7 +843,7 @@ if (ENV.IsEditing || ENV.Discussing) {
                 var li = document.createElement("li");
                 li.height = '90px';
                 li.innerHTML = '<img style="height: 90px;" src="' + vidNow.snippet.thumbnails.default.url + '"></img>' +
-                  '<div style="position: relative; display: inline-block; margin-left: 5px; overflow: hidden; width: 670px;">' +
+                  '<div style="position: relative; display: inline-block; margin-left: 5px; overflow: hidden; width: 670px; max-width: 100vw;">' +
                   '<span style="font-weight: bold; font-size: 12pt; margin-bottom: 3px;">' + vidNow.snippet.title + '</span><button name="insertThis" class="moreFlat">삽입</button><button name="preview" class="moreFlat">미리보기</button><br><span style="font-size:10pt;">' + vidNow.snippet.description + '</span>' +
                   '</div>';
                 li.querySelector('[name="preview"]').parentNode.dataset.videoId = vidNow.id.videoId;
@@ -854,8 +854,10 @@ if (ENV.IsEditing || ENV.Discussing) {
                     var iframe = document.createElement("iframe");
                     iframe.setAttribute("frameborder", "0");
                     iframe.setAttribute("src", "//www.youtube.com/embed/" + evt.target.parentNode.dataset.videoId);
-                    iframe.setAttribute("height", "360px");
-                    iframe.setAttribute("width", "640px");
+                    iframe.style.height = "360px";
+                    iframe.style.width = "640px";
+                    iframe.style.maxWidth = "100vw";
+                    iframe.style.maxHeight = "calc(100vh - 80px)"
                     el.appendChild(iframe);
                   });
                   previewWin.button('닫기', previewWin.close);
