@@ -8,8 +8,8 @@
 // @include     http://issue.namu.wiki/*
 // @version     151004.1
 // @namespace   http://litehell.info/
-// @downloadURL https://raw.githubusercontent.com/LiteHell/NamuFix/master/NamuFix.user.js
-// @require     https://raw.githubusercontent.com/LiteHell/NamuFix/master/FlexiColorPicker.js
+// @downloadURL https://raw.githubusercontent.com/LiteHell/NamuFix/better/NamuFix.user.js
+// @require     https://raw.githubusercontent.com/LiteHell/NamuFix/better/FlexiColorPicker.js
 // @require     https://raw.githubusercontent.com/Caligatio/jsSHA/v2.0.1/src/sha512.js
 // @require     https://raw.githubusercontent.com/zenozeng/color-hash/master/dist/color-hash.js
 // @require     http://www.xarg.org/download/pnglib.js
@@ -82,7 +82,7 @@ function insertCSS(url) {
     }
   });
 }
-insertCSS("https://raw.githubusercontent.com/LiteHell/NamuFix/master/NamuFix.css");
+insertCSS("https://raw.githubusercontent.com/LiteHell/NamuFix/better/NamuFix.css");
 insertCSS("https://raw.githubusercontent.com/LiteHell/TooSimplePopupLib/master/TooSimplePopupLib.css");
 
 function nOu(a) {
