@@ -395,35 +395,29 @@ function createDesigner(buttonBar) {
 
     var dbHover = false,
       dbBHover = false;
-    dropdownButton.addEventListener('mouseover', function() {
-      dbBHover = true;
-    });
-    dropdown.addEventListener('mouseover', function() {
-      dbHover = true;
-    });
-    dropdownButton.addEventListener('mouseleave', function() {
-      dbBHover = false;
-    });
-    dropdown.addEventListener('mouseleave', function() {
-      dbHover = false;
-    });
-    var shower = setInterval(function() {
-      if (dbHover || dbBHover) {
-        dropdownButton.setAttribute('hover', 'yes');
-        dropdown.style.display = '';
-      } else {
-        dropdownButton.removeAttribute('hover');
-        dropdown.style.display = 'none';
+    dropdown.style.display = 'none';
+    dropdownButton.addEventListener('click', function() {
+      var dropdowns = buttonBar.querySelectorAll(".NamaEditor.NEMenuButton > .NamaEditor.NEDropDown");
+      for (var i = 0; i < dropdowns.length; i++) {
+        if (dropdowns[i] != dropdown) {
+          dropdowns[i].style.display = 'none';
+          dropdowns[i].parentNode.removeAttribute("hover");
+        } else if (dropdown.style.display.trim() == 'none') {
+          dropdown.style.display = '';
+          dropdownButton.setAttribute("hover", "yes");
+        } else {
+          dropdown.style.display = 'none';
+          dropdownButton.removeAttribute("hover");
+        }
       }
-    }, 50);
+    });
 
     var hr = {
       button: function(iconTxt, txt) {
         var liTag = document.createElement('li');
         liTag.innerHTML = '<span class="NEHeadIcon">' + iconTxt + '</span><span class="NEDescText">' + txt + '</span>'
         liTag.addEventListener('click', function() {
-          dbHover = false;
-          dbBHover = false;
+          dropdown.style.display = '';
         })
         dropdownList.appendChild(liTag);
         var r = {
