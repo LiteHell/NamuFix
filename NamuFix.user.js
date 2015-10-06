@@ -101,6 +101,16 @@ if (!String.prototype.format) {
   }
 }
 
+function forLoop(array, callback) {
+  var index = 0;
+  var doNext = function() {
+    if (array.length > index) {
+      callback(array[index++], doNext, index == array.length - 1);
+    }
+  }
+  doNext();
+}
+
 function formatDateTime(t) {
   var d = new Date(t);
   return '{0}년 {1}월 {2}일 {6} {3}시 {4}분 {5}초'.format(d.getFullYear(), d.getMonth() + 1, d.getDate(), d.getHours() - (d.getHours() > 12 ? 12 : 0), d.getMinutes(), d.getSeconds(), d.getHours() > 12 ? '오후' : '오전');
@@ -552,9 +562,11 @@ function createTextProcessor(txtarea) {
   return r;
 }
 
-function getFile(callback) {
+function getFile(callback, allowMultiple) {
+  if (typeof allowMultiple === "undefined") var allowMultiple = false;
   var elm = document.createElement("input");
   elm.setAttribute("type", "file");
+  if (allowMultiple) elm.setAttribute("multiple", "1");
   elm.style.visibility = "hidden";
   elm.setAttribute("accept", "image/*");
   document.body.appendChild(elm);
@@ -708,72 +720,72 @@ if (ENV.IsEditing || ENV.Discussing) {
     // Insertable Media Functions
     function ImgurUpload() {
       getFile(function(files, finish) {
-        if (files.length > 1) {
-          alert('한개의 파일만 업로드하실 수 있습니다.');
-          finish();
-          return;
-        } else if (files.length < 0) {
+        if (files.length < 0) {
           alert('선택된 파일이 없습니다.');
           finish();
           return;
         }
-        var win = TooSimplePopup();
-        win.title('Imgur 업로드');
-        win.content(function(el) {
-          el.innerHTML = '<span id="msg">진행중입니다. 잠시만 기다려주세요....</span><br>이미지 삭제 주소는 <a href="https://namu.wiki/settings" target="_blank">NamuFix 설정 페이지</a>를 참고하세요.'
-        });
-        var setMsg = function(msg) {
+        forLoop(files, function(file, next, isLastItem) {
+          var win = TooSimplePopup();
+          win.title('Imgur 업로드');
+          win.content(function(el) {
+            el.innerHTML = '<span id="msg">진행중입니다. 잠시만 기다려주세요....</span><br><br>이미지 삭제 주소는 <a href="https://namu.wiki/settings" target="_blank">NamuFix 설정 페이지</a>를 참고하세요.'
+          });
+
+          function setMsg(msg) {
             win.content(function(el) {
               el.querySelector('span#msg').innerHTML = msg;
             });
           }
           // imgur Client ID : 60a43baebed658a
-        var file = files[0];
-        if (file) {
-          setMsg('전송중입니다. 잠시만 기다려주세요.....');
-          var reader = new FileReader();
-          reader.onload = function(evt) {
-            var res;
-            GM_xmlhttpRequest({
-              method: "POST",
-              headers: {
-                Authorization: "Client-ID 60a43baebed658a",
-                Accept: "application/json",
-                "Content-Type": "application/x-www-form-urlencoded"
-              },
-              url: "https://api.imgur.com/3/image",
-              data: 'type=base64&image=' + encodeURIComponent(reader.result.replace(/.*,/, '')),
-              onload: function(response) {
-                res = JSON.parse(response.responseText)
-                if (!res["success"]) {
-                  alert("죄송하지만 이미지 업로드에 실패하였습니다.");
-                  NE.close();
-                } else {
-                  var deleteLink = 'http://imgur.com/delete/' + res["data"]["deletehash"];
-                  var imageDirectLink = res["data"]["link"];
-                  setMsg('완료됬습니다.');
-                  SET.load();
-                  SET.imgurDeletionLinks.push({
-                    imgUrl: imageDirectLink,
-                    deleteionUrl: deleteLink,
-                    uploadedAt: Date.now()
-                  });
-                  SET.save();
-                  win.close();
-                  TextProc.selectionText(TextProc.selectionText() + ' ' + imageDirectLink + ' ');
+          if (file) {
+            setMsg('전송중입니다. 잠시만 기다려주세요.....<br>파일 이름 : ' + file.name);
+            var reader = new FileReader();
+            reader.onload = function(evt) {
+              var res;
+              GM_xmlhttpRequest({
+                method: "POST",
+                headers: {
+                  Authorization: "Client-ID 60a43baebed658a",
+                  Accept: "application/json",
+                  "Content-Type": "application/x-www-form-urlencoded"
+                },
+                url: "https://api.imgur.com/3/image",
+                data: 'type=base64&image=' + encodeURIComponent(reader.result.replace(/.*,/, '')),
+                onload: function(response) {
+                  res = JSON.parse(response.responseText)
+                  if (!res["success"]) {
+                    alert("죄송하지만 이미지 업로드에 실패하였습니다.");
+                    win.close();
+                  } else {
+                    var deleteLink = 'http://imgur.com/delete/' + res["data"]["deletehash"];
+                    var imageDirectLink = res["data"]["link"];
+                    setMsg('완료 : ' + file.name);
+                    SET.load();
+                    SET.imgurDeletionLinks.push({
+                      imgUrl: imageDirectLink,
+                      deleteionUrl: deleteLink,
+                      uploadedAt: Date.now()
+                    });
+                    SET.save();
+                    win.close();
+                    TextProc.selectionText(TextProc.selectionText() + ' ' + imageDirectLink + ' ');
+                  }
+                  if (isLastItem) finish();
+                  next();
                 }
-              }
-            });
-            finish();
-          };
-          setMsg('진행중입니다. 파일을 읽고있습니다....');
-          reader.readAsDataURL(file);
-        }
-      });
+              });
+            };
+            setMsg('진행중입니다. 파일을 읽고있습니다....<br>파일 이름 : ' + file.name);
+            reader.readAsDataURL(file);
+          } else {
+            next();
+          }
+        });
+      }, true);
       // imgur Client ID : 60a43baebed658a
     };
 
-    // Insertable Media Functions
     function InsertYouTube() {
       var win = TooSimplePopup();
       win.title('YouTube 동영상 삽입');
@@ -2154,7 +2166,7 @@ if (ENV.Discussing) {
             getFile(function(files, finish) {
               if (files.length < 0) {
                 alert('선택된 파일이 없습니다.')
-                finish();
+                if (isLastItem) finish();
                 return;
               }
               if (files.length > 1) {
