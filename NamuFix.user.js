@@ -890,6 +890,8 @@ if (ENV.IsEditing || ENV.Discussing) {
       win.content(function(el) {
         var mapDiv = document.createElement("div");
         mapDiv.id = "NFMapDiv";
+        mapDiv.style.maxHeight = "calc(100vh - 100px)";
+        mapDiv.style.maxWidth = "100vw";
         mapDiv.style.height = '480px';
         mapDiv.style.width = '640px';
         el.appendChild(mapDiv);
@@ -1067,6 +1069,8 @@ if (ENV.IsEditing || ENV.Discussing) {
       win.title("코드 예쁘게 해서 삽입");
       win.content(function(container) {
         var textarea = document.createElement("textarea");
+        textarea.style.maxWidth = "100vw";
+        textarea.style.maxHeight = "calc(100vh - 150px)";
         textarea.style.width = "400px";
         textarea.style.height = "400px";
         textarea.style.display = "block";
