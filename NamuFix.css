@@ -146,3 +146,21 @@ div.NamaEditor.NEMenuButton {
   /* Bug Fix */
   color: black;
 }
+
+/* Tab */
+
+.nf-tabs > ul > li {
+  display: inline-block;
+  font-size: 20px;
+  font-family: sans-serif !important;
+  border: none;
+  background: #646771;
+  color: white;
+  padding: 8px 20px 5px 20px;
+  font-weight: normal;
+  list-style-type: none;
+  cursor: pointer;
+}
+.nf-tabs > ul > li.selected {
+  background: #31343E;
+}

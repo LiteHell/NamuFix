@@ -16,6 +16,7 @@
 // @require     https://raw.githubusercontent.com/stewartlord/identicon.js/master/identicon.js
 // @require     https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.3.0/katex.min.js
 // @require     https://raw.githubusercontent.com/LiteHell/TooSimplePopupLib/master/TooSimplePopupLib.js
+// @require     https://cdn.rawgit.com/kpdecker/jsdiff/49dece07ae3b3e9e2e9a57592f467de3dff1aabc/diff.js
 // @grant       GM_addStyle
 // @grant       GM_xmlhttpRequest
 // @grant       GM_getValue
@@ -351,6 +352,40 @@ function getRAW(title, onfound, onnotfound) {
   })
 }
 
+function makeTabs() {
+  var div = document.createElement("div");
+  div.className = "nf-tabs";
+  div.innerHTML = "<ul></ul>";
+  var ul = div.querySelector("ul");
+  return {
+    tab: function(text) {
+      var item = document.createElement("li");
+      item.innerHTML = text;
+      item.addEventListener('click', function() {
+        var selectedTabs = div.querySelectorAll('li.selected');
+        for (var i = 0; i < selectedTabs.length; i++) {
+          selectedTabs[i].className = selectedTabs[i].className.replace(/selected/mg, '');
+        }
+        item.className = "selected";
+      });
+      ul.appendChild(item);
+      return {
+        click: function(callback) {
+          item.addEventListener('click', callback);
+          return this;
+        },
+        selected: function() {
+          if (item.className.indexOf('selected') == -1) item.className += ' selected';
+          return this;
+        }
+      };
+    },
+    get: function() {
+      return div;
+    }
+  };
+}
+
 function createDesigner(buttonBar) {
   var Designer = {};
   Designer.button = function(txt) {
@@ -600,6 +635,70 @@ if (document.querySelector('footer')) {
 if (ENV.IsEditing || ENV.Discussing) {
   if (document.querySelectorAll("textarea").length == 1 && !document.querySelector("textarea").hasAttribute("readonly")) {
     var rootDiv = document.createElement("div");
+    if (ENV.IsEditing) {
+      // 탭 추가
+      var previewTab = document.createElement("div");
+      var diffTab = document.createElement("div");
+      var initalPreviewTabHTML = '<iframe id="nfPreviewFrame" name="nfPreviewFrame" style="width: 100%; height: 600px; display: block; border: 1px solid black;"></iframe>';
+      document.querySelector('textarea').parentNode.insertBefore(previewTab, document.querySelector('textarea').nextSibling);
+      document.querySelector('textarea').parentNode.insertBefore(diffTab, document.querySelector('textarea').nextSibling);
+
+      function hideAndShow(no) {
+        rootDiv.style.display = no == 0 ? '' : 'none';
+        previewTab.style.display = no == 1 ? '' : 'none';
+        diffTab.style.display = no == 2 ? '' : "none";
+      }
+      hideAndShow(0);
+      var tabs = makeTabs();
+      tabs.tab("편집").selected().click(function() {
+        hideAndShow(0);
+      });
+      tabs.tab("미리보기").click(function() {
+        previewTab.innerHTML = initalPreviewTabHTML;
+        hideAndShow(1);
+        var form = document.querySelector('form#editForm');
+        form.setAttribute("method", "POST");
+        form.setAttribute("target", "nfPreviewFrame");
+        form.setAttribute("action", "/preview/" + ENV.docTitle);
+        form.submit();
+      });
+      tabs.tab("비교").click(function() {
+        hideAndShow(2);
+        diffTab.innerHTML = '<span style="font-size: 15px;">처리중입니다...</span>';
+        var editUrl = 'https://namu.wiki/edit/'.concat(ENV.docTitle, ENV.section != -2 ? '?section='.concat(ENV.section) : '');
+        GM_xmlhttpRequest({
+          url: editUrl,
+          method: "GET",
+          onload: function(res) {
+            var parser = new DOMParser();
+            var doc = parser.parseFromString(res.responseText, "text/html");
+            var latestBaseRev = doc.querySelector('input[name="baserev"]').value;
+            if (doc.querySelectorAll('textarea').length < 1) {
+              diffTab.innerHTML = '<span style="font-size: 15px; color:red;">오류가 발생했습니다.</span>';
+              return;
+            }
+            var remoteWikitext = doc.querySelector('textarea').value;
+            var wikitext = document.querySelector("textarea.NamaEditor.NETextarea").value;
+            diffTab.innerHTML = '<div style="width: 100%;">' +
+              '<div style="width: 100%; background: #006600; color: white; padding: 10px 5px 8px 5px;">' +
+              '현재 편집중인 내용은 리버전 r{0}에 기반하고, 현재 최신 버전의 리버전은 r{1}입니다. 삭제된 부분은 <span style="color:red">붉은</span>색으로, 추가된 부분은 <span style="color:green">녹색</span>으로 나타납니다.'.format(document.querySelector('input[name="baserev"]').value, latestBaseRev) +
+              '</div>' +
+              '<pre style="background: #001400; padding: 10px 5px 10px 5px; color: white; width: 100%; margin: 0px;" id="diffResult">' +
+              '</pre>' +
+              '</div>';
+            var result = diffTab.querySelector('pre#diffResult');
+            var diff = JsDiff.diffChars(remoteWikitext, wikitext);
+            diff.forEach(function(item) {
+              var span = document.createElement("span");
+              span.style.color = item.added ? 'green' : item.removed ? 'red' : 'white';
+              span.innerHTML = item.value;
+              result.appendChild(span);
+            });
+          }
+        });
+      });
+      document.querySelector("#editForm").insertBefore(tabs.get(), document.querySelector("#editForm").firstChild);
+    }
 
     // Init (Add Elements)
     var buttonBar = document.createElement('div');
