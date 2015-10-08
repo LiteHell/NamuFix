@@ -868,6 +868,7 @@ if (ENV.IsEditing || ENV.Discussing) {
                     setMsg('완료 : ' + file.name);
                     SET.load();
                     SET.imgurDeletionLinks.push({
+                      name: file.name,
                       imgUrl: imageDirectLink,
                       deleteionUrl: deleteLink,
                       uploadedAt: Date.now()
@@ -2084,8 +2085,8 @@ if (ENV.IsEditing || ENV.Discussing) {
     divWithScrolls.style.maxWidth = '1200px';
 
     var table = document.createElement("table");
-    table.innerHTML = '<tr><th style="min-width: 200px;">업로드한 날짜/시각</th><th>이미지 주소(다이렉트)</th><th>이미지 삭제 주소</th></tr>';
-    var addRow = function(dt, dil, del) {
+    table.innerHTML = '<tr><th style="min-width: 200px;">업로드한 날짜/시각</th><th>이름</th><th>이미지 주소(다이렉트)</th><th>이미지 삭제 주소</th></tr>';
+    var addRow = function(dt, dna, dil, del) {
       var tr = document.createElement("tr");
       var appendTd = function(t) {
         var td = document.createElement("td");
@@ -2093,13 +2094,14 @@ if (ENV.IsEditing || ENV.Discussing) {
         tr.appendChild(td);
       }
       appendTd(formatDateTime(dt));
+      appendTd(dna == null ? '<span style="color: red;">정보 없음</span>' : dna);
       appendTd('<a href="' + dil + '" target="_blank">' + dil + '</a>');
       appendTd('<a href="' + del + '" target="_blank">' + del + '</a>');
       table.appendChild(tr);
     }
     for (var i = 0; i < SET.imgurDeletionLinks.length; i++) {
       var ii = SET.imgurDeletionLinks[i];
-      addRow(ii.uploadedAt, ii.imgUrl, ii.deleteionUrl);
+      addRow(ii.uploadedAt, typeof ii.name !== "undefined" ? ii.name : null, ii.imgUrl, ii.deleteionUrl);
     }
     win.content(function(el) {
       el.appendChild(table);
