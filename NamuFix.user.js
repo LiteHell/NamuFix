@@ -83,7 +83,7 @@ function insertCSS(url) {
     }
   });
 }
-insertCSS("https://raw.githubusercontent.com/LiteHell/NamuFix/better/NamuFix.css");
+insertCSS("https://cdn.rawgit.com/LiteHell/NamuFix/c13e0433b36fcf481d52a5b50cc602f8e6a8d07c/NamuFix.css");
 insertCSS("https://raw.githubusercontent.com/LiteHell/TooSimplePopupLib/master/TooSimplePopupLib.css");
 
 function nOu(a) {
