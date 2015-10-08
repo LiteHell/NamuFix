@@ -683,14 +683,20 @@ if (ENV.IsEditing || ENV.Discussing) {
               '<div style="width: 100%; background: #006600; color: white; padding: 10px 5px 8px 5px;">' +
               '현재 편집중인 내용은 리버전 r{0}에 기반하고, 현재 최신 버전의 리버전은 r{1}입니다. 삭제된 부분은 <span style="color:red">붉은</span>색으로, 추가된 부분은 <span style="color:green">녹색</span>으로 나타납니다.'.format(document.querySelector('input[name="baserev"]').value, latestBaseRev) +
               '</div>' +
-              '<pre style="background: #001400; padding: 10px 5px 10px 5px; color: white; width: 100%; margin: 0px;" id="diffResult">' +
+              '<pre style="background: #001400; padding: 10px 5px 10px 5px; color: white; width: 100%; margin: 0px; max-height: 600px;" id="diffResult">' +
               '</pre>' +
-              '</div>';
+              '</div>' +
+              '<style>' +
+              '.added, .removed, .normal {display: block;}' +
+              '.added {background: darkgreen; color: green;}' +
+              '.removed {background: darkred; color: red;}' +
+              '.normal {background: transparent; color: white;}' +
+              '</style>';
             var result = diffTab.querySelector('pre#diffResult');
-            var diff = JsDiff.diffChars(remoteWikitext, wikitext);
+            var diff = JsDiff.diffLines(remoteWikitext, wikitext);
             diff.forEach(function(item) {
               var span = document.createElement("span");
-              span.style.color = item.added ? 'green' : item.removed ? 'red' : 'white';
+              span.className = item.added ? 'added' : item.removed ? 'removed' : 'normal';
               span.innerHTML = item.value;
               result.appendChild(span);
             });
