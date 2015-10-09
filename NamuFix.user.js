@@ -231,6 +231,12 @@ function INITSET() { // Storage INIT
     SET.hideDeletedWhenDiscussing = 0;
   else if (typeof SET.hideDeletedWhenDiscussing !== "Number")
     SET.hideDeletedWhenDiscussing = Number(SET.hideDeletedWhenDiscussing);
+  if (nOu(SET.discussAnchorPreviewType))
+    SET.discussAnchorPreviewType = 1; // 0 : None, 1 : mouseover, 2 : quote
+  else
+    SET.discussAnchorPreviewType = Number(SET.discussAnchorPreviewType);
+  if (nOu(SET.removeNFQuotesInAnchorPreview))
+    SET.removeNFQuotesInAnchorPreview = false;
   SET.save();
 }
 INITSET();
@@ -2051,7 +2057,12 @@ if (ENV.IsEditing || ENV.Discussing) {
         '<h1 class="wsmall">토론시 취소선</h1>' +
         '<input type="radio" name="hideDeletedWhenDiscussing" data-setname="hideDeletedWhenDiscussing" data-setvalue="0">표시<br>' +
         '<input type="radio" name="hideDeletedWhenDiscussing" data-setname="hideDeletedWhenDiscussing" data-setvalue="0.5">반숨김<br>' +
-        '<input type="radio" name="hideDeletedWhenDiscussing" data-setname="hideDeletedWhenDiscussing" data-setvalue="1">숨기기<br>';
+        '<input type="radio" name="hideDeletedWhenDiscussing" data-setname="hideDeletedWhenDiscussing" data-setvalue="1">숨기기<br>' +
+        '<h1 class="wsmall">토론시 앵커 미리보기</h1>' +
+        '<input type="radio" name="discussAnchorPreviewType" data-setname="discussAnchorPreviewType" data-setvalue="0">사용하지 않음<br>' +
+        '<input type="radio" name="discussAnchorPreviewType" data-setname="discussAnchorPreviewType" data-setvalue="1">마우스를 올리면 미리보기 표시<br>' +
+        '<input type="radio" name="discussAnchorPreviewType" data-setname="discussAnchorPreviewType" data-setvalue="2">토론 메세지 위에 인용형식으로 표시<br>' +
+        '<input type="checkbox" name="removeNFQuotesInAnchorPreview" data-setname="removeNFQuotesInAnchorPreview" data-as-boolean>토론 메세지 위에 인용형식으로 표시할때, 인용문 안에 인용 형식으로 표시된 미리보기 제거';
       var optionTags = document.querySelectorAll('[data-setname]');
       SET.load();
       for (var i = 0; i < optionTags.length; i++) {
@@ -2060,7 +2071,7 @@ if (ENV.IsEditing || ENV.Discussing) {
         var sn = tag.dataset.setname;
         if (t == "radio" && tag.dataset.setvalue == SET[sn]) {
           tag.checked = true;
-        } else if (t == "checkbox" && tag.dataset.setvalueOnChecked == SET[sn]) {
+        } else if ((t == "checkbox" && tag.dataset.setvalueOnChecked == SET[sn]) || (t == "checkbox" && tag.hasAttribute("data-as-boolean") && SET[sn])) {
           tag.checked = true;
         } else if (["text", "password", "number", "range"].indexOf(t) != -1) {
           tag.value = ["number", "range"].indexOf(t) != -1 ? Number(SET[sn]) : SET[sn];
@@ -2078,7 +2089,7 @@ if (ENV.IsEditing || ENV.Discussing) {
         if (t == "radio" && tag.checked) {
           SET[sn] = tag.dataset.setvalue;
         } else if (t == "checkbox") {
-          SET[sn] = tag.checked ? t.dataset.setvalueOnChecked : t.dataset.setvalueOnUnchecked;
+          SET[sn] = tag.hasAttribute("data-as-boolean") ? tag.checked : tag.checked ? t.dataset.setvalueOnChecked : t.dataset.setvalueOnUnchecked;
         } else if (["text", "password", "number", "range"].indexOf(t) != -1) {
           SET[sn] = tag.value;
         }
@@ -2165,7 +2176,7 @@ if (ENV.Discussing) {
   }
 
   // #[0-9]+ 엥커 미리보기
-  setInterval(function() {
+  function mouseoverPreview() {
     var anchors = document.querySelectorAll('.res .r-body .wiki-link-anchor:not([data-nf-title-processed])');
     for (var i = 0; i < anchors.length; i++) {
       var anchor = anchors[i];
@@ -2214,7 +2225,55 @@ if (ENV.Discussing) {
 
       anchor.dataset.nfTitleProcessed = true;
     }
-  }, 200);
+  }
+
+  function previewAsQuote() {
+    var message = document.querySelector('.res:not([data-message-anchor-processed])');
+    if (message) {
+      message.dataset.messageAnchorProcessed = true;
+      var rbody = message.querySelector('.r-body');
+      var anchors = rbody.querySelectorAll('.wiki-link-anchor:not([data-nf-title-processed])');
+      for (var i = 0; i < anchors.length; i++) {
+        var anchor = anchors[i];
+        if (!/#[0-9]+$/.test(anchor.href) || anchor.title != ENV.docTitle + '#' + /#([0-9]+)$/.exec(anchor.href)[1]) {
+          continue;
+        }
+        var numbericId = /#([0-9]+)$/.exec(anchor.href)[1];
+        var anchorDirection = document.querySelector('.r-head .num a[id=\'' + numbericId + '\']');
+        if (anchorDirection == null) continue;
+        var anchorTarget = anchorDirection.parentNode.parentNode.parentNode;
+        var talker = anchorTarget.querySelector('.r-head > a').textContent,
+          message = anchorTarget.querySelector('.r-body').innerHTML,
+          talkedAt = anchorTarget.querySelector('.r-head span.f_r').textContent;
+        var blockquoteElement = document.createElement("blockquote");
+        blockquoteElement.className = "wiki-quote nf-anchor-preview";
+        blockquoteElement.style.borderColor = "#CCC #CCC #CCC #FF9900"; // 다른 인용이랑 구분용
+        blockquoteElement.style.margin = '0.5em 0px';
+        blockquoteElement.innerHTML = message;
+        if (SET.removeNFQuotesInAnchorPreview) {
+          var quotesToRemove = blockquoteElement.querySelectorAll('blockquote.nf-anchor-preview');
+          for (var i = 0; i < quotesToRemove.length; i++) {
+            var quote = quotesToRemove[i];
+            quote.parentNode.removeChild(quote);
+          }
+        }
+        blockquoteElement.innerHTML += '<div style="text-align: right; font-style: italic;">--#{1}, {0}, {2}</div>'.format(talker, numbericId, talkedAt);
+        rbody.insertBefore(blockquoteElement, rbody.firstChild)
+      }
+    }
+  }
+  var previewFunction;
+  switch (SET.discussAnchorPreviewType) {
+    case 1:
+      previewFunction = mouseoverPreview;
+      break;
+    case 2:
+      previewFunction = previewAsQuote;
+      break;
+    default:
+      previewFunction = function() {};
+  }
+  setInterval(previewFunction, 200);
 
   // 아이덴티콘
   setInterval(function() {
