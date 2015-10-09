@@ -137,7 +137,7 @@ function SHA512(text) {
   return hashDictionary[text];
 }
 
-function uniqueID(){
+function uniqueID() {
   var dt = Date.now();
   var url = location.href;
   var randomized = Math.floor(Math.random() * 48158964189489678525869410);
@@ -2251,12 +2251,11 @@ if (ENV.Discussing) {
         var talker = anchorTarget.querySelector('.r-head > a').textContent,
           message = anchorTarget.querySelector('.r-body').innerHTML,
           talkedAt = anchorTarget.querySelector('.r-head span.f_r').textContent;
+        var blockquoteId = uniqueID();
         var blockquoteElement = document.createElement("blockquote");
         blockquoteElement.className = "wiki-quote nf-anchor-preview";
-        blockquoteElement.style.borderColor = "#CCC #CCC #CCC #FF9900";
-        blockquoteElement.style.backgroundImage = 'url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAABTklEQVRoge2ZvYrCQBSF71ulEVLIFIIgC5LOaQRhwcbCKSLbCYtFunmDBTuLEKwEKx9ASOsjWNlYni2WwK5ZV83PTMa9B053IedjJpCcS8RisZ5baaIxG/YhfA+eZ8i+QH84g05SlAofSd9c6Cv2ZVQMIuy0rIfP3OqEj0GsQ2E99KVFuL4fQjYgcN7yPoDjctyAsL97vDzehtjrwHrQaw70ngEYgAEYgAFsA4gR9OaAEwDghMNGYyRqmqkeoIfF7oxLnXcL9CqfqQVAIc49FgBiqMpn+ASe8h2wawawbQawbQaw7f8B4HwrQeR4L0REFKt2AwL/dFvFj9WL6sZ3iVELVazgnQcNaKeDebmKPU00poOu8f1AdzAtvx+oQ+HLX7V9watiWttIwncZINNrboniGAAR0eot+HYaDgJk+vqddBiAiOhj8u42AItlQZ8Z9UiwBSnJVAAAAABJRU5ErkJggg==")';
-        blockquoteElement.style.margin = '0.5em 0px';
         blockquoteElement.innerHTML = message;
+        blockquoteElement.id = blockquoteId;
         if (SET.removeNFQuotesInAnchorPreview) {
           var quotesToRemove = blockquoteElement.querySelectorAll('blockquote.nf-anchor-preview');
           for (var i = 0; i < quotesToRemove.length; i++) {
@@ -2265,7 +2264,19 @@ if (ENV.Discussing) {
           }
         }
         blockquoteElement.innerHTML += '<div style="text-align: right; font-style: italic;">--#{1}, {0}, {2}</div>'.format(talker, numbericId, talkedAt);
-        rbody.insertBefore(blockquoteElement, rbody.firstChild)
+        rbody.insertBefore(blockquoteElement, rbody.firstChild);
+
+        anchor.dataset.quoteId = blockquoteId;
+        anchor.addEventListener('mouseenter', function(evt){
+          var quote = document.getElementById(evt.target.dataset.quoteId);
+          quote.style.borderColor = '#CCC #CCC #CCC red !important';
+          quote.style.boxShadow = '2px 2px 3px orange';
+        });
+        anchor.addEventListener('mouseleave', function(evt){
+          var quote = document.getElementById(evt.target.dataset.quoteId);
+          quote.style.borderColor = '';
+          quote.style.boxShadow = '';
+        })
       }
     }
   }
@@ -2275,6 +2286,13 @@ if (ENV.Discussing) {
       previewFunction = mouseoverPreview;
       break;
     case 2:
+      GM_addStyle('' +
+        'blockquote.nf-anchor-preview{' +
+        'border-color: #CCC #CCC #CCC #FF9900 !important;' +
+        'background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAABTklEQVRoge2ZvYrCQBSF71ulEVLIFIIgC5LOaQRhwcbCKSLbCYtFunmDBTuLEKwEKx9ASOsjWNlYni2WwK5ZV83PTMa9B053IedjJpCcS8RisZ5baaIxG/YhfA+eZ8i+QH84g05SlAofSd9c6Cv2ZVQMIuy0rIfP3OqEj0GsQ2E99KVFuL4fQjYgcN7yPoDjctyAsL97vDzehtjrwHrQaw70ngEYgAEYgAFsA4gR9OaAEwDghMNGYyRqmqkeoIfF7oxLnXcL9CqfqQVAIc49FgBiqMpn+ASe8h2wawawbQawbQaw7f8B4HwrQeR4L0REFKt2AwL/dFvFj9WL6sZ3iVELVazgnQcNaKeDebmKPU00poOu8f1AdzAtvx+oQ+HLX7V9watiWttIwncZINNrboniGAAR0eot+HYaDgJk+vqddBiAiOhj8u42AItlQZ8Z9UiwBSnJVAAAAABJRU5ErkJggg==") !important;' +
+        'margin: 0.5em 0px !important;' +
+        '}'
+      );
       previewFunction = previewAsQuote;
       break;
     default:
