@@ -128,6 +128,21 @@ function formatDateTime(t) {
   return '{0}년 {1}월 {2}일 {7}요일 {6} {3}시 {4}분 {5}초'.format(d.getFullYear(), d.getMonth() + 1, d.getDate(), d.getHours() - (d.getHours() > 12 ? 12 : 0), d.getMinutes(), d.getSeconds(), d.getHours() > 12 ? '오후' : '오전', (['일', '월', '화', '수', '목', '금', '토'])[d.getDay()]);
 }
 
+function SHA512(text) {
+  if (typeof hashDictionary[text] === 'undefined') {
+    var shaObj = new jsSHA("SHA-512", "TEXT");
+    shaObj.update(text);
+    hashDictionary[text] = shaObj.getHash("HEX");
+  }
+  return hashDictionary[text];
+}
+
+function uniqueID(){
+  var dt = Date.now();
+  var url = location.href;
+  var randomized = Math.floor(Math.random() * 48158964189489678525869410);
+  return SHA512(String(dt).concat(dt, '\n', url, '\n', String(randomized)));
+}
 var ENV = {};
 ENV.IsSSL = /^https/.test(location.href);
 ENV.IsEditing = /^https?:\/\/(?:no-ssl\.|)namu\.wiki\/edit\/(.+?)/.test(location.href);
@@ -2165,15 +2180,6 @@ if (ENV.Discussing) {
     hashDictionary = {},
     identiconDictionary = {};
   var identiconCSSAdded = false;
-
-  function SHA512(text) {
-    if (typeof hashDictionary[text] === 'undefined') {
-      var shaObj = new jsSHA("SHA-512", "TEXT");
-      shaObj.update(text);
-      hashDictionary[text] = shaObj.getHash("HEX");
-    }
-    return hashDictionary[text];
-  }
 
   // #[0-9]+ 엥커 미리보기
   function mouseoverPreview() {
