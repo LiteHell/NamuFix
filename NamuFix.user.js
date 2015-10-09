@@ -2247,7 +2247,8 @@ if (ENV.Discussing) {
           talkedAt = anchorTarget.querySelector('.r-head span.f_r').textContent;
         var blockquoteElement = document.createElement("blockquote");
         blockquoteElement.className = "wiki-quote nf-anchor-preview";
-        blockquoteElement.style.borderColor = "#CCC #CCC #CCC #FF9900"; // 다른 인용이랑 구분용
+        blockquoteElement.style.borderColor = "#CCC #CCC #CCC #FF9900";
+        blockquoteElement.style.backgroundImage = 'url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAABTklEQVRoge2ZvYrCQBSF71ulEVLIFIIgC5LOaQRhwcbCKSLbCYtFunmDBTuLEKwEKx9ASOsjWNlYni2WwK5ZV83PTMa9B053IedjJpCcS8RisZ5baaIxG/YhfA+eZ8i+QH84g05SlAofSd9c6Cv2ZVQMIuy0rIfP3OqEj0GsQ2E99KVFuL4fQjYgcN7yPoDjctyAsL97vDzehtjrwHrQaw70ngEYgAEYgAFsA4gR9OaAEwDghMNGYyRqmqkeoIfF7oxLnXcL9CqfqQVAIc49FgBiqMpn+ASe8h2wawawbQawbQaw7f8B4HwrQeR4L0REFKt2AwL/dFvFj9WL6sZ3iVELVazgnQcNaKeDebmKPU00poOu8f1AdzAtvx+oQ+HLX7V9watiWttIwncZINNrboniGAAR0eot+HYaDgJk+vqddBiAiOhj8u42AItlQZ8Z9UiwBSnJVAAAAABJRU5ErkJggg==")';
         blockquoteElement.style.margin = '0.5em 0px';
         blockquoteElement.innerHTML = message;
         if (SET.removeNFQuotesInAnchorPreview) {
