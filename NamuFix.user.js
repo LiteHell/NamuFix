@@ -83,7 +83,7 @@ function insertCSS(url) {
     }
   });
 }
-insertCSS("https://cdn.rawgit.com/LiteHell/NamuFix/c13e0433b36fcf481d52a5b50cc602f8e6a8d07c/NamuFix.css");
+insertCSS("https://raw.githubusercontent.com/LiteHell/NamuFix/master/NamuFix.css");
 insertCSS("https://raw.githubusercontent.com/LiteHell/TooSimplePopupLib/master/TooSimplePopupLib.css");
 
 function nOu(a) {
@@ -152,9 +152,9 @@ ENV.IsSettings = /^https?:\/\/(?:no-ssl\.|)namu\.wiki\/settings/.test(location.h
 ENV.IsUserPage = /^https?:\/\/(?:no-ssl\.|)namu\.wiki\/contribution\/(?:author|ip)\/.+\/(?:document|discuss)/.test(location.href);
 ENV.IsUploadPage = /^https?:\/\/(?:no-ssl\.|)namu\.wiki\/Upload$/.test(location.href);
 ENV.IsDiff = /^https?:\/\/(?:no-ssl\.|)namu\.wiki\/diff\/.+/.test(location.href);
-ENV.IsLoggedIn = document.querySelectorAll('.logged-in').length == 1;
+ENV.IsLoggedIn = document.querySelectorAll('img.user-img').length == 1;
 if (ENV.IsLoggedIn) {
-  ENV.UserName = document.querySelector('#memberMenu li a span').textContent.trim();
+  ENV.UserName = document.querySelector('div.user-info > div.user-info > div:first-child').textContent.trim();
 }
 if (document.querySelector("input[name=section]"))
   ENV.section = document.querySelector("input[name=section]").value;
@@ -174,31 +174,15 @@ if (ENV.IsDiff) {
 if (nOu(ENV.section))
   ENV.section = -2;
 
-function addContributionLink() {
-  if (document.querySelector('header.nav_top')) {
-    var memberMenu = document.querySelector('ul#memberMenu');
-
-    memberMenu.innerHTML += ('<li class="f_r"><a style="padding: 0;">|</a></li>' +
-      '<li class="f_r"><a id="myContributions" title="내 기여" href="{0}" rel="nofollow">내 기여</a></li>').format(
-      '/contribution/{0}/{1}/document'.format(ENV.IsLoggedIn ? 'author' : 'ip', ENV.UserName)
-    );
+GM_xmlhttpRequest({
+  method: "GET",
+  url: "https://api.ipify.org/?format=json",
+  onload: function(res) {
+    var ip = JSON.parse(res.responseText).ip;
+    if (!ENV.IsLoggedIn) ENV.UserName = ip;
+    ENV.IPAddress = ip;
   }
-}
-if (ENV.IsLoggedIn) {
-  addContributionLink();
-} else {
-  GM_xmlhttpRequest({
-    method: "GET",
-    url: "https://api.ipify.org/?format=json",
-    onload: function(res) {
-      var ip = JSON.parse(res.responseText).ip;
-      if (!ENV.IsLoggedIn) ENV.UserName = ip;
-      ENV.IPAddress = ip;
-      addContributionLink();
-    }
-  });
-}
-
+});
 
 var SET = new function() {
   var discards = ['save', 'load'];
@@ -272,10 +256,10 @@ GM_xmlhttpRequest({
         // 변경 사항 : obj.body
         element.innerHTML = '업데이트가 있습니다.<br><br>현재 사용중인 버전 : ' + currentVersion + '<br>' +
           '현재 최신 버전 : ' + latestVersion + '<br><br>' +
-          latestVersion + '버전에서의 변경 사항<div style="border-left: 6px solid green; padding: 10px; font-size: 13px; font-family: sans-family;" id="changeLog"></div>' +
+          latestVersion + '버전에서의 변경 사항<pre style="border-left: 6px solid green; padding: 10px; font-size: 13px; font-family: sans-family;" id="changeLog"></pre>' +
           '<p><a href="' + scriptUrl + '" style="text-decoration: none;"><button type="button" style="display: block; margin: 0 auto;">최신 버전 설치</button></a></p>' +
           '설치 후 새로고침을 해야 적용됩니다.<br>버그 신고 및 건의는 <a href="https://github.com/LiteHell/NamuFix/issues">이슈 트래커</a>에서 해주시면 감사하겠습니다.';
-        element.querySelector('#changeLog').innerHTML = obj.body.replace(/\r\n/g, '<br>').replace(/\n/g, '<br>');
+        element.querySelector('#changeLog').innerHTML = obj.body;
       });
 
       win.button('닫기', win.close);
@@ -286,72 +270,20 @@ GM_xmlhttpRequest({
   }
 })
 
-function modifyDocument(title, content, log, callback) {
-  var editUrl = "https://namu.wiki/edit/{0}".format(title);
-  GM_xmlhttpRequest({
-    method: "GET",
-    url: editUrl,
-    onload: function(res) {
-      var doc = (new DOMParser()).parseFromString(res.responseText, "text/html");
-      var data = new FormData();
-      data.append("baserev", doc.querySelector("form#editForm input[name=baserev]").value)
-      data.append("text", content);
-      data.append("log", arguments.length == 4 ? log : 'via NamuFix');
+var nfMenuDivider = document.createElement("div");
+(function() {
+  nfMenuDivider.className = "dropdown-divider";
+  var secondDivider = document.querySelectorAll('.dropdown-divider')[1];
+  secondDivider.parentNode.insertBefore(nfMenuDivider, secondDivider);
+})();
 
-      function Finish() {
-        GM_xmlhttpRequest({
-          method: "POST",
-          url: editUrl,
-          data: data,
-          onload: function(res) {
-            if (res.status == 200) // reCAPTCHA 오류 떠도 200임.
-              callback();
-          }
-        });
-      }
-      if (doc.querySelector('.g-recaptcha')) {
-        /* var orgWidget = doc.querySelector('.g-recaptcha');
-        var win = TooSimplePopup();
-
-        win.title("reCAPTCHA");
-        win.button('닫기(디버그용)', win.close);
-        win.content(function(container) {
-          // add reCAPTCHA script
-          var script = document.createElement("script");
-          script.src = "//www.google.com/recaptcha/api.js";
-          container.appendChild(script);
-
-          // add reCAPTCHA
-          var hiddenBtn = document.createElement("button");
-          hiddenBtn.id = "nfCommunicate";
-          hiddenBtn.setAttribute("type", "button");
-          hiddenBtn.style.display = 'none';
-          hiddenBtn.addEventListener('click', function() {
-            win.close();
-            setTimeout(Finish, 500);
-          });
-          container.appendChild(hiddenBtn);
-
-          // add Script block
-          var script1 = document.createElement("script");
-          script1.innerHTML = 'function reCallback(){document.querySelector("#nfCommunicate").click();}';
-          container.appendChild(script1);
-
-          // add Widget
-          var widget = document.createElement("div");
-          widget.className = "g-recaptcha";
-          widget.dataset.sitekey = orgWidget.dataset.sitekey;
-          widget.dataset.callback = "reCallback";
-          container.appendChild(widget);
-        }); */
-
-        // ㅅㅂ 왜 안되고 지랄이야
-        alert('오류 : reCATPCHA가 감지됬습니다.');
-      } else {
-        Finish();
-      }
-    }
-  });
+function addItemToMemberMenu(text, onclick) {
+  var menuItem = document.createElement("a");
+  menuItem.className = "dropdown-item";
+  menuItem.href = "#NothingToLink";
+  menuItem.innerHTML = text;
+  menuItem.addEventListener('click', onclick);
+  nfMenuDivider.parentNode.insertBefore(menuItem, nfMenuDivider.nextSibling);
 }
 
 function getVPNGateIPList(callback) {
@@ -1931,14 +1863,13 @@ if (ENV.IsEditing || ENV.Discussing) {
 } else if (ENV.IsDocument) {
   // 버튼 추가 함수
   function addButton(text, onclick) {
-    var btn = document.createElement("li");
-    btn.className = "f_r";
     var aTag = document.createElement("a");
+    aTag.className = "btn btn-secondary";
+    aTag.setAttribute("role", "button");
     aTag.innerHTML = text;
-    aTag.setAttribute("href", "#NothingToLink");
+    aTag.href = "#NothingToLink";
     aTag.addEventListener('click', onclick);
-    btn.appendChild(aTag);
-    document.querySelector('ul.tab_bar').appendChild(btn);
+    document.querySelector('.wiki-article-menu > div.btn-group').appendChild(aTag);
   };
 
   // 리다이렉트 버튼 추가
@@ -2027,150 +1958,125 @@ if (ENV.IsEditing || ENV.Discussing) {
       }
     }
   }
-} else if (ENV.IsSettings) {
-  var aside = document.querySelector("aside > ul.nav_list");
-  var li = document.createElement("li");
-  var a = document.createElement("a");
-  a.innerHTML = "NamuFix";
-  a.className = "menu-item";
-  a.setAttribute("href", "#NamuFixSettings");
-  li.appendChild(a);
-  aside.appendChild(li);
-
-  var pages = document.querySelector("section");
-  var page = document.createElement("div");
-  page.innerHTML = '<h3>NamuFix</h3>';
-  page.className = "tab_page";
-  page.style.display = "none";
-  page.id = "NamuFixSettings";
-
-  function appendButton(text, onclick) {
-    var btn = document.createElement("button");
-    btn.setAttribute("type", "button");
-    btn.className = "d_btn type_blue";
-    btn.innerHTML = text;
-    btn.addEventListener("click", onclick);
-    page.appendChild(btn);
-    page.appendChild(document.createElement("br"));
-  }
-  appendButton("NamuFix 설정", function() {
-    var win = TooSimplePopup();
-    var elems = {};
-    win.title('NamuFix 설정');
-    SET.load();
-    win.content(function(el) {
-      el.innerHTML = '<style>h1.wsmall{font-size: 14pt;}</style>' +
-        '<h1 class="wsmall">토론 아이덴티콘</h1>' +
-        '<input type="radio" name="discussIdenti" data-setname="discussIdenti" data-setvalue="icon">디시라이트 갤러콘 방식<br>' +
-        '<input type="radio" name="discussIdenti" data-setname="discussIdenti" data-setvalue="headBg">스레딕 헬퍼 방식<br>' +
-        '<input type="radio" name="discussIdenti" data-setname="discussIdenti" data-setvalue="identicon">아이덴티콘<br>' +
-        '<input type="radio" name="discussIdenti" data-setname="discussIdenti" data-setvalue="none">사용 안함' +
-        '<h1 class="wsmall">토론 아이덴티콘 명도</h1>' +
-        '<p>스레딕 헬퍼 방식을 사용하는 경우에만 적용됩니다.</p>' +
-        '<label for="discussIdentiLightness">명도</label><input name="discussIdentiLightness" data-setname="discussIdentiLightness" type="range" max="1" min="0" step="0.01"><br>' +
-        '<label for="discussIdentiSaturation">순도</label><input name="discussIdentiSaturation" data-setname="discussIdentiSaturation" type="range" max="1" min="0" step="0.01">' +
-        '<h1 class="wsmall">토론시 취소선</h1>' +
-        '<input type="radio" name="hideDeletedWhenDiscussing" data-setname="hideDeletedWhenDiscussing" data-setvalue="0">표시<br>' +
-        '<input type="radio" name="hideDeletedWhenDiscussing" data-setname="hideDeletedWhenDiscussing" data-setvalue="0.5">반숨김<br>' +
-        '<input type="radio" name="hideDeletedWhenDiscussing" data-setname="hideDeletedWhenDiscussing" data-setvalue="1">숨기기<br>' +
-        '<h1 class="wsmall">토론시 앵커 미리보기</h1>' +
-        '<input type="radio" name="discussAnchorPreviewType" data-setname="discussAnchorPreviewType" data-setvalue="0">사용하지 않음<br>' +
-        '<input type="radio" name="discussAnchorPreviewType" data-setname="discussAnchorPreviewType" data-setvalue="1">마우스를 올리면 미리보기 표시<br>' +
-        '<input type="radio" name="discussAnchorPreviewType" data-setname="discussAnchorPreviewType" data-setvalue="2">토론 메세지 위에 인용형식으로 표시<br>' +
-        '<input type="checkbox" name="removeNFQuotesInAnchorPreview" data-setname="removeNFQuotesInAnchorPreview" data-as-boolean>토론 메세지 위에 인용형식으로 표시할때, 인용문 안에 인용 형식으로 표시된 미리보기 제거';
-      var optionTags = document.querySelectorAll('[data-setname]');
-      SET.load();
-      for (var i = 0; i < optionTags.length; i++) {
-        var tag = optionTags[i];
-        var t = tag.getAttribute('type');
-        var sn = tag.dataset.setname;
-        if (t == "radio" && tag.dataset.setvalue == SET[sn]) {
-          tag.checked = true;
-        } else if ((t == "checkbox" && tag.dataset.setvalueOnChecked == SET[sn]) || (t == "checkbox" && tag.hasAttribute("data-as-boolean") && SET[sn])) {
-          tag.checked = true;
-        } else if (["text", "password", "number", "range"].indexOf(t) != -1) {
-          tag.value = ["number", "range"].indexOf(t) != -1 ? Number(SET[sn]) : SET[sn];
-        }
-      }
-    });
-    win.button('저장하지 않고 닫기', win.close);
-    win.button('저장하고 닫기', function() {
-      var optionTags = document.querySelectorAll('[data-setname]');
-      SET.load();
-      for (var i = 0; i < optionTags.length; i++) {
-        var tag = optionTags[i];
-        var t = tag.getAttribute('type');
-        var sn = tag.dataset.setname;
-        if (t == "radio" && tag.checked) {
-          SET[sn] = tag.dataset.setvalue;
-        } else if (t == "checkbox") {
-          SET[sn] = tag.hasAttribute("data-as-boolean") ? tag.checked : tag.checked ? t.dataset.setvalueOnChecked : t.dataset.setvalueOnUnchecked;
-        } else if (["text", "password", "number", "range"].indexOf(t) != -1) {
-          SET[sn] = tag.value;
-        }
-      }
-      SET.save();
-      win.close();
-    });
-  });
-  appendButton("Imgur 이미지 삭제 주소들", function() {
-    SET.load();
-    var win = TooSimplePopup();
-    var divWithScrolls = document.createElement("div");
-    divWithScrolls.style.overflow = 'scroll';
-    divWithScrolls.style.maxHeight = '800px';
-    divWithScrolls.style.maxWidth = '1200px';
-
-    var table = document.createElement("table");
-    table.innerHTML = '<tr><th style="min-width: 200px;">업로드한 날짜/시각</th><th>이름</th><th>이미지 주소(다이렉트)</th><th>이미지 삭제 주소</th></tr>';
-    var addRow = function(dt, dna, dil, del) {
-      var tr = document.createElement("tr");
-      var appendTd = function(t) {
-        var td = document.createElement("td");
-        td.innerHTML = t;
-        tr.appendChild(td);
-      }
-      appendTd(formatDateTime(dt));
-      appendTd(dna == null ? '<span style="color: red;">정보 없음</span>' : dna);
-      appendTd('<a href="' + dil + '" target="_blank">' + dil + '</a>');
-      appendTd('<a href="' + del + '" target="_blank">' + del + '</a>');
-      table.appendChild(tr);
-    }
-    for (var i = 0; i < SET.imgurDeletionLinks.length; i++) {
-      var ii = SET.imgurDeletionLinks[i];
-      addRow(ii.uploadedAt, typeof ii.name !== "undefined" ? ii.name : null, ii.imgUrl, ii.deleteionUrl);
-    }
-    win.content(function(el) {
-      el.appendChild(table);
-    });
-    win.title('이미지 삭제 주소들');
-    win.button('닫기', win.close);
-  });
-  appendButton('설정 백업/복업', function() {
-    if (!confirm('경고 : 이 기능은 불안정합니다.\n그래도 진행하시겠습니까?'))
-      return;
-    if (confirm('백업입니까?')) {
-      var keys = GM_listValues();
-      var obj = {};
-      for (var i = 0; i < keys.length; i++) {
-        var ke = keys[i];
-        obj[ke] = GM_getValue(ke);
-      }
-      prompt('복사해서 어딘가에 보관해두세요.', JSON.stringify(obj));
-    } else if (confirm('그러면 복원입니까?')) {
-      var obj = prompt('**원문 그대로** 복사하세요.');
-      obj = JSON.stringify(obj);
-      var keys = Object.keys(obj);
-      for (var i = 0; i < keys.length; i++) {
-        var ke = keys[i];
-        GM_setValue(ke, obj[ke]);
-      }
-    } else {
-      alert('취소됨.');
-    }
-  })
-  pages.appendChild(page);
 }
+
+// 설정 메뉴 추가
+addItemToMemberMenu("NamuFix 설정", function() {
+  var win = TooSimplePopup();
+  var elems = {};
+  win.title('NamuFix 설정');
+  SET.load();
+  win.content(function(el) {
+    el.innerHTML = '<style>h1.wsmall{font-size: 14pt;}</style>' +
+      '<h1 class="wsmall">토론 아이덴티콘</h1>' +
+      '<input type="radio" name="discussIdenti" data-setname="discussIdenti" data-setvalue="icon">디시라이트 갤러콘 방식<br>' +
+      '<input type="radio" name="discussIdenti" data-setname="discussIdenti" data-setvalue="headBg">스레딕 헬퍼 방식<br>' +
+      '<input type="radio" name="discussIdenti" data-setname="discussIdenti" data-setvalue="identicon">아이덴티콘<br>' +
+      '<input type="radio" name="discussIdenti" data-setname="discussIdenti" data-setvalue="none">사용 안함' +
+      '<h1 class="wsmall">토론 아이덴티콘 명도</h1>' +
+      '<p>스레딕 헬퍼 방식을 사용하는 경우에만 적용됩니다.</p>' +
+      '<label for="discussIdentiLightness">명도</label><input name="discussIdentiLightness" data-setname="discussIdentiLightness" type="range" max="1" min="0" step="0.01"><br>' +
+      '<label for="discussIdentiSaturation">순도</label><input name="discussIdentiSaturation" data-setname="discussIdentiSaturation" type="range" max="1" min="0" step="0.01">' +
+      '<h1 class="wsmall">토론시 취소선</h1>' +
+      '<input type="radio" name="hideDeletedWhenDiscussing" data-setname="hideDeletedWhenDiscussing" data-setvalue="0">표시<br>' +
+      '<input type="radio" name="hideDeletedWhenDiscussing" data-setname="hideDeletedWhenDiscussing" data-setvalue="0.5">반숨김<br>' +
+      '<input type="radio" name="hideDeletedWhenDiscussing" data-setname="hideDeletedWhenDiscussing" data-setvalue="1">숨기기<br>' +
+      '<h1 class="wsmall">토론시 앵커 미리보기</h1>' +
+      '<input type="radio" name="discussAnchorPreviewType" data-setname="discussAnchorPreviewType" data-setvalue="0">사용하지 않음<br>' +
+      '<input type="radio" name="discussAnchorPreviewType" data-setname="discussAnchorPreviewType" data-setvalue="1">마우스를 올리면 미리보기 표시<br>' +
+      '<input type="radio" name="discussAnchorPreviewType" data-setname="discussAnchorPreviewType" data-setvalue="2">토론 메세지 위에 인용형식으로 표시<br>' +
+      '<input type="checkbox" name="removeNFQuotesInAnchorPreview" data-setname="removeNFQuotesInAnchorPreview" data-as-boolean>토론 메세지 위에 인용형식으로 표시할때, 인용문 안에 인용 형식으로 표시된 미리보기 제거';
+    var optionTags = document.querySelectorAll('[data-setname]');
+    SET.load();
+    for (var i = 0; i < optionTags.length; i++) {
+      var tag = optionTags[i];
+      var t = tag.getAttribute('type');
+      var sn = tag.dataset.setname;
+      if (t == "radio" && tag.dataset.setvalue == SET[sn]) {
+        tag.checked = true;
+      } else if ((t == "checkbox" && tag.dataset.setvalueOnChecked == SET[sn]) || (t == "checkbox" && tag.hasAttribute("data-as-boolean") && SET[sn])) {
+        tag.checked = true;
+      } else if (["text", "password", "number", "range"].indexOf(t) != -1) {
+        tag.value = ["number", "range"].indexOf(t) != -1 ? Number(SET[sn]) : SET[sn];
+      }
+    }
+  });
+  win.button('저장하지 않고 닫기', win.close);
+  win.button('저장하고 닫기', function() {
+    var optionTags = document.querySelectorAll('[data-setname]');
+    SET.load();
+    for (var i = 0; i < optionTags.length; i++) {
+      var tag = optionTags[i];
+      var t = tag.getAttribute('type');
+      var sn = tag.dataset.setname;
+      if (t == "radio" && tag.checked) {
+        SET[sn] = tag.dataset.setvalue;
+      } else if (t == "checkbox") {
+        SET[sn] = tag.hasAttribute("data-as-boolean") ? tag.checked : tag.checked ? t.dataset.setvalueOnChecked : t.dataset.setvalueOnUnchecked;
+      } else if (["text", "password", "number", "range"].indexOf(t) != -1) {
+        SET[sn] = tag.value;
+      }
+    }
+    SET.save();
+    win.close();
+  });
+});
+addItemToMemberMenu("Imgur 이미지 삭제 주소들", function() {
+  SET.load();
+  var win = TooSimplePopup();
+  var divWithScrolls = document.createElement("div");
+  divWithScrolls.style.overflow = 'scroll';
+  divWithScrolls.style.maxHeight = '800px';
+  divWithScrolls.style.maxWidth = '1200px';
+
+  var table = document.createElement("table");
+  table.innerHTML = '<tr><th style="min-width: 200px;">업로드한 날짜/시각</th><th>이름</th><th>이미지 주소(다이렉트)</th><th>이미지 삭제 주소</th></tr>';
+  var addRow = function(dt, dna, dil, del) {
+    var tr = document.createElement("tr");
+    var appendTd = function(t) {
+      var td = document.createElement("td");
+      td.innerHTML = t;
+      tr.appendChild(td);
+    }
+    appendTd(formatDateTime(dt));
+    appendTd(dna == null ? '<span style="color: red;">정보 없음</span>' : dna);
+    appendTd('<a href="' + dil + '" target="_blank">' + dil + '</a>');
+    appendTd('<a href="' + del + '" target="_blank">' + del + '</a>');
+    table.appendChild(tr);
+  }
+  for (var i = 0; i < SET.imgurDeletionLinks.length; i++) {
+    var ii = SET.imgurDeletionLinks[i];
+    addRow(ii.uploadedAt, typeof ii.name !== "undefined" ? ii.name : null, ii.imgUrl, ii.deleteionUrl);
+  }
+  win.content(function(el) {
+    el.appendChild(table);
+  });
+  win.title('이미지 삭제 주소들');
+  win.button('닫기', win.close);
+});
+addItemToMemberMenu('설정 백업/복업', function() {
+  if (!confirm('경고 : 이 기능은 불안정합니다.\n그래도 진행하시겠습니까?'))
+    return;
+  if (confirm('백업입니까?')) {
+    var keys = GM_listValues();
+    var obj = {};
+    for (var i = 0; i < keys.length; i++) {
+      var ke = keys[i];
+      obj[ke] = GM_getValue(ke);
+    }
+    prompt('복사해서 어딘가에 보관해두세요.', JSON.stringify(obj));
+  } else if (confirm('그러면 복원입니까?')) {
+    var obj = prompt('**원문 그대로** 복사하세요.');
+    obj = JSON.stringify(obj);
+    var keys = Object.keys(obj);
+    for (var i = 0; i < keys.length; i++) {
+      var ke = keys[i];
+      GM_setValue(ke, obj[ke]);
+    }
+  } else {
+    alert('취소됨.');
+  }
+})
 if (ENV.Discussing) {
   // 아이덴티콘 설정들과 변수들
   var isIcon = SET.discussIdenti == 'icon';
@@ -2267,12 +2173,12 @@ if (ENV.Discussing) {
         rbody.insertBefore(blockquoteElement, rbody.firstChild);
 
         anchor.dataset.quoteId = blockquoteId;
-        anchor.addEventListener('mouseenter', function(evt){
+        anchor.addEventListener('mouseenter', function(evt) {
           var quote = document.getElementById(evt.target.dataset.quoteId);
           quote.style.borderColor = '#CCC #CCC #CCC red !important';
           quote.style.boxShadow = '2px 2px 3px orange';
         });
-        anchor.addEventListener('mouseleave', function(evt){
+        anchor.addEventListener('mouseleave', function(evt) {
           var quote = document.getElementById(evt.target.dataset.quoteId);
           quote.style.borderColor = '';
           quote.style.boxShadow = '';
@@ -2447,9 +2353,9 @@ if (ENV.Discussing) {
       break;
   }
 } else if (ENV.IsUserPage) {
-  function insertBeforeTitle(element) {
-    var title = document.querySelector("h1.title");
-    title.parentNode.insertBefore(element, title.nextSibling);
+  function insertBeforeTable(element) {
+    var bread = document.querySelector("article > ol.breadcrumb.link-nav");
+    bread.parentNode.insertBefore(element, bread);
   }
 
   function makeHeatTable(times) {
@@ -2520,7 +2426,7 @@ if (ENV.Discussing) {
     var ip = ipPattern.exec(location.href)[1];
     var ipInfo = document.createElement("p");
     ipInfo.innerHTML = '<div style="border: 1px black solid; padding: 2px;">IP 관련 정보를 조회중입니다. 잠시만 기다려주세요.</div>'
-    insertBeforeTitle(ipInfo);
+    insertBeforeTable(ipInfo);
     getVPNGateIPList(function(result) {
       GM_xmlhttpRequest({
         method: "GET",
@@ -2666,7 +2572,7 @@ if (ENV.Discussing) {
   } else {
     delete p;
   }
-  if (typeof p !== 'undefined') insertBeforeTitle(p);
+  if (typeof p !== 'undefined') insertBeforeTable(p);
 } else if (ENV.IsDiff) {
   setTimeout(function() {
     try {

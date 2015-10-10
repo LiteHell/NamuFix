@@ -148,10 +148,12 @@ div.NamaEditor.NEMenuButton {
 }
 
 /* Tab */
-
+.nf-tabs > ul {
+  padding: 0px;
+  margin: 0px;
+}
 .nf-tabs > ul > li {
   display: inline-block;
-  font-size: 20px;
   font-family: sans-serif !important;
   border: none;
   background: #646771;
