@@ -149,8 +149,8 @@ div.NamaEditor.NEMenuButton {
 
 /* Tab */
 .nf-tabs > ul {
-  padding: 0px;
-  margin: 0px;
+  padding: 0px !important;
+  margin: 0px !important;
 }
 .nf-tabs > ul > li {
   display: inline-block;
