@@ -1966,7 +1966,6 @@ function mainFunc() {
     var isIdenticon = SET.discussIdenti == 'identicon';
     var colorDictionary = {},
       identiconDictionary = {};
-    var identiconCSSAdded = false;
 
     // #[0-9]+ 엥커 미리보기
     function mouseoverPreview() {
@@ -2089,14 +2088,18 @@ function mainFunc() {
 
     // 아이덴티콘
     setInterval(function() {
+      if(/^https?:\/\/(?:no-ssl\.|)namu\.wiki\/discuss\/(.+?)/.test(location.href)) return;
       var messages = document.querySelectorAll('.res:not([data-nfbeauty])');
       var colorHash = isThreadicLike ? new ColorHash({
         lightness: Number(SET.discussIdentiLightness),
         saturation: Number(SET.discussIdentiSaturation)
       }) : new ColorHash();
-      if (isIdenticon && !identiconCSSAdded) {
-        GM_addStyle('div.nf-identicon { border: 1px solid #808080; margin: 10px; width: 64px; border: 1px black solid; background: white;} .res[data-nfbeauty] {margin-left: 88px; position: relative; top: -76px;}')
-        identiconCSSAdded = true;
+      if (isIdenticon && document.querySelector('#nf-identicon-css') == null) {
+        var cssContent = 'div.nf-identicon { border: 1px solid #808080; margin: 10px; width: 64px; border: 1px black solid; background: white;} .res[data-nfbeauty] {margin-left: 88px; position: relative; top: -76px;}';
+        var styleTag = document.createElement("style");
+        styleTag.innerHTML = cssContent;
+        styleTag.id = "nf-identicon-css";
+        document.head.appendChild(styleTag);
       }
       for (var i = 0; i < messages.length; i++) {
         var message = messages[i];
@@ -2471,6 +2474,24 @@ function mainFunc() {
   }
 }
 
+// 아이덴티콘 버그 수정
+setInterval(function() {
+  if (!/^https?:\/\/(?:no-ssl\.|)namu\.wiki\/discuss\/(.+?)/.test(location.href)) {
+    return;
+  }
+  var identicons = document.querySelectorAll('.nf-identicon');
+  for (var i = 0; i < identicons.length; i++) {
+    var ide = identicons[i];
+    var pa = ide.parentNode;
+
+    pa.removeChild(ide);
+    pa.style.marginTop = '';
+  }
+  if (document.querySelector('#nf-identicon-css') != null) {
+    var cssTag = document.querySelector('#nf-identicon-css');
+    cssTag.parentNode.removeChild(cssTag);
+  }
+}, 50);
 
 // 설정 메뉴 추가
 addItemToMemberMenu("NamuFix 설정", function() {
