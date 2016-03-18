@@ -16,7 +16,7 @@
 // @require     https://raw.githubusercontent.com/stewartlord/identicon.js/master/identicon.js
 // @require     https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.3.0/katex.min.js
 // @require     https://raw.githubusercontent.com/LiteHell/TooSimplePopupLib/master/TooSimplePopupLib.js
-// @require     https://cdn.rawgit.com/kpdecker/jsdiff/49dece07ae3b3e9e2e9a57592f467de3dff1aabc/diff.js
+// @require     https://raw.githubusercontent.com/kpdecker/jsdiff/49dece07ae3b3e9e2e9a57592f467de3dff1aabc/diff.js
 // @grant       GM_addStyle
 // @grant       GM_xmlhttpRequest
 // @grant       GM_getValue
