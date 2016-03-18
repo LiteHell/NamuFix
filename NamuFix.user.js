@@ -6,7 +6,7 @@
 // @include     http://namu.wiki/*
 // @include     https://namu.wiki/*
 // @include     http://issue.namu.wiki/*
-// @version     160109.0
+// @version     160318.0
 // @namespace   http://litehell.info/
 // @downloadURL https://raw.githubusercontent.com/LiteHell/NamuFix/master/NamuFix.user.js
 // @require     https://raw.githubusercontent.com/LiteHell/NamuFix/master/FlexiColorPicker.js
@@ -83,7 +83,7 @@ function insertCSS(url) {
     }
   });
 }
-insertCSS("https://raw.githubusercontent.com/LiteHell/NamuFix/master/NamuFix.css");
+insertCSS("https://cdn.rawgit.com/LiteHell/NamuFix/83dd14f60070af204b452ec79f2db68acda65cfe/NamuFix.css");
 insertCSS("https://raw.githubusercontent.com/LiteHell/TooSimplePopupLib/master/TooSimplePopupLib.css");
 
 function nOu(a) {
@@ -592,7 +592,7 @@ function mainFunc() {
       var win = TooSimplePopup();
       win.title('QR코드');
       win.content(function(container) {
-        container.innerHTML = '<img src="//i.imgur.com/DDsEsTo.png" style="max-width: calc(100vw - 50px);"></img>';
+        container.innerHTML = '<img src="https://file1.namu.wiki/d1/d1fddc88d65dacea0f5622f7a0c768f7f7bc3012e65efd45c9fa07db6d119472.png" style="max-width: calc(100vw - 50px);"></img>';
       });
       win.button('닫기', win.close);
     })
