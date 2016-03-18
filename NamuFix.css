@@ -42,7 +42,7 @@ em {
 }
 .NamaEditor.NETextarea {
   height: calc(100% - 50px);
-  width: 100%;
+  width: 100% !important;
 }
 .NamaEditor.NEMenuButton {
   font-size: 13pt;
@@ -85,7 +85,7 @@ div.NamaEditor.NEMenuButton {
   list-style: inside none none;
   float: left;
   margin: 0px 0px 0px 10px;
-  padding: 0px;
+  padding: 0px !important;
 }
 .NamaEditor.NEDropDown ul > li {
   margin: 5px;
