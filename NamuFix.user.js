@@ -789,6 +789,55 @@ function mainFunc() {
       });
 
       // Insertable Media Functions
+      function namuUpload() {
+        var win = TooSimplePopup();
+        var imageinfo_addr = prompt("출처를 입력해주세요. 제한적 이용이라면 아무것도 입력하지 마세요.", "");
+
+        win.title("업로드 중...");
+        win.content(function(el) {
+          el.innerHTML = '<p>파일을 업로드하고 있습니다. 잠시만 기다려주세요.</p>';
+        });
+        getFiles(function(files, finish) {
+          if (files.length < 0) {
+            alert('선택된 파일이 없습니다');
+            primaryWin.close();
+            return finish();
+          }
+
+          forLoop(files, function(file, next, isLastItem) {
+            win.content(function(el) {
+              el.innerHTML = '<p>파일을 업로드하고 있습니다. 잠시만 기다려주세요.</p><p>현재 업로드중 : ' + file.name + '</p>';
+            });
+            var query = new FormData();
+            var fn = "파일:" + SHA512(String(Date.now()) + file.name) + "_" + file.name;
+            query.append('file', file);
+            query.append('document', fn);
+            query.append('text', (imageinfo_addr.length != 0 ? "== 기본 정보 ==\n|| 출처 || [["+ imageinfo_addr + "]] ||" : "[include(틀:이미지 라이선스/제한적 이용)]\n== 기본 정보==\n없음") + "\n\n== 기타 ==\n자동으로 업로드된 이미지입니다.\n더 자세한 이미지 정보를 아신다면 기여해주세요.");
+            query.append('log', "NamuFix로 자동으로 업로드됨");
+            query.append('baserev', 0);
+            GM_xmlhttpRequest({
+              method: 'POST',
+              url: 'https://namu.wiki/Upload',
+              data: query,
+              onload: function(res) {
+                var parser = new DOMParser();
+                if(parser.parseFromString(res.responseText, "text/html").querySelector("p.wiki-edit-date") != null) {
+                  TextProc.selectionText(TextProc.selectionText() + '[[' + fn + ']]');
+                } else {
+                  alert("업로드에 실패함 : " + file.name);
+                }
+                if(isLastItem){
+                  finish();
+                  win.close();
+                  return;
+                }
+                next();
+              }
+            })
+          })
+        });
+      }
+
       function ImgurUpload() {
         getFile(function(files, finish) {
           if (files.length < 0) {
@@ -1022,6 +1071,7 @@ function mainFunc() {
       insertablesDropDown.button('<span class="ion-social-youtube" style="color:red;"></span>', 'YouTube 동영상').click(InsertYouTube);
       insertablesDropDown.button('<span class="ion-map"></span>', '지도').click(MapMacro);
       insertablesDropDown.button('<span class="ion-ios-play-outline" style="color: Aqua;"></span>', '다음 TV팟 동영상').click(DaumTVPotMarkUp);
+      insertablesDropDown.button('<span class="ion-images" style="color: #008275;"></span>', '나무위키 이미지 업로드').click(namuUpload);
 
       Designer.button('<span class="ion-ios-timer-outline"></span>').hoverMessage('아카이브하고 외부링크 삽입').click(function() {
         var win = TooSimplePopup();
