@@ -790,21 +790,24 @@ function mainFunc() {
 
       // Insertable Media Functions
       function namuUpload() {
-        var win = TooSimplePopup();
-        var imageinfo_addr = prompt("출처를 입력해주세요. 제한적 이용이라면 아무것도 입력하지 마세요.", "");
+        var isOwnWork = confirm("자작입니까?");
+        if(isOwnWork) var imageinfo_addr = prompt("출처를 입력해주세요. 제한적 이용이라면 아무것도 입력하지 마세요.", "");
+        if(isOwnWork) {
+          var docuText = "== 기본 정보 ==\n|| 저작자 || (자작입니다.) ||";
+        } else {
+          var docuText = (imageinfo_addr.length != 0 ? "== 기본 정보 ==\n|| 출처 || [["+ imageinfo_addr + "]] ||" : "[include(틀:이미지 라이선스/제한적 이용)]\n== 기본 정보 ==\n없음") + "\n\n== 기타 ==\n자동으로 업로드된 이미지입니다.\n더 자세한 이미지 정보를 아신다면 기여해주세요.";
+        }
 
-        win.title("업로드 중...");
-        win.content(function(el) {
-          el.innerHTML = '<p>파일을 업로드하고 있습니다. 잠시만 기다려주세요.</p>';
-        });
-        getFiles(function(files, finish) {
+        getFile(function(files, finish) {
           if (files.length < 0) {
             alert('선택된 파일이 없습니다');
-            primaryWin.close();
             return finish();
           }
 
           forLoop(files, function(file, next, isLastItem) {
+            if(!file) next();
+            var win = TooSimplePopup();
+            win.title("업로드 중...");
             win.content(function(el) {
               el.innerHTML = '<p>파일을 업로드하고 있습니다. 잠시만 기다려주세요.</p><p>현재 업로드중 : ' + file.name + '</p>';
             });
@@ -812,7 +815,7 @@ function mainFunc() {
             var fn = "파일:" + SHA512(String(Date.now()) + file.name) + "_" + file.name;
             query.append('file', file);
             query.append('document', fn);
-            query.append('text', (imageinfo_addr.length != 0 ? "== 기본 정보 ==\n|| 출처 || [["+ imageinfo_addr + "]] ||" : "[include(틀:이미지 라이선스/제한적 이용)]\n== 기본 정보==\n없음") + "\n\n== 기타 ==\n자동으로 업로드된 이미지입니다.\n더 자세한 이미지 정보를 아신다면 기여해주세요.");
+            query.append('text', docuText);
             query.append('log', "NamuFix로 자동으로 업로드됨");
             query.append('baserev', 0);
             GM_xmlhttpRequest({
@@ -828,14 +831,13 @@ function mainFunc() {
                 }
                 if(isLastItem){
                   finish();
-                  win.close();
-                  return;
                 }
+                win.close();
                 next();
               }
             })
           })
-        });
+        }, true);
       }
 
       function ImgurUpload() {
