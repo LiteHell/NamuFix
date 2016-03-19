@@ -791,7 +791,7 @@ function mainFunc() {
       // Insertable Media Functions
       function namuUpload() {
         var isOwnWork = confirm("자작입니까?");
-        if(isOwnWork) var imageinfo_addr = prompt("출처를 입력해주세요. 제한적 이용이라면 아무것도 입력하지 마세요.", "");
+        if(!isOwnWork) var imageinfo_addr = prompt("출처를 입력해주세요. 제한적 이용이라면 아무것도 입력하지 마세요.", "");
         if(isOwnWork) {
           var docuText = "== 기본 정보 ==\n|| 저작자 || (자작입니다.) ||";
         } else {
