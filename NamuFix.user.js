@@ -1954,13 +1954,6 @@ function mainFunc() {
           blockquoteElement.className = "wiki-quote nf-anchor-preview";
           blockquoteElement.innerHTML = message;
           blockquoteElement.id = blockquoteId;
-          if (SET.removeNFQuotesInAnchorPreview) {
-            var quotesToRemove = blockquoteElement.querySelectorAll('blockquote.nf-anchor-preview');
-            for (var i = 0; i < quotesToRemove.length; i++) {
-              var quote = quotesToRemove[i];
-              quote.parentNode.removeChild(quote);
-            }
-          }
           blockquoteElement.innerHTML += '<div style="text-align: right; font-style: italic;">--#{1}, {0}, {2}</div>'.format(talker, numbericId, talkedAt);
           rbody.insertBefore(blockquoteElement, rbody.firstChild);
 
@@ -1996,6 +1989,11 @@ function mainFunc() {
         break;
       default:
         previewFunction = function() {};
+    }
+    
+    // 인용형식 앵커 미리보기안의 앵커 미리보기 삭제 옵션 설정시 CSS 추가
+    if (SET.removeNFQuotesInAnchorPreview) {
+      GM_addStyle("blockquote.nf-anchor-preview blockquote.nf-anchor-preview {display: none;}");
     }
 
     // 아이덴티콘
