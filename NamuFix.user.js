@@ -2533,7 +2533,7 @@ addItemToMemberMenu("Imgur 이미지 삭제 주소들", function() {
   win.title('이미지 삭제 주소들');
   win.button('닫기', win.close);
 });
-addItemToMemberMenu('설정 백업/복업', function() {
+addItemToMemberMenu('설정 백업/복원', function() {
   if (!confirm('경고 : 이 기능은 불안정합니다.\n그래도 진행하시겠습니까?'))
     return;
   if (confirm('백업입니까?')) {
