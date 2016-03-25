@@ -1096,7 +1096,7 @@ function mainFunc() {
                 }
                 var matches = /var redirUrl = \"(.+?)\";/.exec(res.responseText);
                 if (matches == null) {
-                  alert('아카이브 주소를 얻는 데 실패했습니다.');
+                  alert('WayBack Machine 아카이브 주소를 얻는 데 실패했습니다.');
                   setTimeout(archiveOne, 50);
                   return;
                 }
@@ -1115,7 +1115,7 @@ function mainFunc() {
                 var matches = /document\.location\.replace\("(.+?)"\)/.exec(res.responseText);
                 if (matches == null) matches = /<meta property="og:url" content="(.+?)"/.exec(res.responseText);
                 if (matches == null) {
-                  alert('아카이브 주소를 얻는 데 실패했습니다.');
+                  alert('archive.is 아카이브 주소를 얻는 데 실패했습니다.');
                   setTimeout(archiveOne, 50);
                   return;
                 }
