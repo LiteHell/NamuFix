@@ -790,54 +790,74 @@ function mainFunc() {
 
       // Insertable Media Functions
       function namuUpload() {
-        var isOwnWork = confirm("자작입니까?");
-        if(!isOwnWork) var imageinfo_addr = prompt("출처를 입력해주세요. 제한적 이용이라면 아무것도 입력하지 마세요.", "");
-        if(isOwnWork) {
-          var docuText = "== 기본 정보 ==\n|| 저작자 || (자작입니다.) ||";
-        } else {
-          var docuText = (imageinfo_addr.length != 0 ? "== 기본 정보 ==\n|| 출처 || [["+ imageinfo_addr + "]] ||" : "[include(틀:이미지 라이선스/제한적 이용)]\n== 기본 정보 ==\n없음") + "\n\n== 기타 ==\n자동으로 업로드된 이미지입니다.\n더 자세한 이미지 정보를 아신다면 기여해주세요.";
+        function getCopyrightInfo(callback) {
+          var win = TooSimplePopup();
+          var contelem;
+          win.title("저작권 정보");
+          win.content(function(el) {
+            contelem = el;
+            el.innerHTML = '<label>출처</label><input type="text" class="cpinfo" data-name="출처"></input><br>' +
+              '<label>날짜</label><input type="text" class="cpinfo" data-name="날짜"></input><br>' +
+              '<label>저작자</label><input type="text" class="cpinfo" data-name="저작자"></input><br>' +
+              '<label>저작권</label><input type="text" class="cpinfo" data-name="저작권"></input><br>' +
+              '<label>기타</label><input type="text" class="cpinfo" data-name="기타"></input><br>' +
+              '<label>설명</label><input type="text" class="cpinfo" data-name="설명"></input>' +
+              '<p>라이선스, 분류는 구현하기 귀찮습니다. 라이선스는 저작권란에 알아서 써주시고 분류는 알아서 하세요.</p>'
+          });
+          win.button("삽입", function() {
+            var result = "== 기본 정보 ==\n";
+            var cpinfos = contelem.querySelectorAll(".cpinfo");
+            for (var i = 0; i < cpinfos.length; i++) {
+              var cpinfo = cpinfos[i];
+              result += "|| " + cpinfo.dataset.name + " || " + cpinfo.value + " ||\n";
+            }
+            callback(result);
+          });
+          win.button("닫기", win.close);
         }
+        getCopyrightInfo(function(docuText) {
+          getFile(function(files, finish) {
+            if (files.length < 0) {
+              alert('선택된 파일이 없습니다');
+              return finish();
+            }
 
-        getFile(function(files, finish) {
-          if (files.length < 0) {
-            alert('선택된 파일이 없습니다');
-            return finish();
-          }
-
-          forLoop(files, function(file, next, isLastItem) {
-            if(!file) next();
-            var win = TooSimplePopup();
-            win.title("업로드 중...");
-            win.content(function(el) {
-              el.innerHTML = '<p>파일을 업로드하고 있습니다. 잠시만 기다려주세요.</p><p>현재 업로드중 : ' + file.name + '</p>';
-            });
-            var query = new FormData();
-            var fn = "파일:" + SHA512(String(Date.now()) + file.name) + "_" + file.name;
-            query.append('file', file);
-            query.append('document', fn);
-            query.append('text', docuText);
-            query.append('log', "NamuFix로 자동으로 업로드됨");
-            query.append('baserev', 0);
-            GM_xmlhttpRequest({
-              method: 'POST',
-              url: 'https://namu.wiki/Upload',
-              data: query,
-              onload: function(res) {
-                var parser = new DOMParser();
-                if(parser.parseFromString(res.responseText, "text/html").querySelector("p.wiki-edit-date") != null) {
-                  TextProc.selectionText(TextProc.selectionText() + '[[' + fn + ']]');
-                } else {
-                  alert("업로드에 실패함 : " + file.name);
+            forLoop(files, function(file, next, isLastItem) {
+              if (!file) next();
+              var win = TooSimplePopup();
+              win.title("업로드 중...");
+              win.content(function(el) {
+                el.innerHTML = '<p>파일을 업로드하고 있습니다. 잠시만 기다려주세요.</p><p>현재 업로드중 : ' + file.name + '</p>';
+              });
+              var query = new FormData();
+              var fn = "파일:" + SHA512(String(Date.now()) + file.name) + "_" + file.name;
+              query.append('file', file);
+              query.append('document', fn);
+              query.append('text', docuText);
+              query.append('log', "NamuFix로 자동으로 업로드됨");
+              query.append('baserev', 0);
+              GM_xmlhttpRequest({
+                method: 'POST',
+                url: 'https://namu.wiki/Upload',
+                data: query,
+                onload: function(res) {
+                  var parser = new DOMParser();
+                  if (parser.parseFromString(res.responseText, "text/html").querySelector("p.wiki-edit-date") != null) {
+                    TextProc.selectionText(TextProc.selectionText() + '[[' + fn + ']]');
+                  } else {
+                    alert("업로드에 실패함 : " + file.name);
+                    prompt("copy this, for debugging", res.responseText)
+                  }
+                  if (isLastItem) {
+                    finish();
+                  }
+                  win.close();
+                  next();
                 }
-                if(isLastItem){
-                  finish();
-                }
-                win.close();
-                next();
-              }
+              })
             })
-          })
-        }, true);
+          }, true);
+        })
       }
 
       function InsertYouTube() {
@@ -1112,7 +1132,7 @@ function mainFunc() {
                 var parser = new DOMParser();
                 var indexDoc = parser.parseFromString(res.responseText, "text/html");
                 var token = indexDoc.querySelector("input[name=submitid][value]");
-                if(token) {
+                if (token) {
                   token = token.value;
 
                   // archive form
@@ -1990,7 +2010,7 @@ function mainFunc() {
       default:
         previewFunction = function() {};
     }
-    
+
     // 인용형식 앵커 미리보기안의 앵커 미리보기 삭제 옵션 설정시 CSS 추가
     if (SET.removeNFQuotesInAnchorPreview) {
       GM_addStyle("blockquote.nf-anchor-preview blockquote.nf-anchor-preview {display: none;}");
