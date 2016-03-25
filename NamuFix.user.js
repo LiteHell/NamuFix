@@ -1105,23 +1105,40 @@ function mainFunc() {
                 setTimeout(archiveOne, 50);
               };
             } else if (archiveType == 'ai') {
-              // 'http://archive.is/submit/'
-              r.method = "POST";
-              r.url = "https://archive.is/submit/";
-              r.headers = {};
-              r.headers["Content-Type"] = "application/x-www-form-urlencoded";
-              r.data = "anyway=1&url=" + encodeURIComponent(linkTo);
+              r.method = "GET";
+              r.url = "https://archive.is";
               r.onload = function(res) {
-                var matches = /document\.location\.replace\("(.+?)"\)/.exec(res.responseText);
-                if (matches == null) matches = /<meta property="og:url" content="(.+?)"/.exec(res.responseText);
-                if (matches == null) {
-                  alert('archive.is 아카이브 주소를 얻는 데 실패했습니다.');
-                  setTimeout(archiveOne, 50);
-                  return;
+                // get submitid
+                var parser = new DOMParser();
+                var indexDoc = parser.parseFromString(res.responseText, "text/html");
+                var token = indexDoc.querySelector("input[name=submitid][value]");
+                if(token) {
+                  token = token.value;
+
+                  // archive form
+                  // 'http://archive.is/submit/'
+                  var r2 = {};
+                  r2.method = "POST";
+                  r2.url = "https://archive.is/submit/";
+                  r2.headers = {};
+                  r2.headers["Content-Type"] = "application/x-www-form-urlencoded";
+                  r2.data = "anyway=1&url=" + encodeURIComponent(linkTo) + "&submitid=" + encodeURIComponent(token);
+                  r2.onload = function(res) {
+                    var matches = /document\.location\.replace\("(.+?)"\)/.exec(res.responseText);
+                    if (matches == null) matches = /<meta property="og:url" content="(.+?)"/.exec(res.responseText);
+                    if (matches == null) {
+                      alert('archive.is 아카이브 주소를 얻는 데 실패했습니다.');
+                      setTimeout(archiveOne, 50);
+                      return;
+                    }
+                    var archiveUrl = matches[1];
+                    archiveLinks.push(archiveUrl);
+                    setTimeout(archiveOne, 50);
+                  }
+                  GM_xmlhttpRequest(r2);
+                } else {
+                  alert('archive.is 아카이브 중 토큰을 얻는 데 실패했습니다.')
                 }
-                var archiveUrl = matches[1];
-                archiveLinks.push(archiveUrl);
-                setTimeout(archiveOne, 50);
               }
             }
             GM_xmlhttpRequest(r);
