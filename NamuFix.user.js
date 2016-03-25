@@ -1886,7 +1886,7 @@ function mainFunc() {
               break;
             case 73: // I
             case 105:
-              ImgurUpload();
+              namuUpload();
               break;
           }
         } else {
