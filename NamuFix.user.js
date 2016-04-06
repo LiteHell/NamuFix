@@ -9,14 +9,15 @@
 // @version     160325.0
 // @namespace   http://litehell.info/
 // @downloadURL https://raw.githubusercontent.com/LiteHell/NamuFix/master/NamuFix.user.js
-// @require     https://raw.githubusercontent.com/LiteHell/NamuFix/master/FlexiColorPicker.js
-// @require     https://raw.githubusercontent.com/Caligatio/jsSHA/v2.0.1/src/sha512.js
-// @require     https://raw.githubusercontent.com/zenozeng/color-hash/master/dist/color-hash.js
+// @require     https://cdn.rawgit.com/LiteHell/NamuFix/0ea78119c377402a10bbdfc33365c5195ce7fccc/FlexiColorPicker.js
+// @require     https://cdn.rawgit.com/Caligatio/jsSHA/v2.0.1/src/sha512.js
+// @require     https://cdn.rawgit.com/zenozeng/color-hash/v1.0.3/dist/color-hash.js
 // @require     http://www.xarg.org/download/pnglib.js
-// @require     https://raw.githubusercontent.com/stewartlord/identicon.js/master/identicon.js
+// @require     https://cdn.rawgit.com/stewartlord/identicon.js/7c4b4efdb7e2aba458eba14b24ba14e8e2bcdb2a/identicon.js
 // @require     https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.3.0/katex.min.js
-// @require     https://raw.githubusercontent.com/LiteHell/TooSimplePopupLib/master/TooSimplePopupLib.js
-// @require     https://raw.githubusercontent.com/kpdecker/jsdiff/49dece07ae3b3e9e2e9a57592f467de3dff1aabc/diff.js
+// @require     https://cdn.rawgit.com/LiteHell/TooSimplePopupLib/7f2a8a81f11f980c1dfa6b5b2213cd38b8bbde3c/TooSimplePopupLib.js
+// @require     https://cdn.rawgit.com/kpdecker/jsdiff/49dece07ae3b3e9e2e9a57592f467de3dff1aabc/diff.js
+// @connect     cdn.rawgit.com
 // @grant       GM_addStyle
 // @grant       GM_xmlhttpRequest
 // @grant       GM_getValue
@@ -83,8 +84,8 @@ function insertCSS(url) {
     }
   });
 }
-insertCSS("https://raw.githubusercontent.com/LiteHell/NamuFix/83dd14f60070af204b452ec79f2db68acda65cfe/NamuFix.css");
-insertCSS("https://raw.githubusercontent.com/LiteHell/TooSimplePopupLib/master/TooSimplePopupLib.css");
+insertCSS("https://cdn.rawgit.com/LiteHell/NamuFix/0ea78119c377402a10bbdfc33365c5195ce7fccc/NamuFix.css");
+insertCSS("https://cdn.rawgit.com/LiteHell/TooSimplePopupLib/7f2a8a81f11f980c1dfa6b5b2213cd38b8bbde3c/TooSimplePopupLib.css");
 
 function nOu(a) {
   return typeof a === 'undefined' || a == null;
