@@ -1,14 +1,14 @@
 // ==UserScript==
-// @name        NamuFix
+// @name        NamuFix-LastorderDC
 // @namespace   http://litehell.info/
 // @description 나무위키 편집 인터페이스 등을 개선합니다.
 // @include     http://no-ssl.namu.wiki/*
 // @include     http://namu.wiki/*
 // @include     https://namu.wiki/*
 // @include     http://issue.namu.wiki/*
-// @version     160325.0
-// @namespace   http://litehell.info/
-// @downloadURL https://raw.githubusercontent.com/LiteHell/NamuFix/master/NamuFix.user.js
+// @version     1.0.1
+// @author      Litehell
+// @downloadURL https://raw.githubusercontent.com/Lastorder-DC/NamuFix/master/NamuFix.user.js
 // @require     https://cdn.rawgit.com/LiteHell/NamuFix/0ea78119c377402a10bbdfc33365c5195ce7fccc/FlexiColorPicker.js
 // @require     https://cdn.rawgit.com/Caligatio/jsSHA/v2.0.1/src/sha512.js
 // @require     https://cdn.rawgit.com/zenozeng/color-hash/v1.0.3/dist/color-hash.js
@@ -589,7 +589,9 @@ function mainFunc() {
     donationDiv.innerHTML = ('<img src="{1}" style="height: 40px; width: 116.7px; float:right; display: inline; margin-left: 10px;"></img>' +
       '오늘같은 날 나무위키에 줄 수 있는 특별한 사랑은 무엇일까요? 특별한 사랑이란 잊혀지지 않는 사랑, 그 이름은 기부입니다.<br>' +
       '비트코인 주소 : {0} <a href="#NothingToLink" id="showQR">(QR 코드 확인)</a>').format(bitcoinAddress, imageDataUrl);
-    donationDiv.querySelector('#showQR').addEventListener('click', function() {
+    donationDiv.querySelector('#showQR').addEventListener('click', function(evt) {
+      evt.preventDefault();
+      
       var win = TooSimplePopup();
       win.title('QR코드');
       win.content(function(container) {
@@ -1805,6 +1807,8 @@ function mainFunc() {
 
     // 리다이렉트 버튼 추가
     addButton('리다이렉트', function(evt) {
+      evt.preventDefault();
+      
       var redirectFrom = prompt('어느 문서에서 지금 이문서로 리다이렉트?');
       if (redirectFrom != null && redirectFrom.trim().length != 0)
         location.href = 'https://namu.wiki/edit/' + redirectFrom + '?redirectTo=' + ENV.docTitle;
@@ -2075,6 +2079,8 @@ function mainFunc() {
           identicon.querySelector("a").dataset.hash = n;
           identicon.querySelector("a").href = "#NothingToLink";
           identicon.querySelector("a").addEventListener('click', function(evt) {
+            evt.preventDefault();
+            
             SET.load();
             var h = evt.target.dataset.hash;
             if (typeof SET.customIdenticons[h] !== 'undefined') {
@@ -2331,7 +2337,9 @@ function mainFunc() {
         '<tr><td>시간대별 기여/활동 횟수 총합(문서 기여)</td><td><a href="#NothingToLink" id="punch">여기를 눌러 확인</a></td></tr>' +
         '</tbody>' +
         '</table>').format(contCount, contTotalBytes, documents.length, deletedDocuments.length, createdDocuments.length, (contTotalBytes / documents.length));
-      p.querySelector('a#punch').addEventListener('click', function() {
+      p.querySelector('a#punch').addEventListener('click', function(evt) {
+        evt.preventDefault();
+        
         var win = TooSimplePopup();
         win.title('시간대별 기여/활동 횟수 총합(문서 기여)');
         win.content(function(element) {
@@ -2392,7 +2400,9 @@ function mainFunc() {
         '<tr><td>시간대별 기여/활동 횟수 총합(토론)</td><td><a href="#NothingToLink" id="punch">여기를 눌러 확인</a></td></tr>' +
         '</tbody>' +
         '</table>').format(totalTalks, discussCount, avgTalks, standardDeviation(Talks));
-      p.querySelector('a#punch').addEventListener('click', function() {
+      p.querySelector('a#punch').addEventListener('click', function(evt) {
+        evt.preventDefault();
+        
         var win = TooSimplePopup();
         win.title('시간대별 기여/활동 횟수 총합(토론)');
         win.content(function(container) {
@@ -2441,7 +2451,9 @@ setInterval(function() {
 }, 50);
 
 // 설정 메뉴 추가
-addItemToMemberMenu("NamuFix 설정", function() {
+addItemToMemberMenu("NamuFix 설정", function(evt) {
+  evt.preventDefault();
+  
   var win = TooSimplePopup();
   var elems = {};
   win.title('NamuFix 설정');
@@ -2501,7 +2513,9 @@ addItemToMemberMenu("NamuFix 설정", function() {
     win.close();
   });
 });
-addItemToMemberMenu("Imgur 이미지 삭제 주소들", function() {
+addItemToMemberMenu("Imgur 이미지 삭제 주소들", function(evt) {
+  evt.preventDefault();
+  
   SET.load();
   var win = TooSimplePopup();
   var divWithScrolls = document.createElement("div");
@@ -2534,7 +2548,9 @@ addItemToMemberMenu("Imgur 이미지 삭제 주소들", function() {
   win.title('이미지 삭제 주소들');
   win.button('닫기', win.close);
 });
-addItemToMemberMenu('설정 백업/복원', function() {
+addItemToMemberMenu('설정 백업/복원', function(evt) {
+  evt.preventDefault();
+  
   if (!confirm('경고 : 이 기능은 불안정합니다.\n그래도 진행하시겠습니까?'))
     return;
   if (confirm('백업입니까?')) {
