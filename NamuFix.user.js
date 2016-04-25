@@ -2580,13 +2580,13 @@ listenPJAX(mainFunc);
 // 업데이트 확인
 GM_xmlhttpRequest({
   method: "GET",
-  url: "https://api.github.com/repos/LiteHell/NamuFix/releases/latest",
+  url: "https://api.github.com/repos/Lastorder-DC/NamuFix/releases/latest",
   onload: function(res) {
     var obj = JSON.parse(res.responseText);
     var currentVersion = GM_info.script.version;
     var latestVersion = obj.tag_name;
     if (currentVersion != latestVersion) {
-      var scriptUrl = 'https://github.com/LiteHell/NamuFix/raw/' + latestVersion + '/NamuFix.user.js';
+      var scriptUrl = 'https://github.com/Lastorder-DC/NamuFix/raw/' + latestVersion + '/NamuFix.user.js';
       var win = TooSimplePopup();
       win.title('새버전 설치');
       win.content(function(element) {
