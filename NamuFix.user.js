@@ -6,7 +6,7 @@
 // @include     http://namu.wiki/*
 // @include     https://namu.wiki/*
 // @include     http://issue.namu.wiki/*
-// @version     160425.0
+// @version     160525.0
 // @author      Litehell
 // @downloadURL https://raw.githubusercontent.com/Lastorder-DC/NamuFix/master/NamuFix.user.js
 // @require     https://cdn.rawgit.com/LiteHell/NamuFix/0ea78119c377402a10bbdfc33365c5195ce7fccc/FlexiColorPicker.js
@@ -595,7 +595,7 @@ function mainFunc() {
       var win = TooSimplePopup();
       win.title('QR코드');
       win.content(function(container) {
-        container.innerHTML = '<img src="https://file1.namu.wiki/d1/d1fddc88d65dacea0f5622f7a0c768f7f7bc3012e65efd45c9fa07db6d119472.png" style="max-width: calc(100vw - 50px);"></img>';
+        container.innerHTML = '<img src="https://lastorder-dc.github.io/NamuFix/images/bitcoin_donate.png" style="max-width: calc(100vw - 50px);"></img>';
       });
       win.button('닫기', win.close);
     })
