@@ -6,7 +6,7 @@
 // @include     http://namu.wiki/*
 // @include     https://namu.wiki/*
 // @include     http://issue.namu.wiki/*
-// @version     160525.0
+// @version     160525.1
 // @author      Litehell
 // @downloadURL https://raw.githubusercontent.com/Lastorder-DC/NamuFix/master/NamuFix.user.js
 // @require     https://cdn.rawgit.com/LiteHell/NamuFix/0ea78119c377402a10bbdfc33365c5195ce7fccc/FlexiColorPicker.js
@@ -611,6 +611,9 @@ function mainFunc() {
         var initalPreviewTabHTML = '<iframe id="nfPreviewFrame" name="nfPreviewFrame" style="width: 100%; height: 600px; display: block; border: 1px solid black;"></iframe>';
         document.querySelector('textarea').parentNode.insertBefore(previewTab, document.querySelector('textarea').nextSibling);
         document.querySelector('textarea').parentNode.insertBefore(diffTab, document.querySelector('textarea').nextSibling);
+        
+        // 나무위키 자체 편집/미리보기 탭 제거
+        document.querySelector('.nav.nav-tabs').setAttribute("style","display:none;");
 
         function hideAndShow(no) {
           rootDiv.style.display = no == 0 ? '' : 'none';
