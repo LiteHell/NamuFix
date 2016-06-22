@@ -6,7 +6,7 @@
 // @include     http://namu.wiki/*
 // @include     https://namu.wiki/*
 // @include     http://issue.namu.wiki/*
-// @version     160622.3
+// @version     160622.4
 // @author      Litehell
 // @downloadURL https://raw.githubusercontent.com/Lastorder-DC/NamuFix/master/NamuFix.user.js
 // @require     https://cdn.rawgit.com/LiteHell/NamuFix/0ea78119c377402a10bbdfc33365c5195ce7fccc/FlexiColorPicker.js
@@ -677,7 +677,7 @@ function mainFunc() {
                 baseTextName: "리비전 r" + document.querySelector('input[name="baserev"]').value,
                 newTextName: "편집중",
                 contextSize: null,
-                viewType: 1
+                viewType: 2
               }));
             }
           });
