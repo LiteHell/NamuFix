@@ -6,7 +6,7 @@
 // @include     http://namu.wiki/*
 // @include     https://namu.wiki/*
 // @include     http://issue.namu.wiki/*
-// @version     160622.1
+// @version     160622.2
 // @author      Litehell
 // @downloadURL https://raw.githubusercontent.com/Lastorder-DC/NamuFix/master/NamuFix.user.js
 // @require     https://cdn.rawgit.com/LiteHell/NamuFix/0ea78119c377402a10bbdfc33365c5195ce7fccc/FlexiColorPicker.js
@@ -657,12 +657,12 @@ function mainFunc() {
               var remoteWikitext = doc.querySelector('textarea').value;
               var wikitext = document.querySelector("textarea.NamaEditor.NETextarea").value;
               diffTab.innerHTML = '<div style="width: 100%;">' +
-                '<div style="background: #001400; padding: 10px 5px 10px 5px; color: white; width: 100%; margin: 0px; max-height: 600px; overflow: scroll;" id="diffResult">' +
+                '<div style="padding: 10px 5px 10px 5px; width: 100%; margin: 0px; max-height: 600px; overflow: scroll;" id="diffResult">' +
                 '</div>' +
                 '</div>';
               var result = diffTab.querySelector('#diffResult');
-              var base = encodeHTMLComponent(remoteWikitext);
-              var newtxt = encodeHTMLComponent(wikitext);
+              var base = remoteWikitext;
+              var newtxt = wikitext;
               
               // create a SequenceMatcher instance that diffs the two sets of lines
               var sm = new difflib.SequenceMatcher(base, newtxt);
