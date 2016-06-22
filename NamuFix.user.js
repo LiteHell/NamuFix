@@ -6,7 +6,7 @@
 // @include     http://namu.wiki/*
 // @include     https://namu.wiki/*
 // @include     http://issue.namu.wiki/*
-// @version     160622.2
+// @version     160622.3
 // @author      Litehell
 // @downloadURL https://raw.githubusercontent.com/Lastorder-DC/NamuFix/master/NamuFix.user.js
 // @require     https://cdn.rawgit.com/LiteHell/NamuFix/0ea78119c377402a10bbdfc33365c5195ce7fccc/FlexiColorPicker.js
@@ -661,8 +661,8 @@ function mainFunc() {
                 '</div>' +
                 '</div>';
               var result = diffTab.querySelector('#diffResult');
-              var base = remoteWikitext;
-              var newtxt = wikitext;
+              var base = difflib.stringAsLines(remoteWikitext);
+              var newtxt = difflib.stringAsLines(wikitext);
               
               // create a SequenceMatcher instance that diffs the two sets of lines
               var sm = new difflib.SequenceMatcher(base, newtxt);
