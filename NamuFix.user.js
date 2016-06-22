@@ -6,7 +6,7 @@
 // @include     http://namu.wiki/*
 // @include     https://namu.wiki/*
 // @include     http://issue.namu.wiki/*
-// @version     160622.0
+// @version     160622.1
 // @author      Litehell
 // @downloadURL https://raw.githubusercontent.com/Lastorder-DC/NamuFix/master/NamuFix.user.js
 // @require     https://cdn.rawgit.com/LiteHell/NamuFix/0ea78119c377402a10bbdfc33365c5195ce7fccc/FlexiColorPicker.js
@@ -19,6 +19,8 @@
 // @require     https://cdn.rawgit.com/wkpark/jsdifflib/dc19d085db5ae71cdff990aac8351607fee4fd01/difflib.js
 // @require     https://cdn.rawgit.com/wkpark/jsdifflib/dc19d085db5ae71cdff990aac8351607fee4fd01/diffview.js
 // @connect     cdn.rawgit.com
+// @connect     api.github.com
+// @connect     api.ipify.org
 // @grant       GM_addStyle
 // @grant       GM_xmlhttpRequest
 // @grant       GM_getValue
