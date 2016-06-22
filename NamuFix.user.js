@@ -6,7 +6,7 @@
 // @include     http://namu.wiki/*
 // @include     https://namu.wiki/*
 // @include     http://issue.namu.wiki/*
-// @version     160525.1
+// @version     160622.0
 // @author      Litehell
 // @downloadURL https://raw.githubusercontent.com/Lastorder-DC/NamuFix/master/NamuFix.user.js
 // @require     https://cdn.rawgit.com/LiteHell/NamuFix/0ea78119c377402a10bbdfc33365c5195ce7fccc/FlexiColorPicker.js
@@ -16,7 +16,8 @@
 // @require     https://cdn.rawgit.com/stewartlord/identicon.js/7c4b4efdb7e2aba458eba14b24ba14e8e2bcdb2a/identicon.js
 // @require     https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.3.0/katex.min.js
 // @require     https://cdn.rawgit.com/LiteHell/TooSimplePopupLib/7f2a8a81f11f980c1dfa6b5b2213cd38b8bbde3c/TooSimplePopupLib.js
-// @require     https://cdn.rawgit.com/kpdecker/jsdiff/49dece07ae3b3e9e2e9a57592f467de3dff1aabc/diff.js
+// @require     https://cdn.rawgit.com/wkpark/jsdifflib/dc19d085db5ae71cdff990aac8351607fee4fd01/difflib.js
+// @require     https://cdn.rawgit.com/wkpark/jsdifflib/dc19d085db5ae71cdff990aac8351607fee4fd01/diffview.js
 // @connect     cdn.rawgit.com
 // @grant       GM_addStyle
 // @grant       GM_xmlhttpRequest
@@ -84,8 +85,10 @@ function insertCSS(url) {
     }
   });
 }
+
 insertCSS("https://cdn.rawgit.com/LiteHell/NamuFix/0ea78119c377402a10bbdfc33365c5195ce7fccc/NamuFix.css");
 insertCSS("https://cdn.rawgit.com/LiteHell/TooSimplePopupLib/7f2a8a81f11f980c1dfa6b5b2213cd38b8bbde3c/TooSimplePopupLib.css");
+insertCSS("https://cdn.rawgit.com/wkpark/jsdifflib/dc19d085db5ae71cdff990aac8351607fee4fd01/diffview.css");
 
 function nOu(a) {
   return typeof a === 'undefined' || a == null;
@@ -652,26 +655,28 @@ function mainFunc() {
               var remoteWikitext = doc.querySelector('textarea').value;
               var wikitext = document.querySelector("textarea.NamaEditor.NETextarea").value;
               diffTab.innerHTML = '<div style="width: 100%;">' +
-                '<div style="width: 100%; background: #006600; color: white; padding: 10px 5px 8px 5px;">' +
-                '현재 편집중인 내용은 리버전 r{0}에 기반하고, 현재 최신 버전의 리버전은 r{1}입니다. 삭제된 부분은 <span style="color:red">붉은</span>색으로, 추가된 부분은 <span style="color:green">녹색</span>으로 나타납니다.'.format(document.querySelector('input[name="baserev"]').value, latestBaseRev) +
-                '</div>' +
                 '<div style="background: #001400; padding: 10px 5px 10px 5px; color: white; width: 100%; margin: 0px; max-height: 600px; overflow: scroll;" id="diffResult">' +
                 '</div>' +
-                '</div>' +
-                '<style>' +
-                '.added, .removed, .normal {display: block;}' +
-                '.added {background: darkgreen; color: green;}' +
-                '.removed {background: darkred; color: red;}' +
-                '.normal {background: transparent; color: white;}' +
-                '</style>';
+                '</div>';
               var result = diffTab.querySelector('#diffResult');
-              var diff = JsDiff.diffLines(encodeHTMLComponent(remoteWikitext), encodeHTMLComponent(wikitext));
-              diff.forEach(function(item) {
-                var span = document.createElement("span");
-                span.className = item.added ? 'added' : item.removed ? 'removed' : 'normal';
-                span.innerHTML = item.value.replace(/\n/mg, '<br>');
-                result.appendChild(span);
-              });
+              var base = encodeHTMLComponent(remoteWikitext);
+              var newtxt = encodeHTMLComponent(wikitext);
+              
+              // create a SequenceMatcher instance that diffs the two sets of lines
+              var sm = new difflib.SequenceMatcher(base, newtxt);
+              var opcodes = sm.get_opcodes();
+              
+              while (result.firstChild) result.removeChild(result.firstChild);
+              result.appendChild(diffview.buildView({
+                baseTextLines: base,
+                newTextLines: newtxt,
+                opcodes: opcodes,
+                // set the display titles for each resource
+                baseTextName: "리비전 r" + document.querySelector('input[name="baserev"]').value,
+                newTextName: "편집중",
+                contextSize: null,
+                viewType: 1
+              }));
             }
           });
         });
