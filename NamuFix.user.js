@@ -6,7 +6,7 @@
 // @include     http://namu.wiki/*
 // @include     https://namu.wiki/*
 // @include     http://issue.namu.wiki/*
-// @version     160622.4
+// @version     160622.5
 // @author      Litehell
 // @downloadURL https://raw.githubusercontent.com/Lastorder-DC/NamuFix/master/NamuFix.user.js
 // @require     https://cdn.rawgit.com/LiteHell/NamuFix/0ea78119c377402a10bbdfc33365c5195ce7fccc/FlexiColorPicker.js
@@ -657,7 +657,7 @@ function mainFunc() {
               var remoteWikitext = doc.querySelector('textarea').value;
               var wikitext = document.querySelector("textarea.NamaEditor.NETextarea").value;
               diffTab.innerHTML = '<div style="width: 100%;">' +
-                '<div style="padding: 10px 5px 10px 5px; width: 100%; margin: 0px; max-height: 600px; overflow: scroll;" id="diffResult">' +
+                '<div style="padding: 0; width: 100%; margin: 0px; max-height: 600px; overflow: scroll;" id="diffResult">' +
                 '</div>' +
                 '</div>';
               var result = diffTab.querySelector('#diffResult');
@@ -676,7 +676,7 @@ function mainFunc() {
                 // set the display titles for each resource
                 baseTextName: "리비전 r" + document.querySelector('input[name="baserev"]').value,
                 newTextName: "편집중",
-                contextSize: null,
+                contextSize: 3,
                 viewType: 2
               }));
             }
