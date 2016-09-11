@@ -1,14 +1,14 @@
 // ==UserScript==
-// @name        NamuFix-LastorderDC
+// @name        NamuFix
 // @namespace   http://litehell.info/
 // @description 나무위키 편집 인터페이스 등을 개선합니다.
 // @include     http://no-ssl.namu.wiki/*
 // @include     http://namu.wiki/*
 // @include     https://namu.wiki/*
 // @include     http://issue.namu.wiki/*
-// @version     160813.1
-// @author      Litehell
-// @downloadURL https://raw.githubusercontent.com/Lastorder-DC/NamuFix/master/NamuFix.user.js
+// @version     160911.0
+// @author      LiteHell
+// @downloadURL https://raw.githubusercontent.com/LiteHell/NamuFix/master/NamuFix.user.js
 // @require     https://cdn.rawgit.com/LiteHell/NamuFix/0ea78119c377402a10bbdfc33365c5195ce7fccc/FlexiColorPicker.js
 // @require     https://cdn.rawgit.com/Caligatio/jsSHA/v2.0.1/src/sha512.js
 // @require     https://cdn.rawgit.com/zenozeng/color-hash/v1.0.3/dist/color-hash.js
@@ -2564,13 +2564,13 @@ listenPJAX(mainFunc);
 // 업데이트 확인
 GM_xmlhttpRequest({
   method: "GET",
-  url: "https://api.github.com/repos/Lastorder-DC/NamuFix/releases/latest",
+  url: "https://api.github.com/repos/LiteHell/NamuFix/releases/latest",
   onload: function(res) {
     var obj = JSON.parse(res.responseText);
     var currentVersion = GM_info.script.version;
     var latestVersion = obj.tag_name;
     if (currentVersion != latestVersion) {
-      var scriptUrl = 'https://github.com/Lastorder-DC/NamuFix/raw/' + latestVersion + '/NamuFix.user.js';
+      var scriptUrl = 'https://github.com/LiteHell/NamuFix/raw/' + latestVersion + '/NamuFix.user.js';
       var win = TooSimplePopup();
       win.title('새버전 설치');
       win.content(function(element) {
