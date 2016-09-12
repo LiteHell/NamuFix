@@ -2184,6 +2184,8 @@ addItemToMemberMenu("NamuFix 설정", function(evt) {
       }
     }
     SET.save();
+    if(confirm("새로고침해야 설정이 적용됩니다. 새로고침할까요?"))
+      location.reload();
     win.close();
   });
 });
