@@ -21,6 +21,7 @@
 // @connect     cdn.rawgit.com
 // @connect     api.github.com
 // @connect     api.ipify.org
+// @connect     tools.keycdn.com
 // @grant       GM_addStyle
 // @grant       GM_xmlhttpRequest
 // @grant       GM_getValue
@@ -225,6 +226,8 @@ function INITSET() { // Storage INIT
     SET.discussAnchorPreviewType = Number(SET.discussAnchorPreviewType);
   if (nOu(SET.removeNFQuotesInAnchorPreview))
     SET.removeNFQuotesInAnchorPreview = false;
+  if (nOu(SET.lookupIPonDiscuss))
+    SET.lookupIPonDiscuss = true;
   SET.save();
 }
 
@@ -579,7 +582,7 @@ function mainFunc() {
 
   // 설정 초기화
   INITSET();
-  
+
   if (ENV.IsEditing || ENV.Discussing) {
     if (document.querySelectorAll("textarea").length == 1 && !document.querySelector("textarea").hasAttribute("readonly")) {
       var rootDiv = document.createElement("div");
@@ -590,9 +593,9 @@ function mainFunc() {
         var initalPreviewTabHTML = '<iframe id="nfPreviewFrame" name="nfPreviewFrame" style="width: 100%; height: 600px; display: block; border: 1px solid black;"></iframe>';
         document.querySelector('textarea').parentNode.insertBefore(previewTab, document.querySelector('textarea').nextSibling);
         document.querySelector('textarea').parentNode.insertBefore(diffTab, document.querySelector('textarea').nextSibling);
-        
+
         // 나무위키 자체 편집/미리보기 탭 제거
-        document.querySelector('.nav.nav-tabs').setAttribute("style","display:none;");
+        document.querySelector('.nav.nav-tabs').setAttribute("style", "display:none;");
 
         function hideAndShow(no) {
           rootDiv.style.display = no == 0 ? '' : 'none';
@@ -637,11 +640,11 @@ function mainFunc() {
               var result = diffTab.querySelector('#diffResult');
               var base = difflib.stringAsLines(remoteWikitext);
               var newtxt = difflib.stringAsLines(wikitext);
-              
+
               // create a SequenceMatcher instance that diffs the two sets of lines
               var sm = new difflib.SequenceMatcher(base, newtxt);
               var opcodes = sm.get_opcodes();
-              
+
               while (result.firstChild) result.removeChild(result.firstChild);
               result.appendChild(diffview.buildView({
                 baseTextLines: base,
@@ -1792,7 +1795,7 @@ function mainFunc() {
     // 리다이렉트 버튼 추가
     addButton('리다이렉트', function(evt) {
       evt.preventDefault();
-      
+
       var redirectFrom = prompt('어느 문서에서 지금 이문서로 리다이렉트?');
       if (redirectFrom != null && redirectFrom.trim().length != 0)
         location.href = 'https://namu.wiki/edit/' + redirectFrom + '?redirectTo=' + ENV.docTitle;
@@ -2064,7 +2067,7 @@ function mainFunc() {
           identicon.querySelector("a").href = "#NothingToLink";
           identicon.querySelector("a").addEventListener('click', function(evt) {
             evt.preventDefault();
-            
+
             SET.load();
             var h = evt.target.dataset.hash;
             if (typeof SET.customIdenticons[h] !== 'undefined') {
@@ -2119,11 +2122,54 @@ function mainFunc() {
       }
     }
 
+    function checkIP(vpngateIP) {
+      var message = document.querySelector(".res:not([data-ip-checked])");
+      if (message) {
+        message.dataset.ipChecked = true;
+        var ipLink = message.querySelector(".r-head > a");
+        var ipPattern = /\/contribution\/ip\/([a-zA-Z0-9\.:]+)\/(?:document|discuss)$/;
+        if (ipPattern.test(ipLink.href)) {
+          var ip = ipPattern.exec(ipLink.href)[1];
+          console.log(ip);
+          GM_xmlhttpRequest({
+            method: "GET",
+            url: "https://tools.keycdn.com/geo.json?host={0}".format(ip),
+            onload: function(res) {
+              var resObj = JSON.parse(res.responseText);
+
+              var span = document.createElement("span");
+              span.style.marginLeft = "1em";
+              span.style.color = "red";
+
+              if (resObj.status == "success") {
+                var country = resObj.data.geo.country_code;
+                var countryName = resObj.data.geo.country_name;
+                var isp = resObj.data.geo.isp;
+                console.log(country);
+                console.log(countryName);
+                console.log(isp);
+
+                span.innerHTML = '<span class="flag-icon flag-icon-{0}"></span> [{1}{2}]'.format(country.toLowerCase(), isp, vpngateIP.indexOf(ip) != -1 ? " (VPNGATE)" : "");
+              } else {
+                span.innerHTML = "[IP조회실패]"
+              }
+              ipLink.parentNode.insertBefore(span, ipLink.nextSibling);
+              console.log(span);
+
+              checkIP(vpngateIP);
+            }
+          });
+        } else {
+          checkIP(vpngateIP);
+        }
+      }
+    }
+
     function discussLoop() {
       // check vpngate
+      if(SET.lookupIPonDiscuss)
       getVPNGateIPList(function(result) {
-        vpngateIP = result;
-        checkVPN();
+        checkIP(result);
       })
 
       // attach identicon
@@ -2137,32 +2183,6 @@ function mainFunc() {
     observer.observe(document.querySelector("#res-container"), {
       childList: true
     });
-
-    // vpngate IP 확인
-    var vpngateIP = [];
-    var checkWorker = null;
-
-    function checkVPN() {
-      var message = document.querySelector(".res:not([data-vpngate-checked])");
-      if (message) {
-        message.dataset.vpngateChecked = true;
-        var ipLink = message.querySelector(".r-head > a");
-        var ipPattern = /\/contribution\/ip\/([a-zA-Z0-9\.:]+)\/(?:document|discuss)$/;
-        if (ipPattern.test(ipLink.href)) {
-          var ip = ipPattern.exec(ipLink.href)[1];
-          if (vpngateIP.indexOf(ip) != -1) {
-            var span = document.createElement("span");
-            span.style.marginLeft = "1em";
-            span.style.color = "red";
-            span.innerHTML = "VPNGATE";
-            ipLink.parentNode.insertBefore(span, ipLink.nextSibling);
-          }
-        }
-        setTimeout(checkVPN, 200); // recursive Loop
-      } else {
-        return;
-      }
-    }
 
     // 취소선 숨기기
     switch (SET.hideDeletedWhenDiscussing) {
@@ -2323,7 +2343,7 @@ function mainFunc() {
         '</table>').format(contCount, contTotalBytes, documents.length, deletedDocuments.length, createdDocuments.length, (contTotalBytes / documents.length));
       p.querySelector('a#punch').addEventListener('click', function(evt) {
         evt.preventDefault();
-        
+
         var win = TooSimplePopup();
         win.title('시간대별 기여/활동 횟수 총합(문서 기여)');
         win.content(function(element) {
@@ -2386,7 +2406,7 @@ function mainFunc() {
         '</table>').format(totalTalks, discussCount, avgTalks, standardDeviation(Talks));
       p.querySelector('a#punch').addEventListener('click', function(evt) {
         evt.preventDefault();
-        
+
         var win = TooSimplePopup();
         win.title('시간대별 기여/활동 횟수 총합(토론)');
         win.content(function(container) {
@@ -2437,7 +2457,7 @@ setInterval(function() {
 // 설정 메뉴 추가
 addItemToMemberMenu("NamuFix 설정", function(evt) {
   evt.preventDefault();
-  
+
   var win = TooSimplePopup();
   var elems = {};
   win.title('NamuFix 설정');
@@ -2449,6 +2469,9 @@ addItemToMemberMenu("NamuFix 설정", function(evt) {
       '<input type="radio" name="discussIdenti" data-setname="discussIdenti" data-setvalue="headBg">스레딕 헬퍼 방식<br>' +
       '<input type="radio" name="discussIdenti" data-setname="discussIdenti" data-setvalue="identicon">아이덴티콘<br>' +
       '<input type="radio" name="discussIdenti" data-setname="discussIdenti" data-setvalue="none">사용 안함' +
+      '<h1 class="wsmall">토론에서 익명 기여자 IP주소 조회</h1>' +
+      '<p>VPNGate 여부, 통신사, 국가이미지를 IP 주소 옆에 표시합니다. 요청 수가 많을 시 실패할 수 도 있습니다.</p>' +
+      '<input type="checkbox" name="lookupIPonDiscuss" data-setname="lookupIPonDiscuss" data-as-boolean>토론시 익명 기여자 IP 주소 조회</input>' +
       '<h1 class="wsmall">토론 아이덴티콘 명도</h1>' +
       '<p>스레딕 헬퍼 방식을 사용하는 경우에만 적용됩니다.</p>' +
       '<label for="discussIdentiLightness">명도</label><input name="discussIdentiLightness" data-setname="discussIdentiLightness" type="range" max="1" min="0" step="0.01"><br>' +
@@ -2499,7 +2522,7 @@ addItemToMemberMenu("NamuFix 설정", function(evt) {
 });
 addItemToMemberMenu("Imgur 이미지 삭제 주소들", function(evt) {
   evt.preventDefault();
-  
+
   SET.load();
   var win = TooSimplePopup();
   var divWithScrolls = document.createElement("div");
@@ -2534,7 +2557,7 @@ addItemToMemberMenu("Imgur 이미지 삭제 주소들", function(evt) {
 });
 addItemToMemberMenu('설정 백업/복원', function(evt) {
   evt.preventDefault();
-  
+
   if (!confirm('경고 : 이 기능은 불안정합니다.\n그래도 진행하시겠습니까?'))
     return;
   if (confirm('백업입니까?')) {
