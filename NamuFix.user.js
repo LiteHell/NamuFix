@@ -22,6 +22,7 @@
 // @connect     api.github.com
 // @connect     api.ipify.org
 // @connect     tools.keycdn.com
+// @connect     wtfismyip.com
 // @grant       GM_addStyle
 // @grant       GM_xmlhttpRequest
 // @grant       GM_getValue
@@ -572,9 +573,9 @@ function mainFunc() {
     ENV.section = -2;
   GM_xmlhttpRequest({
     method: "GET",
-    url: "https://api.ipify.org/?format=json",
+    url: "https://wtfismyip.com/json",
     onload: function(res) {
-      var ip = JSON.parse(res.responseText).ip;
+      var ip = JSON.parse(res.responseText).YourFuckingIPAddress;
       if (!ENV.IsLoggedIn) ENV.UserName = ip;
       ENV.IPAddress = ip;
     }
@@ -826,6 +827,7 @@ function mainFunc() {
               query.append('text', docuText);
               query.append('log', "NamuFix로 자동으로 업로드됨");
               query.append('baserev', 0);
+              query.append('identifier', (ENV.IsLoggedIn ? "m" : "i") + ":" + ENV.UserName);
               GM_xmlhttpRequest({
                 method: 'POST',
                 url: 'https://namu.wiki/Upload',
