@@ -2246,11 +2246,6 @@ function mainFunc() {
       }
     }
 
-    function namuDTParse(v) {
-      var time = v.trim().replace(' ', 'T');
-      time += '+09:00';
-      return new Date(Date.parse(time));
-    }
     var p = document.createElement("p");
     p.innerHTML += '<style>.contInfo { border-collapse: collapse; border: 1px solid black; padding: 2px;} #contInfo td {padding: 3px;} #contInfo td:nth-child(2) {border-left: 1px solid black;}</style>';
     var ipPattern = /\/ip\/([a-zA-Z0-9:\.]+)\/(?:document|discuss)(?:#.+|)$/;
@@ -2295,7 +2290,7 @@ function mainFunc() {
     }
 
     if (/\/document(?:#.+|)$/.test(location.href)) {
-      var rows = document.querySelectorAll('table tr');
+      var rows = document.querySelectorAll('table tbody tr');
       var contCount = 0,
         contTotalBytes = 0,
         contDocuments = 0,
@@ -2323,8 +2318,8 @@ function mainFunc() {
           else if (italicText == '(삭제)' && deletedDocuments.indexOf(documentName) == -1) deletedDocuments.push(documentName);
         }
 
-        if (row.querySelector('td:nth-child(3)')) {
-          contributedAt.push(namuDTParse(row.querySelector('td:nth-child(3)').innerHTML));
+        if (row.querySelector('time')) {
+          contributedAt.push(new Date(row.querySelector('time').getAttribute("datetime")));
         }
       }
       p.innerHTML += ('<table class="contInfo">' +
@@ -2365,7 +2360,7 @@ function mainFunc() {
         temp1 /= numbers.length;
         return Math.sqrt(temp1);
       }
-      var rows = document.querySelectorAll('table tr');
+      var rows = document.querySelectorAll('table tbody tr');
       var docuAndTalks = {};
       var talkedAt = [];
       for (var i = 0; i < rows.length; i++) {
@@ -2378,8 +2373,8 @@ function mainFunc() {
         } else {
           docuAndTalks[docuNow] = 1;
         }
-        if (row.querySelector('td:nth-child(3)')) {
-          talkedAt.push(namuDTParse(row.querySelector('td:nth-child(3)').innerHTML));
+        if (row.querySelector('time')) {
+          talkedAt.push(new Date(row.querySelector('time').getAttribute("datetime")));
         }
       }
       var totalTalks = 0,
