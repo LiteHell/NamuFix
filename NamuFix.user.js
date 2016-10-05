@@ -628,6 +628,11 @@ function mainFunc() {
               var parser = new DOMParser();
               var doc = parser.parseFromString(res.responseText, "text/html");
               var latestBaseRev = doc.querySelector('input[name="baserev"]').value;
+              var token = doc.querySelector('input[name="token"]').value;
+              
+              //update edit token
+              document.querySelector('input[name="token"]').value = token;
+              
               if (doc.querySelectorAll('textarea').length < 1) {
                 diffTab.innerHTML = '<span style="font-size: 15px; color:red;">오류가 발생했습니다.</span>';
                 return;
