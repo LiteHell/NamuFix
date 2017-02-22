@@ -1813,16 +1813,19 @@ function mainFunc() {
         var ipPattern = /\/contribution\/ip\/([a-zA-Z0-9\.:]+)\/(?:document|discuss)$/;
         if (ipPattern.test(ipLink.href)) {
           var ip = ipPattern.exec(ipLink.href)[1];
+          // span eleement
+          var span = document.createElement("span");
+          span.style.marginLeft = "1em";
+          span.style.color = "red";
+          span.innerHTML = "[IP 조회중]";
+          ipLink.parentNode.insertBefore(span, ipLink.nextSibling);
           console.log(ip);
+          // get ip info
           GM_xmlhttpRequest({
             method: "GET",
             url: "https://tools.keycdn.com/geo.json?host={0}".format(ip),
             onload: function(res) {
               var resObj = JSON.parse(res.responseText);
-
-              var span = document.createElement("span");
-              span.style.marginLeft = "1em";
-              span.style.color = "red";
 
               if (resObj.status == "success") {
                 var country = resObj.data.geo.country_code;
@@ -1832,13 +1835,11 @@ function mainFunc() {
                 console.log(countryName);
                 console.log(isp);
 
-                span.innerHTML = '<span class="flag-icon flag-icon-{0}"></span> [{1}{2}]'.format(country.toLowerCase(), isp, vpngateIP.indexOf(ip) != -1 ? " (VPNGATE)" : "");
+                span.innerHTML = '[국가: {0}, {1}{2}]'.format(country, isp, vpngateIP.indexOf(ip) != -1 ? " (VPNGATE)" : "");
               } else {
                 span.innerHTML = "[IP조회실패]"
               }
-              ipLink.parentNode.insertBefore(span, ipLink.nextSibling);
               console.log(span);
-
               checkIP(vpngateIP);
             }
           });
