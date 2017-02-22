@@ -23,6 +23,9 @@
 // @connect     api.ipify.org
 // @connect     tools.keycdn.com
 // @connect     wtfismyip.com
+// @connect     www.googleapis.com
+// @connect     web.archive.org
+// @connect     archive.is
 // @grant       GM_addStyle
 // @grant       GM_xmlhttpRequest
 // @grant       GM_getValue
@@ -1482,23 +1485,14 @@ function mainFunc() {
     });
 
     // 리다이렉트로 왔을 시 그 라디이렉트 문서 편집/삭제 링크 추가
-    if (document.querySelector('div.top-doc-desc a.document') && document.querySelector('div.top-doc-desc').innerHTML.indexOf('에서 넘어옴') != -1) {
-      function insertLinkinto(link, element, label, color) {
-        var aTag = document.createElement('a');
-        aTag.href = link;
-        aTag.innerHTML = label;
-        if (typeof color !== 'undefined') aTag.style.color = color;
-        element.appendChild(aTag);
-      }
-      var rdTag = document.querySelector('div.top-doc-desc a.document');
-      var rdDocumentName = decodeURIComponent(/\/w\/(.+?)\?noredirect=1/.exec(rdTag.href)[1]);
-      var editUrl = '/edit/' + rdDocumentName;
-      var deleteUrl = '/delete/' + rdDocumentName;
+    if (document.querySelector('article .alert.alert-info') && document.querySelector('article .alert.alert-info').innerHTML.indexOf('에서 넘어옴') != -1) {
+      var redirectAlert = document.querySelector('article .alert.alert-info');
+      var origDocuName = decodeURIComponent(/\/w\/(.+?)\?noredirect=1/.exec(redirectAlert.querySelector('a.document').href)[1]);
+      var editUrl = '/edit/' + origDocuName;
+      var deleteUrl = '/delete/' + origDocuName;
 
-      var sup = document.createElement("sup");
-      rdTag.parentNode.insertBefore(sup, rdTag.nextSibling);
-      insertLinkinto(editUrl, sup, '(편집)');
-      insertLinkinto(deleteUrl, sup, '(삭제)', 'red');
+      redirectAlert.innerHTML = '<a href="/w/' + encodeURIComponent(origDocuName) + '?noredirect=1" class="document" title="' + encodeHTMLComponent(origDocuName) + '">' + encodeHTMLComponent(origDocuName) + '</a>' +
+      '에서 여기로 넘어왔습니다. 당신은 ' + encodeHTMLComponent(origDocuName) + ' 문서를 <a href="' + editUrl + '">수정</a>하거나 <a href="' + deleteUrl + '">삭제</a>할 수 있습니다.';
     }
     // 상위 문서로의 링크
     if (ENV.docTitle.indexOf('/') != -1) {
