@@ -1758,6 +1758,7 @@ function mainFunc() {
               if (confirm('이미 이미지가 설정되어 있습니다. 제거할까요?')) {
                 delete SET.customIdenticons[h];
                 SET.save();
+                alert('설정됐습니다. 새로고침시 적용됩니다');
               }
             } else {
               if (!confirm('이 아이디 또는 닉네임에 기존 아이덴티콘 대신 다른 이미지를 설정할 수 있습니다.\n설정할까요?')) return;
@@ -1779,7 +1780,7 @@ function mainFunc() {
                   reader.onload = function(evt) {
                     SET.customIdenticons[h] = reader.result;
                     SET.save();
-                    alert('설정됐습니다.');
+                    alert('설정됐습니다. 새로고침시 적용됩니다');
                     finish();
                   };
                   reader.readAsDataURL(file);
