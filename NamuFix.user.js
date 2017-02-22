@@ -26,6 +26,7 @@
 // @connect     www.googleapis.com
 // @connect     web.archive.org
 // @connect     archive.is
+// @connect     www.vpngate.net
 // @grant       GM_addStyle
 // @grant       GM_xmlhttpRequest
 // @grant       GM_getValue
@@ -251,20 +252,28 @@ function addItemToMemberMenu(text, onclick) {
   nfMenuDivider.parentNode.insertBefore(menuItem, nfMenuDivider.nextSibling);
 }
 
+var _vpngateList = [], _vpngateCrawlledAt = -1;
 function getVPNGateIPList(callback) {
-  GM_xmlhttpRequest({
-    method: "GET",
-    url: "http://www.vpngate.net/api/iphone/",
-    onload: function(res) {
-      var lines = res.responseText.split('\n');
-      var result = [];
-      for (var i = 0; i < lines.length; i++) {
-        if (!/^[\*#]/.test(lines[i]))
-          result.push(lines[i].split(',')[1]);
+  if(_vpngateCrawlledAt == -1 || Date.now() - _vpngateCrawlledAt > 1000 * 60 * 3) {
+    GM_xmlhttpRequest({
+      method: "GET",
+      url: "http://www.vpngate.net/api/iphone/",
+      onload: function(res) {
+        var lines = res.responseText.split('\n');
+        var result = [];
+        for (var i = 0; i < lines.length; i++) {
+          if (!/^[\*#]/.test(lines[i]))
+            result.push(lines[i].split(',')[1]);
+        }
+        _vpngateList = result;
+        _vpngateCrawlledAt = Date.now();
+        callback(result);
       }
-      callback(result);
-    }
-  })
+    })
+  } else {
+    console.log('returned cached vpngate ip list');
+    callback(_vpngateList);
+  }
 }
 
 function getRAW(title, onfound, onnotfound) {
