@@ -6,7 +6,7 @@
 // @include     http://namu.wiki/*
 // @include     https://namu.wiki/*
 // @include     http://issue.namu.wiki/*
-// @version     170222.0
+// @version     170710.0
 // @author      LiteHell
 // @downloadURL https://raw.githubusercontent.com/LiteHell/NamuFix/master/NamuFix.user.js
 // @require     https://cdn.rawgit.com/LiteHell/NamuFix/0ea78119c377402a10bbdfc33365c5195ce7fccc/FlexiColorPicker.js
@@ -556,7 +556,7 @@ function mainFunc() {
   var ENV = {};
   ENV.IsSSL = /^https/.test(location.href);
   ENV.IsEditing = /^https?:\/\/(?:no-ssl\.|)namu\.wiki\/edit\/(.+?)/.test(location.href);
-  ENV.Discussing = /^https?:\/\/(?:no-ssl\.|)namu\.wiki\/topic\/([0-9]+?)/.test(location.href);
+  ENV.Discussing = /^https?:\/\/(?:no-ssl\.|)namu\.wiki\/thread\/([^#]+?)/.test(location.href);
   ENV.IsDocument = /^https?:\/\/(?:no-ssl\.|)namu\.wiki\/w\/(.+)/.test(location.href); //&& document.querySelector('p.wiki-edit-date');
   ENV.IsSettings = /^https?:\/\/(?:no-ssl\.|)namu\.wiki\/settings/.test(location.href);
   ENV.IsUserPage = /^https?:\/\/(?:no-ssl\.|)namu\.wiki\/contribution\/(?:author|ip)\/.+\/(?:document|discuss)/.test(location.href);
@@ -573,7 +573,7 @@ function mainFunc() {
   else if (document.querySelector("h1.title"))
     ENV.docTitle = document.querySelector("h1.title").innerHTML;
   if (ENV.Discussing) {
-    ENV.topicNo = /^https?:\/\/(?:no-ssl\.|)namu\.wiki\/topic\/([0-9]+)/.exec(location.href)[1];
+    ENV.topicNo = /^https?:\/\/(?:no-ssl\.|)namu\.wiki\/thread\/([^#]+)/.exec(location.href)[1];
     ENV.topicTitle = document.querySelector('article > h2').innerHTML;
   }
   if (ENV.IsDiff) {
@@ -2059,7 +2059,7 @@ function mainFunc() {
         var row = rows[i];
         if (row.querySelectorAll('a').length == 0) continue;
         var docuNow = rows[i].querySelector('a').getAttribute('href');
-        docuNow = /^\/topic\/([0-9]+)(?:#[0-9]+|)/.exec(docuNow)[1];
+        docuNow = /^\/thread\/(.+)(?:#[0-9]+|)/.exec(docuNow)[1];
         if (docuAndTalks[docuNow]) {
           docuAndTalks[docuNow]++;
         } else {
