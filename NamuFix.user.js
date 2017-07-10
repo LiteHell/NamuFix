@@ -6,7 +6,7 @@
 // @include     http://namu.wiki/*
 // @include     https://namu.wiki/*
 // @include     http://issue.namu.wiki/*
-// @version     170710.0
+// @version     170711.0
 // @author      LiteHell
 // @downloadURL https://raw.githubusercontent.com/LiteHell/NamuFix/master/NamuFix.user.js
 // @require     https://cdn.rawgit.com/LiteHell/NamuFix/0ea78119c377402a10bbdfc33365c5195ce7fccc/FlexiColorPicker.js
@@ -141,6 +141,7 @@ function formatDateTime(t) {
 }
 
 var hashDictionary = {};
+var ipDictionary = {};
 
 function SHA512(text) {
   if (typeof hashDictionary[text] === 'undefined') {
@@ -149,6 +150,23 @@ function SHA512(text) {
     hashDictionary[text] = shaObj.getHash("HEX");
   }
   return hashDictionary[text];
+}
+function getIpInfo(ip, cb) {
+    if(ipDictionary[ip])
+        return cb(ipDictionary[ip]);
+    GM_xmlhttpRequest({
+        method: "GET",
+        url: "https://tools.keycdn.com/geo.json?host={0}".format(ip),
+        onload: function(res) {
+            var resObj = JSON.parse(res.responseText);
+            if (resObj.status == "success") {
+                ipDictionary[ip] = resObj;
+                cb(resObj);
+            } else {
+                cb(null);
+            }
+        }
+    });
 }
 
 function uniqueID() {
@@ -1822,27 +1840,19 @@ function mainFunc() {
           ipLink.parentNode.insertBefore(span, ipLink.nextSibling);
           console.log(ip);
           // get ip info
-          GM_xmlhttpRequest({
-            method: "GET",
-            url: "https://tools.keycdn.com/geo.json?host={0}".format(ip),
-            onload: function(res) {
-              var resObj = JSON.parse(res.responseText);
-
-              if (resObj.status == "success") {
+          getIpInfo(ip, function (resObj) {
+              if (resObj !== null) {
                 var country = resObj.data.geo.country_code;
                 var countryName = resObj.data.geo.country_name;
                 var isp = resObj.data.geo.isp;
                 console.log(country);
                 console.log(countryName);
                 console.log(isp);
-
                 span.innerHTML = '[국가: {0}, {1}{2}]'.format(country, isp, vpngateIP.indexOf(ip) != -1 ? " (VPNGATE)" : "");
               } else {
                 span.innerHTML = "[IP조회실패]"
               }
-              console.log(span);
               checkIP(vpngateIP);
-            }
           });
         } else {
           checkIP(vpngateIP);
