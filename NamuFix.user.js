@@ -6,9 +6,10 @@
 // @include     http://namu.wiki/*
 // @include     https://namu.wiki/*
 // @include     http://issue.namu.wiki/*
-// @version     170711.0
+// @version     170711.1
 // @author      LiteHell
 // @downloadURL https://raw.githubusercontent.com/LiteHell/NamuFix/master/NamuFix.user.js
+// @require     https://cdn.rawgit.com/LiteHell/NamuFix/3bea33e76808ba9765f39135c17bfa46972131ac/mascott_pics.js
 // @require     https://cdn.rawgit.com/LiteHell/NamuFix/0ea78119c377402a10bbdfc33365c5195ce7fccc/FlexiColorPicker.js
 // @require     https://cdn.rawgit.com/Caligatio/jsSHA/v2.0.1/src/sha512.js
 // @require     https://cdn.rawgit.com/zenozeng/color-hash/v1.0.3/dist/color-hash.js
@@ -1589,7 +1590,8 @@ function mainFunc() {
     var isThreadicLike = SET.discussIdenti == 'headBg';
     var isIdenticon = SET.discussIdenti == 'identicon';
     var colorDictionary = {},
-      identiconDictionary = {};
+      identiconDictionary = {},
+      mascottPics = getMascottPics();
 
     // #[0-9]+ 엥커 미리보기
     function mouseoverPreview() {
@@ -1809,7 +1811,7 @@ function mainFunc() {
           if (typeof identiconDictionary[n] === 'undefined' && typeof SET.customIdenticons[n] !== 'undefined')
             identiconDictionary[n] = SET.customIdenticons[n];
           if (typeof identiconDictionary[n] === 'undefined')
-            identiconDictionary[n] = "data:image/png;base64," + new Identicon(n, 64).toString();
+            identiconDictionary[n] = mascottPics.length > 0 ? mascottPics.pop() : "data:image/png;base64," + new Identicon(n, 64).toString();
           var identiconImage = identiconDictionary[n];
           identicon.querySelector('img').src = identiconImage;
           message.parentNode.insertBefore(identicon, message);
