@@ -6,12 +6,12 @@
 // @include     http://namu.wiki/*
 // @include     https://namu.wiki/*
 // @include     http://issue.namu.wiki/*
-// @version     170724.0
+// @version     170724.1
 // @author      LiteHell
 // @downloadURL https://raw.githubusercontent.com/LiteHell/NamuFix/master/NamuFix.user.js
 // @require     https://cdn.rawgit.com/LiteHell/NamuFix/3bea33e76808ba9765f39135c17bfa46972131ac/mascott_pics.js
 // @require     https://cdn.rawgit.com/LiteHell/NamuFix/0ea78119c377402a10bbdfc33365c5195ce7fccc/FlexiColorPicker.js
-// @require     https://cdn.rawgit.com/Caligatio/jsSHA/v2.0.1/src/sha512.js
+// @require     https://cdn.rawgit.com/Caligatio/jsSHA/v2.3.1/src/sha.js
 // @require     https://cdn.rawgit.com/zenozeng/color-hash/v1.0.3/dist/color-hash.js
 // @require     http://www.xarg.org/download/pnglib.js
 // @require     https://cdn.rawgit.com/stewartlord/identicon.js/7c4b4efdb7e2aba458eba14b24ba14e8e2bcdb2a/identicon.js
@@ -143,6 +143,7 @@ function formatDateTime(t) {
 }
 
 var hashDictionary = {};
+var hashDictionary256 = {};
 var ipDictionary = {};
 
 function SHA512(text) {
@@ -152,6 +153,14 @@ function SHA512(text) {
     hashDictionary[text] = shaObj.getHash("HEX");
   }
   return hashDictionary[text];
+}
+function SHA256(text) {
+    if (typeof hashDictionary256[text] === 'undefined') {
+        var shaObj = new jsSHA("SHA-256", "TEXT");
+        shaObj.update(text);
+        hashDictionary256[text] = shaObj.getHash("HEX");
+    }
+    return hashDictionary256[text];
 }
 function getIpInfo(ip, cb) {
     if(ipDictionary[ip])
@@ -852,6 +861,7 @@ function mainFunc() {
               var cpinfo = cpinfos[i];
               result += "|| " + cpinfo.dataset.name + " || " + cpinfo.value + " ||\n";
             }
+            result += "\n\n== 기타 ==\nNamuFix {0} 버전을 이용하여 업로드된 이미지입니다.".format(GM_info.script.version);
             callback(result);
           });
           win.button("닫기", win.close);
@@ -871,7 +881,7 @@ function mainFunc() {
                 el.innerHTML = '<p>파일을 업로드하고 있습니다. 잠시만 기다려주세요.</p><p>현재 업로드중 : ' + file.name + '</p>';
               });
               var query = new FormData();
-              var fn = "파일:" + SHA512(String(Date.now()) + file.name) + "_" + file.name;
+              var fn = "파일:" + SHA256(String(Date.now()) + file.name) + "_" + file.name;
               query.append('file', file);
               query.append('document', fn);
               query.append('text', docuText);
