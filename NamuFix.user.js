@@ -20,6 +20,7 @@
 // @require     https://cdn.rawgit.com/wkpark/jsdifflib/dc19d085db5ae71cdff990aac8351607fee4fd01/difflib.js
 // @require     https://cdn.rawgit.com/wkpark/jsdifflib/dc19d085db5ae71cdff990aac8351607fee4fd01/diffview.js
 // @connect     cdn.rawgit.com
+// @connect     cdnjs.cloudflare.com
 // @connect     api.github.com
 // @connect     api.ipify.org
 // @connect     tools.keycdn.com
@@ -169,7 +170,20 @@ function getIpInfo(ip, cb) {
         }
     });
 }
-
+// To bypass CSP
+var flagIconDictionary = {};
+function getFlagIcon(countryCode, cb) {
+    if(flagIconDictionary[countryCode])
+        return cb(flagIconDictionary[countryCode]);
+    GM_xmlhttpRequest({
+        method: 'GET',
+        url: 'https://cdnjs.cloudflare.com/ajax/libs/flag-icon-css/2.8.0/flags/4x3/{0}.svg'.format(countryCode),
+        onload: function(res) {
+            flagIconDictionary[countryCode] = "data:image/svg+xml;base64," + btoa(res.responseText);
+            return cb(flagIconDictionary[countryCode]);
+        }
+    });
+}
 function uniqueID() {
   var dt = Date.now();
   var url = location.href;
@@ -1595,10 +1609,10 @@ function mainFunc() {
 
     // #[0-9]+ 엥커 미리보기
     function mouseoverPreview() {
-      var anchors = document.querySelectorAll('.res .r-body .wiki-link-anchor:not([data-nf-title-processed])');
+      var anchors = document.querySelectorAll('.res .r-body .wiki-self-link:not([data-nf-title-processed])');
       for (var i = 0; i < anchors.length; i++) {
         var anchor = anchors[i];
-        if (!/#[0-9]+$/.test(anchor.href) || anchor.title != ENV.docTitle + '#' + /#([0-9]+)$/.exec(anchor.href)[1]) {
+        if (!/#[0-9]+$/.test(anchor.href)) {
           continue;
         }
         var anchorDirection = document.querySelector('.r-head .num a[id=\'' + /#([0-9]+)$/.exec(anchor.href)[1] + '\']');
@@ -1651,10 +1665,10 @@ function mainFunc() {
       if (message) {
         message.dataset.messageAnchorProcessed = true;
         var rbody = message.querySelector('.r-body');
-        var anchors = rbody.querySelectorAll('.wiki-link-anchor:not([data-nf-title-processed])');
+        var anchors = rbody.querySelectorAll('.wiki-self-link:not([data-nf-title-processed])');
         for (var i = 0; i < anchors.length; i++) {
           var anchor = anchors[i];
-          if (!/#[0-9]+$/.test(anchor.href) || anchor.title != ENV.docTitle + '#' + /#([0-9]+)$/.exec(anchor.href)[1]) {
+          if (!/#[0-9]+$/.test(anchor.href)) {
             continue;
           }
           var numbericId = /#([0-9]+)$/.exec(anchor.href)[1];
@@ -1850,11 +1864,14 @@ function mainFunc() {
                 console.log(country);
                 console.log(countryName);
                 console.log(isp);
-                span.innerHTML = '[국가: {0}, {1}{2}]'.format(country, isp, vpngateIP.indexOf(ip) != -1 ? " (VPNGATE)" : "");
+                  getFlagIcon(country.toLowerCase(), function(data){
+                      span.innerHTML = '[국가: <img src="{0}" style="height: 0.9rem;"></img> {1}{2}]'.format(data, isp, vpngateIP.indexOf(ip) != -1 ? " (VPNGATE)" : "");
+                      checkIP(vpngateIP);
+                  });
               } else {
                 span.innerHTML = "[IP조회실패]"
+                checkIP(vpngateIP);
               }
-              checkIP(vpngateIP);
           });
         } else {
           checkIP(vpngateIP);
