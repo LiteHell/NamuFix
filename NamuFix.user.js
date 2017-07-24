@@ -90,7 +90,7 @@ function insertCSS(url) {
   GM_xmlhttpRequest({
     method: "GET",
     url: url,
-    onload: function(res) {
+    onload: function (res) {
       GM_addStyle(res.responseText);
     }
   });
@@ -105,7 +105,7 @@ function nOu(a) {
 }
 
 if (!String.prototype.format) {
-  String.prototype.format = function() {
+  String.prototype.format = function () {
     var newstr = this;
     for (var i = 0; i < arguments.length; i++) {
       var b = '{' + i + '}';
@@ -129,7 +129,7 @@ function encodeHTMLComponent(text) {
 
 function forLoop(array, callback) {
   var index = 0;
-  var doNext = function() {
+  var doNext = function () {
     if (array.length > index) {
       callback(array[index++], doNext, index == array.length - 1);
     }
@@ -154,45 +154,49 @@ function SHA512(text) {
   }
   return hashDictionary[text];
 }
+
 function SHA256(text) {
-    if (typeof hashDictionary256[text] === 'undefined') {
-        var shaObj = new jsSHA("SHA-256", "TEXT");
-        shaObj.update(text);
-        hashDictionary256[text] = shaObj.getHash("HEX");
-    }
-    return hashDictionary256[text];
+  if (typeof hashDictionary256[text] === 'undefined') {
+    var shaObj = new jsSHA("SHA-256", "TEXT");
+    shaObj.update(text);
+    hashDictionary256[text] = shaObj.getHash("HEX");
+  }
+  return hashDictionary256[text];
 }
+
 function getIpInfo(ip, cb) {
-    if(ipDictionary[ip])
-        return cb(ipDictionary[ip]);
-    GM_xmlhttpRequest({
-        method: "GET",
-        url: "https://tools.keycdn.com/geo.json?host={0}".format(ip),
-        onload: function(res) {
-            var resObj = JSON.parse(res.responseText);
-            if (resObj.status == "success") {
-                ipDictionary[ip] = resObj;
-                cb(resObj);
-            } else {
-                cb(null);
-            }
-        }
-    });
+  if (ipDictionary[ip])
+    return cb(ipDictionary[ip]);
+  GM_xmlhttpRequest({
+    method: "GET",
+    url: "https://tools.keycdn.com/geo.json?host={0}".format(ip),
+    onload: function (res) {
+      var resObj = JSON.parse(res.responseText);
+      if (resObj.status == "success") {
+        ipDictionary[ip] = resObj;
+        cb(resObj);
+      } else {
+        cb(null);
+      }
+    }
+  });
 }
 // To bypass CSP
 var flagIconDictionary = {};
+
 function getFlagIcon(countryCode, cb) {
-    if(flagIconDictionary[countryCode])
-        return cb(flagIconDictionary[countryCode]);
-    GM_xmlhttpRequest({
-        method: 'GET',
-        url: 'https://cdnjs.cloudflare.com/ajax/libs/flag-icon-css/2.8.0/flags/4x3/{0}.svg'.format(countryCode),
-        onload: function(res) {
-            flagIconDictionary[countryCode] = "data:image/svg+xml;base64," + btoa(res.responseText);
-            return cb(flagIconDictionary[countryCode]);
-        }
-    });
+  if (flagIconDictionary[countryCode])
+    return cb(flagIconDictionary[countryCode]);
+  GM_xmlhttpRequest({
+    method: 'GET',
+    url: 'https://cdnjs.cloudflare.com/ajax/libs/flag-icon-css/2.8.0/flags/4x3/{0}.svg'.format(countryCode),
+    onload: function (res) {
+      flagIconDictionary[countryCode] = "data:image/svg+xml;base64," + btoa(res.responseText);
+      return cb(flagIconDictionary[countryCode]);
+    }
+  });
 }
+
 function uniqueID() {
   var dt = Date.now();
   var url = location.href;
@@ -221,15 +225,15 @@ function listenPJAX(callback) {
 
 
 
-var SET = new function() {
+var SET = new function () {
   var discards = ['save', 'load'];
-  this.save = function() {
+  this.save = function () {
     for (var i in this) {
       if (discards.indexOf(i) != -1) continue;
       GM_setValue('SET_' + i, this[i]);
     }
   };
-  this.load = function() {
+  this.load = function () {
     var sets = GM_listValues();
     for (var i = 0; i < sets.length; i++) {
       var now = sets[i];
@@ -238,7 +242,7 @@ var SET = new function() {
       this[now.substring(4)] = GM_getValue(now);
     }
   };
-  this.delete = function(key) {
+  this.delete = function (key) {
     if (discards.indexOf(key) != -1) return;
     GM_deleteValue(key);
     delete this[key];
@@ -279,7 +283,7 @@ function INITSET() { // Storage INIT
 }
 
 var nfMenuDivider = document.createElement("div");
-(function() {
+(function () {
   nfMenuDivider.className = "dropdown-divider";
   var secondDivider = document.querySelectorAll('.dropdown-divider')[1];
   secondDivider.parentNode.insertBefore(nfMenuDivider, secondDivider);
@@ -294,13 +298,15 @@ function addItemToMemberMenu(text, onclick) {
   nfMenuDivider.parentNode.insertBefore(menuItem, nfMenuDivider.nextSibling);
 }
 
-var _vpngateList = [], _vpngateCrawlledAt = -1;
+var _vpngateList = [],
+  _vpngateCrawlledAt = -1;
+
 function getVPNGateIPList(callback) {
-  if(_vpngateCrawlledAt == -1 || Date.now() - _vpngateCrawlledAt > 1000 * 60 * 3) {
+  if (_vpngateCrawlledAt == -1 || Date.now() - _vpngateCrawlledAt > 1000 * 60 * 3) {
     GM_xmlhttpRequest({
       method: "GET",
       url: "http://www.vpngate.net/api/iphone/",
-      onload: function(res) {
+      onload: function (res) {
         var lines = res.responseText.split('\n');
         var result = [];
         for (var i = 0; i < lines.length; i++) {
@@ -322,7 +328,7 @@ function getRAW(title, onfound, onnotfound) {
   GM_xmlhttpRequest({
     method: 'GET',
     url: 'https://namu.wiki/raw/' + title,
-    onload: function(res) {
+    onload: function (res) {
       if (res.status == 404) {
         onnotfound(title);
         return;
@@ -338,10 +344,10 @@ function makeTabs() {
   div.innerHTML = "<ul></ul>";
   var ul = div.querySelector("ul");
   return {
-    tab: function(text) {
+    tab: function (text) {
       var item = document.createElement("li");
       item.innerHTML = text;
-      item.addEventListener('click', function() {
+      item.addEventListener('click', function () {
         var selectedTabs = div.querySelectorAll('li.selected');
         for (var i = 0; i < selectedTabs.length; i++) {
           selectedTabs[i].className = selectedTabs[i].className.replace(/selected/mg, '');
@@ -350,17 +356,17 @@ function makeTabs() {
       });
       ul.appendChild(item);
       return {
-        click: function(callback) {
+        click: function (callback) {
           item.addEventListener('click', callback);
           return this;
         },
-        selected: function() {
+        selected: function () {
           if (item.className.indexOf('selected') == -1) item.className += ' selected';
           return this;
         }
       };
     },
-    get: function() {
+    get: function () {
       return div;
     }
   };
@@ -368,7 +374,7 @@ function makeTabs() {
 
 function createDesigner(buttonBar) {
   var Designer = {};
-  Designer.button = function(txt) {
+  Designer.button = function (txt) {
     var btn = document.createElement('button');
     btn.className = 'NamaEditor NEMenuButton';
     btn.setAttribute('type', 'button');
@@ -376,38 +382,38 @@ function createDesigner(buttonBar) {
 
     buttonBar.appendChild(btn);
     var r = {
-      click: function(func) {
+      click: function (func) {
         btn.addEventListener('click', func);
         return r;
       },
-      hoverMessage: function(msg) {
+      hoverMessage: function (msg) {
         btn.setAttribute('title', msg);
         return r;
       },
-      right: function() {
+      right: function () {
         btn.className += ' NEright';
         return r;
       },
-      active: function() {
+      active: function () {
         btn.setAttribute('active', 'yes');
         return r;
       },
-      deactive: function() {
+      deactive: function () {
         btn.removeAttribute('active')
         return r;
       },
-      remove: function() {
+      remove: function () {
         btn.parentNode.removeChild(btn);
         return r;
       },
-      use: function() {
+      use: function () {
         buttonBar.appendChild(btn);
         return r;
       }
     };
     return r;
   };
-  Designer.dropdown = function(txt) {
+  Designer.dropdown = function (txt) {
     var dropdownButton = document.createElement("div");
     var dropdown = document.createElement("div");
     var dropdownList = document.createElement("ul");
@@ -421,7 +427,7 @@ function createDesigner(buttonBar) {
     var dbHover = false,
       dbBHover = false;
     dropdown.style.display = 'none';
-    dropdownButton.addEventListener('click', function() {
+    dropdownButton.addEventListener('click', function () {
       var dropdowns = buttonBar.querySelectorAll(".NamaEditor.NEMenuButton > .NamaEditor.NEDropDown");
       for (var i = 0; i < dropdowns.length; i++) {
         if (dropdowns[i] != dropdown) {
@@ -438,43 +444,43 @@ function createDesigner(buttonBar) {
     });
 
     var hr = {
-      button: function(iconTxt, txt) {
+      button: function (iconTxt, txt) {
         var liTag = document.createElement('li');
         liTag.innerHTML = '<span class="NEHeadIcon">' + iconTxt + '</span><span class="NEDescText">' + txt + '</span>'
-        liTag.addEventListener('click', function() {
+        liTag.addEventListener('click', function () {
           dropdown.style.display = '';
         })
         dropdownList.appendChild(liTag);
         var r = {
-          icon: function(iconTxt) {
+          icon: function (iconTxt) {
             liTag.querySelector('.NEHeadIcon').innerHTML = iconTxt;
             return r;
           },
-          text: function(txt) {
+          text: function (txt) {
             liTag.querySElector('.NEDescText').innerHTML = txt;
             return r;
           },
-          hoverMessage: function(msg) {
+          hoverMessage: function (msg) {
             liTag.setAttribute('title', msg);
             return r;
           },
-          click: function(handler) {
+          click: function (handler) {
             liTag.addEventListener('click', handler);
             return r;
           },
-          right: function() {
+          right: function () {
             liTag.className += 'NEright';
             return r;
           },
-          remove: function() {
+          remove: function () {
             dropdownList.removeChild(liTag);
             return r;
           },
-          insert: function() {
+          insert: function () {
             dropdownList.appendChild(liTag);
             return r;
           },
-          backwalk: function() {
+          backwalk: function () {
             dropdownList.removeChild(ilTag);
             dropdownList.appendChild(ilTag);
             return r;
@@ -482,15 +488,15 @@ function createDesigner(buttonBar) {
         };
         return r;
       },
-      right: function() {
+      right: function () {
         liTag.className += 'NEright';
         return hr;
       },
-      hoverMessage: function(txt) {
+      hoverMessage: function (txt) {
         dropdownButton.setAttribute('title', txt);
         return hr;
       },
-      clear: function() {
+      clear: function () {
         dropdownList.innerHTML = '';
         return hr;
       }
@@ -502,11 +508,11 @@ function createDesigner(buttonBar) {
 
 function createTextProcessor(txtarea) {
   var r = {};
-  r.value = function() {
+  r.value = function () {
     if (arguments.length == 0) return txtarea.value;
     else txtarea.value = arguments[0];
   };
-  r.selectionText = function() {
+  r.selectionText = function () {
     if (arguments.length == 0) return txtarea.value.substring(txtarea.selectionStart, txtarea.selectionEnd);
     else {
       var s = txtarea.selectionStart;
@@ -519,30 +525,30 @@ function createTextProcessor(txtarea) {
       txtarea.selectionEnd = s + arguments[0].length;
     }
   };
-  r.selectionStart = function() {
+  r.selectionStart = function () {
     if (arguments.length == 0) return txtarea.selectionStart;
     else txtarea.selectionStart = arguments[0];
   };
-  r.selectionTest = function(r) {
+  r.selectionTest = function (r) {
     return this.selectionText().search(r) != -1;
   };
-  r.valueTest = function(r) {
+  r.valueTest = function (r) {
     return this.value().search(r) != -1;
   };
-  r.selectionEnd = function() {
+  r.selectionEnd = function () {
     if (arguments.length == 0) return txtarea.selectionEnd;
     else txtarea.selectionEnd = arguments[0];
   };
-  r.selectionLength = function() {
+  r.selectionLength = function () {
     if (arguments.length == 0) return (txtarea.selectionEnd - txtarea.selectionStart);
     else txtarea.selectionEnd = txtarea.selectionStart + arguments[0];
   };
-  r.select = function(s, e) {
+  r.select = function (s, e) {
     txtarea.focus();
     txtarea.selectionStart = s;
     if (typeof e !== 'undefined') txtarea.selectionEnd = e;
   }
-  r.WrapSelection = function(l, r) {
+  r.WrapSelection = function (l, r) {
     if (arguments.length == 1) var r = l;
     var t = this.selectionText();
     if (typeof t === 'undefined' || t == null || t == '') t = '내용';
@@ -551,7 +557,7 @@ function createTextProcessor(txtarea) {
     this.selectionText(t);
     this.select(s + l.length, s + t.length - r.length)
   };
-  r.ToggleWrapSelection = function(l, r) {
+  r.ToggleWrapSelection = function (l, r) {
     function isWrapped(t) {
       return t.indexOf(l) == 0 && t.lastIndexOf(r) == (t.length - r.length);
     }
@@ -585,8 +591,8 @@ function getFile(callback, allowMultiple) {
   elm.style.visibility = "hidden";
   elm.setAttribute("accept", "image/*");
   document.body.appendChild(elm);
-  elm.addEventListener('change', function(evt) {
-    callback(evt.target.files, function() {
+  elm.addEventListener('change', function (evt) {
+    callback(evt.target.files, function () {
       document.body.removeChild(elm);
     })
   });
@@ -628,7 +634,7 @@ function mainFunc() {
   GM_xmlhttpRequest({
     method: "GET",
     url: "https://wtfismyip.com/json",
-    onload: function(res) {
+    onload: function (res) {
       var ip = JSON.parse(res.responseText).YourFuckingIPAddress;
       if (!ENV.IsLoggedIn) ENV.UserName = ip;
       ENV.IPAddress = ip;
@@ -659,10 +665,10 @@ function mainFunc() {
         }
         hideAndShow(0);
         var tabs = makeTabs();
-        tabs.tab("편집").selected().click(function() {
+        tabs.tab("편집").selected().click(function () {
           hideAndShow(0);
         });
-        tabs.tab("미리보기").click(function() {
+        tabs.tab("미리보기").click(function () {
           previewTab.innerHTML = initalPreviewTabHTML;
           hideAndShow(1);
           var form = document.querySelector('form#editForm');
@@ -671,22 +677,22 @@ function mainFunc() {
           form.setAttribute("action", "/preview/" + ENV.docTitle);
           form.submit();
         });
-        tabs.tab("비교").click(function() {
+        tabs.tab("비교").click(function () {
           hideAndShow(2);
           diffTab.innerHTML = '<span style="font-size: 15px;">처리중입니다...</span>';
           var editUrl = 'https://namu.wiki/edit/'.concat(ENV.docTitle, ENV.section != -2 ? '?section='.concat(ENV.section) : '');
           GM_xmlhttpRequest({
             url: editUrl,
             method: "GET",
-            onload: function(res) {
+            onload: function (res) {
               var parser = new DOMParser();
               var doc = parser.parseFromString(res.responseText, "text/html");
               var latestBaseRev = doc.querySelector('input[name="baserev"]').value;
               var token = doc.querySelector('input[name="token"]').value;
-              
+
               //update edit token
               document.querySelector('input[name="token"]').value = token;
-              
+
               if (doc.querySelectorAll('textarea').length < 1) {
                 diffTab.innerHTML = '<span style="font-size: 15px; color:red;">오류가 발생했습니다.</span>';
                 return;
@@ -777,7 +783,7 @@ function mainFunc() {
         }
         var w = window.TooSimplePopup();
         var c = w.close;
-        w.title('색 지정').content(function(e) {
+        w.title('색 지정').content(function (e) {
           var pickerWrapper = document.createElement('div');
           var sliderWrapper = document.createElement('div');
           var picker = document.createElement('div');
@@ -800,7 +806,7 @@ function mainFunc() {
             sliderIndicator,
             pickerIndicator
           )
-          ColorPicker(slider, picker, function(hex, hsv, rgb, pickerCo, sliderCo) {
+          ColorPicker(slider, picker, function (hex, hsv, rgb, pickerCo, sliderCo) {
             ColorPicker.positionIndicators(
               sliderIndicator,
               pickerIndicator,
@@ -810,7 +816,7 @@ function mainFunc() {
           }).setHex(color);
           e.appendChild(pickerWrapper);
           e.appendChild(sliderWrapper);
-        }).button('지정', function() {
+        }).button('지정', function () {
           TextProc.selectionText('{{{' + color + ' ' + text + '}}}');
           c();
         }).button('닫기', c);
@@ -818,23 +824,23 @@ function mainFunc() {
 
       // Add Basic MarkUp Buttons
       var decoDropdown = Designer.dropdown('<span class="ion-wand"></span>').hoverMessage('텍스트 꾸미기');
-      decoDropdown.button('<strong>A</strong>', '굵게').click(function() {
+      decoDropdown.button('<strong>A</strong>', '굵게').click(function () {
         TextProc.ToggleWrapSelection("'''");
       });
-      decoDropdown.button('<em>A</em>', '기울임꼴').click(function() {
+      decoDropdown.button('<em>A</em>', '기울임꼴').click(function () {
         TextProc.ToggleWrapSelection("''");
       });
-      decoDropdown.button('<del>A</del>', '취소선').click(function() {
+      decoDropdown.button('<del>A</del>', '취소선').click(function () {
         TextProc.ToggleWrapSelection("--");
       });
-      decoDropdown.button('<span style="text-decoration: underline;">A</span>', '밑줄').click(function() {
+      decoDropdown.button('<span style="text-decoration: underline;">A</span>', '밑줄').click(function () {
         TextProc.ToggleWrapSelection("__");
       });
       decoDropdown.button('<span style="color:red;">A</span>', '글씨색').click(TextColorChange);
-      decoDropdown.button('-', '글씨 작게').click(function() {
+      decoDropdown.button('-', '글씨 작게').click(function () {
         FontSizeChanger(false);
       });
-      decoDropdown.button('+', '글씨 크게').click(function() {
+      decoDropdown.button('+', '글씨 크게').click(function () {
         FontSizeChanger(true);
       });
 
@@ -844,7 +850,7 @@ function mainFunc() {
           var win = TooSimplePopup();
           var contelem;
           win.title("저작권 정보");
-          win.content(function(el) {
+          win.content(function (el) {
             contelem = el;
             el.innerHTML = '<label>출처</label><input type="text" class="cpinfo" data-name="출처"></input><br>' +
               '<label>날짜</label><input type="text" class="cpinfo" data-name="날짜"></input><br>' +
@@ -854,7 +860,7 @@ function mainFunc() {
               '<label>설명</label><input type="text" class="cpinfo" data-name="설명"></input>' +
               '<p>라이선스, 분류는 구현하기 귀찮습니다. 라이선스는 저작권란에 알아서 써주시고 분류는 알아서 하세요.</p>'
           });
-          win.button("삽입", function() {
+          win.button("삽입", function () {
             var result = "== 기본 정보 ==\n";
             var cpinfos = contelem.querySelectorAll(".cpinfo");
             for (var i = 0; i < cpinfos.length; i++) {
@@ -866,18 +872,18 @@ function mainFunc() {
           });
           win.button("닫기", win.close);
         }
-        getCopyrightInfo(function(docuText) {
-          getFile(function(files, finish) {
+        getCopyrightInfo(function (docuText) {
+          getFile(function (files, finish) {
             if (files.length < 0) {
               alert('선택된 파일이 없습니다');
               return finish();
             }
 
-            forLoop(files, function(file, next, isLastItem) {
+            forLoop(files, function (file, next, isLastItem) {
               if (!file) next();
               var win = TooSimplePopup();
               win.title("업로드 중...");
-              win.content(function(el) {
+              win.content(function (el) {
                 el.innerHTML = '<p>파일을 업로드하고 있습니다. 잠시만 기다려주세요.</p><p>현재 업로드중 : ' + file.name + '</p>';
               });
               var query = new FormData();
@@ -895,7 +901,7 @@ function mainFunc() {
                   "Referer": 'https://namu.wiki/Upload'
                 },
                 data: query,
-                onload: function(res) {
+                onload: function (res) {
                   var parser = new DOMParser();
                   if (parser.parseFromString(res.responseText, "text/html").querySelector("p.wiki-edit-date") != null) {
                     TextProc.selectionText(TextProc.selectionText() + '[[' + fn + ']]');
@@ -918,7 +924,7 @@ function mainFunc() {
       function InsertYouTube() {
         var win = TooSimplePopup();
         win.title('YouTube 동영상 삽입');
-        win.content(function(el) {
+        win.content(function (el) {
           el.innerHTML = '<p style="background: cyan; box-shadow: 2px 2px 2px gray; color:white; padding: 8px; border-radius: 3px; margin-bottom: 5px;">YouTube 동영상을 검색하거나 동영상 주소를 입력하여 YouTube 동영상을 삽입할 수 있습니다.</p>' +
             '<p><label for="vidUrl" style="width: 120px; display: inline-block;">YouTube 동영상 주소</label><input type="text" name="vidUrl" id="vidUrl" style="width:620px; max-width: 100vw;"></input><button id="insertUrl">삽입</button></p>' +
             '<hr>' +
@@ -927,17 +933,17 @@ function mainFunc() {
             '<div id="results" style="overflow-y: scroll; overflow-x: hidden; width: 820px; max-width: 100vw; height: 400px; max-height: calc(100vh - 300px);"><span style="color:red">검색 결과가 없습니다.</span></div>' +
             '</div>';
         })
-        var finish = function(vid) {
-            if (vid == null) {
-              alert('무언가 잘못된것 같습니다.');
-              return;
-            }
-            TextProc.selectionText(TextProc.selectionText() + '[youtube(' + vid + ')]');
-            win.close();
+        var finish = function (vid) {
+          if (vid == null) {
+            alert('무언가 잘못된것 같습니다.');
+            return;
           }
-          // 주소로 삽입 기능
-        win.content(function(el) {
-          var ExtractYouTubeID = function(url) {
+          TextProc.selectionText(TextProc.selectionText() + '[youtube(' + vid + ')]');
+          win.close();
+        }
+        // 주소로 삽입 기능
+        win.content(function (el) {
+          var ExtractYouTubeID = function (url) {
             // from Lasnv's answer from http://stackoverflow.com/questions/3452546/javascript-regex-how-to-get-youtube-video-id-from-url
             var regExp = /^.*((youtu.be\/)|(v\/)|(\/u\/\w\/)|(embed\/)|(watch\?))\??v?=?([^#\&\?]*).*/;
             var match = url.match(regExp);
@@ -946,13 +952,13 @@ function mainFunc() {
             else
               return null;
           }
-          var insertByUrlFunc = function() {
+          var insertByUrlFunc = function () {
             var url = el.querySelector('#vidUrl').value;
             var vidId = ExtractYouTubeID(url);
             finish(vidId);
           }
           el.querySelector('#insertUrl').addEventListener('click', insertByUrlFunc);
-          el.querySelector('#vidUrl').addEventListener('keyup', function(evt) {
+          el.querySelector('#vidUrl').addEventListener('keyup', function (evt) {
             if (evt.which == 13 || evt.keycode == 13) {
               insertByUrlFunc();
               return false;
@@ -960,18 +966,18 @@ function mainFunc() {
           })
         });
         // 검색 기능
-        win.content(function(el) {
+        win.content(function (el) {
           // https://developers.google.com/youtube/v3/docs/search/list
           var baseUri = 'https://www.googleapis.com/youtube/v3/search?key=AIzaSyAqi9PjUr_F54U0whrbMeavFfvNap3kjvA&';
           var basicSearchUri = baseUri + 'part=snippet&safeSearch=none&type=video&maxResults=20&videoEmbeddable=true&q=';
-          var vidSearchFunc = function() {
+          var vidSearchFunc = function () {
             var q = el.querySelector('#vidQuery').value;
             var resultDiv = el.querySelector('#results');
             resultDiv.innerHTML = '<span style="color:orange;">검색중입니다.</span>'
             GM_xmlhttpRequest({
               method: "GET",
               url: basicSearchUri + encodeURIComponent(q),
-              onload: function(res) {
+              onload: function (res) {
                 resultDiv.innerHTML = '<ul></ul>';
                 var ul = resultDiv.querySelector('ul');
                 if (res.status != 200) {
@@ -988,10 +994,10 @@ function mainFunc() {
                     '<span style="font-weight: bold; font-size: 12pt; margin-bottom: 3px;">' + vidNow.snippet.title + '</span><button name="insertThis" class="moreFlat">삽입</button><button name="preview" class="moreFlat">미리보기</button><br><span style="font-size:10pt;">' + vidNow.snippet.description + '</span>' +
                     '</div>';
                   li.querySelector('[name="preview"]').parentNode.dataset.videoId = vidNow.id.videoId;
-                  li.querySelector('[name="preview"]').addEventListener('click', function(evt) {
+                  li.querySelector('[name="preview"]').addEventListener('click', function (evt) {
                     var previewWin = TooSimplePopup();
                     previewWin.title('미리보기');
-                    previewWin.content(function(el) {
+                    previewWin.content(function (el) {
                       var iframe = document.createElement("iframe");
                       iframe.setAttribute("frameborder", "0");
                       iframe.setAttribute("src", "//www.youtube.com/embed/" + evt.target.parentNode.dataset.videoId);
@@ -1003,7 +1009,7 @@ function mainFunc() {
                     });
                     previewWin.button('닫기', previewWin.close);
                   });
-                  li.querySelector('[name="insertThis"]').addEventListener('click', function(evt) {
+                  li.querySelector('[name="insertThis"]').addEventListener('click', function (evt) {
                     finish(evt.target.parentNode.dataset.videoId);
                   })
                   ul.appendChild(li);
@@ -1013,7 +1019,7 @@ function mainFunc() {
           };
 
           el.querySelector('#searchVids').addEventListener('click', vidSearchFunc);
-          el.querySelector('#vidQuery').addEventListener('keyup', function(evt) {
+          el.querySelector('#vidQuery').addEventListener('keyup', function (evt) {
             if (evt.which == 13 || evt.keycode == 13) {
               vidSearchFunc();
               return false;
@@ -1028,7 +1034,7 @@ function mainFunc() {
         // title(text), content(callback), foot(callback), button(text,onclick), close
         var win = TooSimplePopup();
         win.title("지도 삽입");
-        win.content(function(el) {
+        win.content(function (el) {
           var mapDiv = document.createElement("div");
           mapDiv.id = "NFMapDiv";
           mapDiv.style.maxHeight = "calc(100vh - 100px)";
@@ -1049,13 +1055,13 @@ function mainFunc() {
           var onloadScript = document.createElement("script");
           onloadScript.innerHTML = initFuncContext;
           el.appendChild(onloadScript);
-          setTimeout(function() {
+          setTimeout(function () {
             var mapsAPILib = document.createElement("script");
             mapsAPILib.setAttribute("src", "//maps.googleapis.com/maps/api/js?key=AIzaSyAqi9PjUr_F54U0whrbMeavFfvNap3kjvA&callback=NFMapInit");
             el.appendChild(mapsAPILib);
           }, 500);
         });
-        win.button("삽입", function() {
+        win.button("삽입", function () {
           var lat = unsafeWindow.NFMap.getCenter().lat();
           var lng = unsafeWindow.NFMap.getCenter().lng();
           var zoom = unsafeWindow.NFMap.getZoom();
@@ -1081,7 +1087,7 @@ function mainFunc() {
       insertablesDropDown.button('<span class="ion-ios-play-outline" style="color: Aqua;"></span>', '다음 TV팟 동영상').click(DaumTVPotMarkUp);
       insertablesDropDown.button('<span class="ion-images" style="color: #008275;"></span>', '나무위키 이미지 업로드').click(namuUpload);
 
-      Designer.button('<span class="ion-ios-timer-outline"></span>').hoverMessage('아카이브하고 외부링크 삽입').click(function() {
+      Designer.button('<span class="ion-ios-timer-outline"></span>').hoverMessage('아카이브하고 외부링크 삽입').click(function () {
         var win = TooSimplePopup();
         win.title("아카이브 한후 외부링크 삽입");
         var linkTo = "",
@@ -1092,7 +1098,7 @@ function mainFunc() {
           archiveIs = false,
           archiveLinks = [];
         var refresh;
-        win.content(function(container) {
+        win.content(function (container) {
           container.innerHTML = '<h1 style="margin: 0px 0px 5px 0px; font-size: 20px;">링크할 곳(외부링크)</h1>' +
             '<style>#linkTo, #visibleOutput {position: absolute; left: 120px;}</style>' +
             '<label>링크할 대상</label> <input type="text" id="linkTo" placeholder="e.g. http://www.naver.com" /><br>' +
@@ -1103,7 +1109,7 @@ function mainFunc() {
             '<strong style="color:red;">주의</strong> : 불안정한 기능입니다. 버그에 주의하세요.<br>' +
             '<input type="checkbox" id="WayBack" /> <label><a href="https://archive.org/web/" target="_blank">WayBack Machine</a>으로 아카이브</label>(<input type="checkbox" id="WayBackMobi" /> 모바일 버전으로)<br>' +
             '<input type="checkbox" id="archiveIs" /> <label><a href="https://archive.is/" target="_blank" checked>archive.is</a>에서 아카이브</label>';
-          refresh = function() {
+          refresh = function () {
             linkTo = container.querySelector('#linkTo').value;
             linkText = container.querySelector('#visibleOutput').value;
             WayBack = container.querySelector('#WayBack').checked;
@@ -1111,14 +1117,14 @@ function mainFunc() {
             archiveIs = container.querySelector('#archiveIs').checked;
           }
         });
-        win.button("박제/삽입", function() {
+        win.button("박제/삽입", function () {
           var waitwin = TooSimplePopup();
           waitwin.title('박제중....');
           refresh();
           if (linkTo.indexOf('http://') != 0 && linkTo.indexOf('https://') != 0) {
             alert('http:// 또는 https://로 시작하는 외부링크가 아닙니다!');
           }
-          waitwin.content(function(container) {
+          waitwin.content(function (container) {
             container.innerHTML = '박제중입니다....'
           });
 
@@ -1159,7 +1165,7 @@ function mainFunc() {
                 r.headers = {};
                 r.headers["User-Agent"] = "Mozilla/5.0 (iPhone; U; CPU iPhone OS 3_0 like Mac OS X; en-us) AppleWebKit/528.18 (KHTML, like Gecko) Version/4.0 Mobile/7A341 Safari/528.16";
               }
-              r.onload = function(res) {
+              r.onload = function (res) {
                 if (res.status == 403) {
                   alert('오류가 발생했습니다. 크롤링이 금지된 사이트일 수도 있습니다.');
                   setTimeout(archiveOne, 50);
@@ -1182,7 +1188,7 @@ function mainFunc() {
             } else if (archiveType == 'ai') {
               r.method = "GET";
               r.url = "https://archive.is";
-              r.onload = function(res) {
+              r.onload = function (res) {
                 // get submitid
                 var parser = new DOMParser();
                 var indexDoc = parser.parseFromString(res.responseText, "text/html");
@@ -1198,7 +1204,7 @@ function mainFunc() {
                   r2.headers = {};
                   r2.headers["Content-Type"] = "application/x-www-form-urlencoded";
                   r2.data = "anyway=1&url=" + encodeURIComponent(linkTo) + "&submitid=" + encodeURIComponent(token);
-                  r2.onload = function(res) {
+                  r2.onload = function (res) {
                     var matches = /document\.location\.replace\("(.+?)"\)/.exec(res.responseText);
                     if (matches == null) matches = /<meta property="og:url" content="(.+?)"/.exec(res.responseText);
                     if (matches == null) {
@@ -1224,16 +1230,16 @@ function mainFunc() {
       });
       if (ENV.IsEditing) {
         // Manager Class
-        var tempsaveManager = new function() {
+        var tempsaveManager = new function () {
           var ht = this;
-          this.getTitles = function() {
+          this.getTitles = function () {
             var r = [];
             for (var i in SET.tempsaves) {
               r.push(i);
             }
             return r;
           }
-          this.getByTitle = function(docTitle) {
+          this.getByTitle = function (docTitle) {
             SET.load();
             if (nOu(SET.tempsaves[docTitle])) {
               SET.tempsaves[docTitle] = [];
@@ -1241,7 +1247,7 @@ function mainFunc() {
             }
             return SET.tempsaves[docTitle]; // {section, text, timestamp}
           };
-          this.getByTitleAndSectionNo = function(docTitle, sectno) {
+          this.getByTitleAndSectionNo = function (docTitle, sectno) {
             SET.load();
             var b = ht.getByTitle(docTitle);
             var a = [];
@@ -1251,7 +1257,7 @@ function mainFunc() {
             }
             return a;
           }
-          this.save = function(docTitle, sectno, timestamp, text) {
+          this.save = function (docTitle, sectno, timestamp, text) {
             SET.load();
             if (nOu(SET.tempsaves[docTitle])) {
               SET.tempsaves[docTitle] = [];
@@ -1264,7 +1270,7 @@ function mainFunc() {
             });
             SET.save();
           }
-          this.delete = function(docTitle, sectno, timestamp) {
+          this.delete = function (docTitle, sectno, timestamp) {
             SET.load();
             if (nOu(SET.tempsaves[docTitle])) return;
             var newArray = [];
@@ -1289,7 +1295,7 @@ function mainFunc() {
             SET.tempsaves[docTitle] = newArray;
             SET.save();
           }
-          this.MigrateIfThereIs = function() {
+          this.MigrateIfThereIs = function () {
             SET.load();
             var autosaves = JSON.parse(GM_getValue("AutoSavedDocuments", "null"));
             if (autosaves != null) {
@@ -1313,15 +1319,15 @@ function mainFunc() {
         tempsaveManager.MigrateIfThereIs();
         // Tempsave Menu
         var tempsaveDropdown = Designer.dropdown('<span class="ion-ios-pricetags-outline"></span>').hoverMessage('임시저장');
-        tempsaveDropdown.button('<span class="ion-ios-pricetag-outline"></span>', '임시저장').click(function() {
+        tempsaveDropdown.button('<span class="ion-ios-pricetag-outline"></span>', '임시저장').click(function () {
           tempsaveManager.save(ENV.docTitle, ENV.section, Date.now(), txtarea.value);
         });
-        tempsaveDropdown.button('<span class="ion-filing"></span>', '임시저장 불려오기').click(function() {
+        tempsaveDropdown.button('<span class="ion-filing"></span>', '임시저장 불려오기').click(function () {
           // title(text), content(callback), foot(callback), button(text,onclick), close
           var win = TooSimplePopup();
           win.title('임시저장 불려오기')
           var tempsaveList = tempsaveManager.getByTitle(ENV.docTitle);
-          win.content(function(el) {
+          win.content(function (el) {
             el.innerHTML = '<p>현재 편집중인 문단인 경우 문단 번호가 <strong>굵게</strong> 표시됩니다.<br>문단 번호가 -2인 경우는 문단 번호가 감지되지 않은 경우입니다.</p>';
             var divWithscrollbars = document.createElement("div");
             divWithscrollbars.style.height = '300px';
@@ -1339,7 +1345,7 @@ function mainFunc() {
               btn.setAttribute("type", "button");
               btn.innerHTML = "불려오기";
               btn.dataset.json = JSON.stringify(now);
-              btn.addEventListener('click', function(evt) {
+              btn.addEventListener('click', function (evt) {
                 var now = JSON.parse(evt.target.dataset.json);
                 txtarea.value = now.text;
               });
@@ -1352,18 +1358,18 @@ function mainFunc() {
           });
           win.button('닫기', win.close);
         });
-        tempsaveDropdown.button('<span class="ion-trash-a" style="color:red;"></span>', '이 문서의 모든 임시저장 삭제').click(function() {
+        tempsaveDropdown.button('<span class="ion-trash-a" style="color:red;"></span>', '이 문서의 모든 임시저장 삭제').click(function () {
           tempsaveManager.delete(ENV.docTitle);
         });
-        tempsaveDropdown.button('<span class="ion-trash-a" style="color:orangered;"></span>', '이 문서의 이 문단의 모든 임시저장 삭제').click(function() {
+        tempsaveDropdown.button('<span class="ion-trash-a" style="color:orangered;"></span>', '이 문서의 이 문단의 모든 임시저장 삭제').click(function () {
           tempsaveManager.delete(ENV.docTitle, ENV.section);
         });
-        tempsaveDropdown.button('<span class="ion-trash-a" style="color:orange;"></span>', '특정 임시저장만 삭제').click(function() {
+        tempsaveDropdown.button('<span class="ion-trash-a" style="color:orange;"></span>', '특정 임시저장만 삭제').click(function () {
           // title(text), content(callback), foot(callback), button(text,onclick), close
           var win = TooSimplePopup();
           var tempsaveList = tempsaveManager.getByTitle(ENV.docTitle);
           win.title('임시저장 삭제');
-          win.content(function(el) {
+          win.content(function (el) {
             el.innerHTML = '<p>현재 편집중인 문단인 경우 문단 번호가 <strong>굵게</strong> 표시됩니다.<br>문단 번호가 -2인 경우는 문단 번호가 감지되지 않은 경우입니다.</p>';
             var divWithscrollbars = document.createElement("div");
             divWithscrollbars.style.height = '300px';
@@ -1381,7 +1387,7 @@ function mainFunc() {
               btn.setAttribute("type", "button");
               btn.innerHTML = "삭제하기";
               btn.dataset.json = JSON.stringify(now);
-              btn.addEventListener('click', function(evt) {
+              btn.addEventListener('click', function (evt) {
                 var now = JSON.parse(evt.target.dataset.json);
                 tempsaveManager.delete(ENV.docTitle, now.section, now.timestamp);
                 win.close();
@@ -1395,23 +1401,23 @@ function mainFunc() {
           });
           win.button('닫기', win.close);
         });
-        setInterval(function() {
+        setInterval(function () {
           tempsaveManager.save(ENV.docTitle, ENV.section, Date.now(), txtarea.value);
         }, 600000);
       }
       // Template Insert Feature
       var templatesDropdown = Designer.dropdown('<span class="ion-ios-copy-outline"></span>').hoverMessage('템플릿 삽입/최근에 사용한 템플릿');
-      var refreshTemplatesDropdown = function() {
+      var refreshTemplatesDropdown = function () {
         SET.load();
         templatesDropdown.clear();
         var rutl = SET.recentlyUsedTemplates.length;
 
         function InsertTemplateClosure(na) {
-          return function() {
+          return function () {
             GM_xmlhttpRequest({
               method: 'GET',
               url: 'https://namu.wiki/raw/' + na,
-              onload: function(res) {
+              onload: function (res) {
                 if (res.status == 404) {
                   alert('존재하지 않는 템플릿입니다.');
                   return;
@@ -1428,13 +1434,13 @@ function mainFunc() {
         for (var i = 0; i < (rutl < 5 ? rutl : 5); i++) {
           templatesDropdown.button('<span class="ion-ios-paper-outline"></span>', SET.recentlyUsedTemplates[i]).click(InsertTemplateClosure(SET.recentlyUsedTemplates[i]));
         }
-        templatesDropdown.button('<span class="ion-close-round"></span>', '기록 삭제').click(function() {
+        templatesDropdown.button('<span class="ion-close-round"></span>', '기록 삭제').click(function () {
           SET.load();
           SET.recentlyUsedTemplates = [];
           SET.save();
           setTimeout(refreshTemplatesDropdown, 300);
         });
-        templatesDropdown.button('<span class="ion-plus-round"></span>', '템플릿 삽입').click(function() {
+        templatesDropdown.button('<span class="ion-plus-round"></span>', '템플릿 삽입').click(function () {
           var templateName = prompt('템플릿 이름을 입력하세요.');
           if (!/^템플릿:.+/.test(templateName) && !/.+Template$/.test(templateName) && !confirm('올바른 템플릿 이름이 아닌 것 같습니다. 계속할까요?')) return;
           InsertTemplateClosure(templateName)();
@@ -1450,8 +1456,8 @@ function mainFunc() {
         rootDiv.style.height = '600px';
 
       // Add Keyboard Shortcut
-      txtarea.addEventListener('keyup', function(evt) {
-          var ignoreDefault = true;
+      txtarea.addEventListener('keyup', function (evt) {
+        var ignoreDefault = true;
         if (evt.ctrlKey && !evt.shiftKey) {
           switch (evt.keyCode) { // Ctrl
             case 66: // B
@@ -1480,13 +1486,13 @@ function mainFunc() {
             case 93: // ]
               FontSizeChanger(true);
               break;
-              default:
-                  ignoreDefault = false;
+            default:
+              ignoreDefault = false;
           }
-            if(ignoreDefault){
-          evt.preventDefault();
-          evt.stopPropagation();
-            }
+          if (ignoreDefault) {
+            evt.preventDefault();
+            evt.stopPropagation();
+          }
         } else if (evt.ctrlKey && evt.shiftKey) { // Ctrl + Shift
           switch (evt.keyCode) {
             case 83: // S
@@ -1497,13 +1503,13 @@ function mainFunc() {
             case 105:
               namuUpload();
               break;
-              default:
-                  ignoreDefault = false;
+            default:
+              ignoreDefault = false;
           }
-            if(ignoreDefault) {
-             evt.preventDefault();
-                evt.stopPropagation();
-            }
+          if (ignoreDefault) {
+            evt.preventDefault();
+            evt.stopPropagation();
+          }
         } else {
           return;
         }
@@ -1541,7 +1547,7 @@ function mainFunc() {
     };
 
     // 리다이렉트 버튼 추가
-    addButton('리다이렉트', function(evt) {
+    addButton('리다이렉트', function (evt) {
       evt.preventDefault();
 
       var redirectFrom = prompt('어느 문서에서 지금 이문서로 리다이렉트?');
@@ -1557,7 +1563,7 @@ function mainFunc() {
       var deleteUrl = '/delete/' + origDocuName;
 
       redirectAlert.innerHTML = '<a href="/w/' + encodeURIComponent(origDocuName) + '?noredirect=1" class="document" title="' + encodeHTMLComponent(origDocuName) + '">' + encodeHTMLComponent(origDocuName) + '</a>' +
-      '에서 여기로 넘어왔습니다. 당신은 ' + encodeHTMLComponent(origDocuName) + ' 문서를 <a href="' + editUrl + '">수정</a>하거나 <a href="' + deleteUrl + '">삭제</a>할 수 있습니다.';
+        '에서 여기로 넘어왔습니다. 당신은 ' + encodeHTMLComponent(origDocuName) + ' 문서를 <a href="' + editUrl + '">수정</a>하거나 <a href="' + deleteUrl + '">삭제</a>할 수 있습니다.';
     }
     // 상위 문서로의 링크
     if (ENV.docTitle.indexOf('/') != -1) {
@@ -1583,15 +1589,15 @@ function mainFunc() {
       var codwe = 0;
       var codwnf = 0;
       for (var i = 0; i < higherDocs.length; i++) {
-        getRAW(higherDocs[i], function(r, t) {
+        getRAW(higherDocs[i], function (r, t) {
           higherDocsWE[t] = true;
           codwe++;
-        }, function(t) {
+        }, function (t) {
           higherDocsWE[t] = false;
           codwnf++;
         });
         if (i == higherDocs.length - 1) {
-          var hdinid = setInterval(function() {
+          var hdinid = setInterval(function () {
             if (codwe + codwnf != higherDocs.length) return;
             var docTitleTag = document.querySelector('h1.title');
             var hdsPT = document.createElement("p");
@@ -1641,7 +1647,7 @@ function mainFunc() {
         var anchorDirection = document.querySelector('.r-head .num a[id=\'' + /#([0-9]+)$/.exec(anchor.href)[1] + '\']');
 
         anchor.dataset.target = (anchorDirection) ? anchorDirection.id : "";
-        anchor.addEventListener('mouseenter', function(evt) {
+        anchor.addEventListener('mouseenter', function (evt) {
           var anchorDirection = document.getElementById(evt.target.dataset.target);
           var obj = {};
           if (anchorDirection == null) {
@@ -1670,7 +1676,7 @@ function mainFunc() {
           evt.target.appendChild(elem);
           evt.target.title = '';
         });
-        anchor.addEventListener('mouseleave', function(evt) {
+        anchor.addEventListener('mouseleave', function (evt) {
           //var obj = JSON.parse(evt.target.dataset.targetMessage);
           if (evt.target.querySelector('.nfTopicMessage')) {
             var elemToRemove = evt.target.querySelector('.nfTopicMessage');
@@ -1710,12 +1716,12 @@ function mainFunc() {
           rbody.insertBefore(blockquoteElement, rbody.firstChild);
 
           anchor.dataset.quoteId = blockquoteId;
-          anchor.addEventListener('mouseenter', function(evt) {
+          anchor.addEventListener('mouseenter', function (evt) {
             var quote = document.getElementById(evt.target.dataset.quoteId);
             quote.style.borderColor = '#CCC #CCC #CCC red !important';
             quote.style.boxShadow = '2px 2px 3px orange';
           });
-          anchor.addEventListener('mouseleave', function(evt) {
+          anchor.addEventListener('mouseleave', function (evt) {
             var quote = document.getElementById(evt.target.dataset.quoteId);
             quote.style.borderColor = '';
             quote.style.boxShadow = '';
@@ -1740,7 +1746,7 @@ function mainFunc() {
         previewFunction = previewAsQuote;
         break;
       default:
-        previewFunction = function() {};
+        previewFunction = function () {};
     }
 
     // 인용형식 앵커 미리보기안의 앵커 미리보기 삭제 옵션 설정시 CSS 추가
@@ -1805,7 +1811,7 @@ function mainFunc() {
           identicon.querySelector("img").dataset.hash = n;
           identicon.querySelector("a").dataset.hash = n;
           identicon.querySelector("a").href = "#NothingToLink";
-          identicon.querySelector("a").addEventListener('click', function(evt) {
+          identicon.querySelector("a").addEventListener('click', function (evt) {
             evt.preventDefault();
 
             SET.load();
@@ -1820,7 +1826,7 @@ function mainFunc() {
             } else {
               if (!confirm('이 아이디 또는 닉네임에 기존 아이덴티콘 대신 다른 이미지를 설정할 수 있습니다.\n설정할까요?')) return;
               // doesn't exists
-              getFile(function(files, finish) {
+              getFile(function (files, finish) {
                 if (files.length < 0) {
                   alert('선택된 파일이 없습니다.')
                   if (isLastItem) finish();
@@ -1834,7 +1840,7 @@ function mainFunc() {
                 var file = files[0];
                 if (file) {
                   var reader = new FileReader();
-                  reader.onload = function(evt) {
+                  reader.onload = function (evt) {
                     SET.customIdenticons[h] = reader.result;
                     SET.save();
                     alert('설정됐습니다. 새로고침시 적용됩니다');
@@ -1880,21 +1886,21 @@ function mainFunc() {
           console.log(ip);
           // get ip info
           getIpInfo(ip, function (resObj) {
-              if (resObj !== null) {
-                var country = resObj.data.geo.country_code;
-                var countryName = resObj.data.geo.country_name;
-                var isp = resObj.data.geo.isp;
-                console.log(country);
-                console.log(countryName);
-                console.log(isp);
-                  getFlagIcon(country.toLowerCase(), function(data){
-                      span.innerHTML = '[국가: <img src="{0}" style="height: 0.9rem;"></img> {1}{2}]'.format(data, isp, vpngateIP.indexOf(ip) != -1 ? " (VPNGATE)" : "");
-                      checkIP(vpngateIP);
-                  });
-              } else {
-                span.innerHTML = "[IP조회실패]"
+            if (resObj !== null) {
+              var country = resObj.data.geo.country_code;
+              var countryName = resObj.data.geo.country_name;
+              var isp = resObj.data.geo.isp;
+              console.log(country);
+              console.log(countryName);
+              console.log(isp);
+              getFlagIcon(country.toLowerCase(), function (data) {
+                span.innerHTML = '[국가: <img src="{0}" style="height: 0.9rem;"></img> {1}{2}]'.format(data, isp, vpngateIP.indexOf(ip) != -1 ? " (VPNGATE)" : "");
                 checkIP(vpngateIP);
-              }
+              });
+            } else {
+              span.innerHTML = "[IP조회실패]"
+              checkIP(vpngateIP);
+            }
           });
         } else {
           checkIP(vpngateIP);
@@ -1904,10 +1910,10 @@ function mainFunc() {
 
     function discussLoop() {
       // check vpngate
-      if(SET.lookupIPonDiscuss)
-      getVPNGateIPList(function(result) {
-        checkIP(result);
-      })
+      if (SET.lookupIPonDiscuss)
+        getVPNGateIPList(function (result) {
+          checkIP(result);
+        })
 
       // attach identicon
       identiconLoop();
@@ -2000,11 +2006,11 @@ function mainFunc() {
       var ipInfo = document.createElement("p");
       ipInfo.innerHTML = '<div style="border: 1px black solid; padding: 2px;">IP 관련 정보를 조회중입니다. 잠시만 기다려주세요.</div>'
       insertBeforeTable(ipInfo);
-      getVPNGateIPList(function(result) {
+      getVPNGateIPList(function (result) {
         GM_xmlhttpRequest({
           method: "GET",
           url: "https://tools.keycdn.com/geo.json?host={0}".format(ip),
-          onload: function(res) {
+          onload: function (res) {
             var resObj = JSON.parse(res.responseText);
             if (resObj.status == "success") {
               var country = resObj.data.geo.country_code;
@@ -2080,12 +2086,12 @@ function mainFunc() {
         '<tr><td>시간대별 기여/활동 횟수 총합(문서 기여)</td><td><a href="#NothingToLink" id="punch">여기를 눌러 확인</a></td></tr>' +
         '</tbody>' +
         '</table>').format(contCount, contTotalBytes, documents.length, deletedDocuments.length, createdDocuments.length, (contTotalBytes / documents.length));
-      p.querySelector('a#punch').addEventListener('click', function(evt) {
+      p.querySelector('a#punch').addEventListener('click', function (evt) {
         evt.preventDefault();
 
         var win = TooSimplePopup();
         win.title('시간대별 기여/활동 횟수 총합(문서 기여)');
-        win.content(function(element) {
+        win.content(function (element) {
           element.appendChild(makeHeatTable(contributedAt));
         });
         win.button('닫기', win.close);
@@ -2143,12 +2149,12 @@ function mainFunc() {
         '<tr><td>시간대별 기여/활동 횟수 총합(토론)</td><td><a href="#NothingToLink" id="punch">여기를 눌러 확인</a></td></tr>' +
         '</tbody>' +
         '</table>').format(totalTalks, discussCount, avgTalks, standardDeviation(Talks));
-      p.querySelector('a#punch').addEventListener('click', function(evt) {
+      p.querySelector('a#punch').addEventListener('click', function (evt) {
         evt.preventDefault();
 
         var win = TooSimplePopup();
         win.title('시간대별 기여/활동 횟수 총합(토론)');
-        win.content(function(container) {
+        win.content(function (container) {
           container.appendChild(makeHeatTable(talkedAt));
         });
         win.button('닫기', win.close);
@@ -2158,7 +2164,7 @@ function mainFunc() {
     }
     if (typeof p !== 'undefined') insertBeforeTable(p);
   } else if (ENV.IsDiff) {
-    setTimeout(function() {
+    setTimeout(function () {
       try {
         var diffTitle = document.querySelector('#diffoutput thead th.texttitle');
         if (diffTitle == null) return;
@@ -2175,7 +2181,7 @@ function mainFunc() {
 }
 
 // 아이덴티콘 버그 수정
-setInterval(function() {
+setInterval(function () {
   if (!/^https?:\/\/(?:no-ssl\.|)namu\.wiki\/discuss\/(.+?)/.test(location.href)) {
     return;
   }
@@ -2194,14 +2200,14 @@ setInterval(function() {
 }, 50);
 
 // 설정 메뉴 추가
-addItemToMemberMenu("NamuFix 설정", function(evt) {
+addItemToMemberMenu("NamuFix 설정", function (evt) {
   evt.preventDefault();
 
   var win = TooSimplePopup();
   var elems = {};
   win.title('NamuFix 설정');
   SET.load();
-  win.content(function(el) {
+  win.content(function (el) {
     el.innerHTML = '<style>h1.wsmall{font-size: 14pt;}</style>' +
       '<h1 class="wsmall">토론 아이덴티콘</h1>' +
       '<input type="radio" name="discussIdenti" data-setname="discussIdenti" data-setvalue="icon">디시라이트 갤러콘 방식<br>' +
@@ -2240,7 +2246,7 @@ addItemToMemberMenu("NamuFix 설정", function(evt) {
     }
   });
   win.button('저장하지 않고 닫기', win.close);
-  win.button('저장하고 닫기', function() {
+  win.button('저장하고 닫기', function () {
     var optionTags = document.querySelectorAll('[data-setname]');
     SET.load();
     for (var i = 0; i < optionTags.length; i++) {
@@ -2256,12 +2262,12 @@ addItemToMemberMenu("NamuFix 설정", function(evt) {
       }
     }
     SET.save();
-    if(confirm("새로고침해야 설정이 적용됩니다. 새로고침할까요?"))
+    if (confirm("새로고침해야 설정이 적용됩니다. 새로고침할까요?"))
       location.reload();
     win.close();
   });
 });
-addItemToMemberMenu("Imgur 이미지 삭제 주소들", function(evt) {
+addItemToMemberMenu("Imgur 이미지 삭제 주소들", function (evt) {
   evt.preventDefault();
 
   SET.load();
@@ -2273,9 +2279,9 @@ addItemToMemberMenu("Imgur 이미지 삭제 주소들", function(evt) {
 
   var table = document.createElement("table");
   table.innerHTML = '<tr><th style="min-width: 200px;">업로드한 날짜/시각</th><th>이름</th><th>이미지 주소(다이렉트)</th><th>이미지 삭제 주소</th></tr>';
-  var addRow = function(dt, dna, dil, del) {
+  var addRow = function (dt, dna, dil, del) {
     var tr = document.createElement("tr");
-    var appendTd = function(t) {
+    var appendTd = function (t) {
       var td = document.createElement("td");
       td.innerHTML = t;
       tr.appendChild(td);
@@ -2290,13 +2296,13 @@ addItemToMemberMenu("Imgur 이미지 삭제 주소들", function(evt) {
     var ii = SET.imgurDeletionLinks[i];
     addRow(ii.uploadedAt, typeof ii.name !== "undefined" ? ii.name : null, ii.imgUrl, ii.deleteionUrl);
   }
-  win.content(function(el) {
+  win.content(function (el) {
     el.appendChild(table);
   });
   win.title('이미지 삭제 주소들');
   win.button('닫기', win.close);
 });
-addItemToMemberMenu('설정 백업/복원', function(evt) {
+addItemToMemberMenu('설정 백업/복원', function (evt) {
   evt.preventDefault();
 
   if (!confirm('경고 : 이 기능은 불안정합니다.\n그래도 진행하시겠습니까?'))
@@ -2329,7 +2335,7 @@ listenPJAX(mainFunc);
 GM_xmlhttpRequest({
   method: "GET",
   url: "https://api.github.com/repos/LiteHell/NamuFix/releases/latest",
-  onload: function(res) {
+  onload: function (res) {
     var obj = JSON.parse(res.responseText);
     var currentVersion = GM_info.script.version;
     var latestVersion = obj.tag_name;
@@ -2337,7 +2343,7 @@ GM_xmlhttpRequest({
       var scriptUrl = 'https://github.com/LiteHell/NamuFix/raw/' + latestVersion + '/NamuFix.user.js';
       var win = TooSimplePopup();
       win.title('새버전 설치');
-      win.content(function(element) {
+      win.content(function (element) {
         // 변경 사항 : obj.body
         element.innerHTML = '업데이트가 있습니다.<br><br>현재 사용중인 버전 : ' + currentVersion + '<br>' +
           '현재 최신 버전 : ' + latestVersion + '<br><br>' +
@@ -2348,7 +2354,7 @@ GM_xmlhttpRequest({
       });
 
       win.button('닫기', win.close);
-      win.button('새로고침', function() {
+      win.button('새로고침', function () {
         location.reload();
       });
     }
