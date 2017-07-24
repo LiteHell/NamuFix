@@ -6,7 +6,7 @@
 // @include     http://namu.wiki/*
 // @include     https://namu.wiki/*
 // @include     http://issue.namu.wiki/*
-// @version     170724.1
+// @version     170724.3
 // @author      LiteHell
 // @downloadURL https://raw.githubusercontent.com/LiteHell/NamuFix/master/NamuFix.user.js
 // @require     https://cdn.rawgit.com/LiteHell/NamuFix/3bea33e76808ba9765f39135c17bfa46972131ac/mascott_pics.js
@@ -1456,7 +1456,7 @@ function mainFunc() {
         rootDiv.style.height = '600px';
 
       // Add Keyboard Shortcut
-      txtarea.addEventListener('keyup', function(evt) {
+      txtarea.addEventListener('keyup', function (evt) {
         if (evt.ctrlKey && evt.altKey) {
           switch (evt.keyCode) { // Ctrl
             case 66: // B
