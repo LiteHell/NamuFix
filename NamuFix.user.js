@@ -10,6 +10,7 @@
 // @author      LiteHell
 // @downloadURL https://raw.githubusercontent.com/LiteHell/NamuFix/master/NamuFix.user.js
 // @require     https://cdn.rawgit.com/LiteHell/NamuFix/3bea33e76808ba9765f39135c17bfa46972131ac/mascott_pics.js
+// @require     https://cdn.rawgit.com/LiteHell/NamuFix/5326c9aada134f65bba171d12f5ca5d042fd4fca/korCountryNames.js
 // @require     https://cdn.rawgit.com/LiteHell/NamuFix/0ea78119c377402a10bbdfc33365c5195ce7fccc/FlexiColorPicker.js
 // @require     https://cdn.rawgit.com/Caligatio/jsSHA/v2.3.1/src/sha.js
 // @require     https://cdn.rawgit.com/zenozeng/color-hash/v1.0.3/dist/color-hash.js
@@ -1875,13 +1876,13 @@ function mainFunc() {
           getIpInfo(ip, function (resObj) {
             if (resObj !== null) {
               var country = resObj.data.geo.country_code;
-              var countryName = resObj.data.geo.country_name;
+              var countryName = korCountryNames[country.toUpperCase()] ? korCountryNames[country.toUpperCase()] : resObj.data.geo.country_name;
               var isp = resObj.data.geo.isp;
               console.log(country);
               console.log(countryName);
               console.log(isp);
               getFlagIcon(country.toLowerCase(), function (data) {
-                span.innerHTML = '[국가: <img src="{0}" style="height: 0.9rem;"></img> {1}{2}]'.format(data, isp, vpngateIP.indexOf(ip) != -1 ? " (VPNGATE)" : "");
+                span.innerHTML = '[<img src="{0}" style="height: 0.9rem;" title="{3}"></img> {1}{2}]'.format(data, isp, vpngateIP.indexOf(ip) != -1 ? " (VPNGATE)" : "", countryName);
                 checkIP(vpngateIP);
               });
             } else {
