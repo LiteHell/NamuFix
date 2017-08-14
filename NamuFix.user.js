@@ -895,6 +895,11 @@ function mainFunc() {
               });
               var query = new FormData();
               var fn = "파일:" + SHA256(String(Date.now()) + file.name) + "_" + file.name;
+              if(/\.[A-Z]+$/.test(fn)) {
+                var fnSplitted = fn.split('.');
+                fnSplitted[fnSplitted.length - 1] = fnSplitted[fnSplitted.length - 1].toLowerCase();
+                fn = fnSplitted.join('.');
+              }
               query.append('file', file);
               query.append('document', fn);
               query.append('text', docuText);
