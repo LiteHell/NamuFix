@@ -280,6 +280,8 @@ function INITSET() { // Storage INIT
     SET.removeNFQuotesInAnchorPreview = false;
   if (nOu(SET.lookupIPonDiscuss))
     SET.lookupIPonDiscuss = true;
+  if (nOu(SET.ignoreNonSenkawaWarning))
+    SET.ignoreNonSenkawaWarning = false;
   SET.save();
 }
 
@@ -2348,3 +2350,17 @@ GM_xmlhttpRequest({
     }
   }
 });
+
+if(document.querySelector('body').getAttribute('class').indexOf('senkawa') == -1) {
+  SET.load();
+  if(!SET.ignoreNonSenkawaWarning) {
+    var win = TooSimplePopup();
+    win.title('스킨 관련 안내');
+    win.content(function(element) {
+      element.innerHTML = '<p><strong>안내:</strong> NamuFix는 senkawa 스킨이 아닌 경우 비정상적으로 작동할 수 있습니다.<br>가능하면 senkawa 스킨을 사용해주십시오.<br><em>(이 메세지는 한번만 보여집니다.)</em></p>'
+    });
+    win.button('닫기', win.close);
+    SET.ignoreNonSenkawaWarning = true;
+    SET.save();
+  }
+}
