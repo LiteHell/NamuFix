@@ -282,6 +282,8 @@ function INITSET() { // Storage INIT
     SET.lookupIPonDiscuss = true;
   if (nOu(SET.ignoreNonSenkawaWarning))
     SET.ignoreNonSenkawaWarning = false;
+  if (nOu(SET.avoidBlankSVG))
+    SET.avoidBlankSVG = false;
   SET.save();
 }
 
@@ -1615,6 +1617,13 @@ function mainFunc() {
         }
       }
     }
+    // 빈 SVG 다운로드 방지 옵션
+    if (SET.avoidBlankSVG) {
+      var wikiImages = document.querySelectorAll('img.wiki-image');
+      for(var i = 0; i < wikiImages.length; i++) {
+        wikiImages[i].setAttribute('src', wikiImages[i].dataset.original);
+      }
+    }
   }
 
   if (ENV.Discussing) {
@@ -2219,7 +2228,9 @@ addItemToMemberMenu("NamuFix 설정", function (evt) {
       '<input type="radio" name="discussAnchorPreviewType" data-setname="discussAnchorPreviewType" data-setvalue="0">사용하지 않음<br>' +
       '<input type="radio" name="discussAnchorPreviewType" data-setname="discussAnchorPreviewType" data-setvalue="1">마우스를 올리면 미리보기 표시<br>' +
       '<input type="radio" name="discussAnchorPreviewType" data-setname="discussAnchorPreviewType" data-setvalue="2">토론 메세지 위에 인용형식으로 표시<br>' +
-      '<input type="checkbox" name="removeNFQuotesInAnchorPreview" data-setname="removeNFQuotesInAnchorPreview" data-as-boolean>토론 메세지 위에 인용형식으로 표시할때, 인용문 안에 인용 형식으로 표시된 미리보기 제거';
+      '<input type="checkbox" name="removeNFQuotesInAnchorPreview" data-setname="removeNFQuotesInAnchorPreview" data-as-boolean>토론 메세지 위에 인용형식으로 표시할때, 인용문 안에 인용 형식으로 표시된 미리보기 제거' +
+      '<h1 class="wsmall">위키 문서에서 빈 SVG 다운로드 방지</h1>' +
+      '<input type="checkbox" name="avoidBlankSVG" data-setname="avoidBlankSVG" data-as-boolean>위키 문서에서 사진 다운로드시 빈 SVG 이미지가 다운로드되는 것을 방지합니다.</input>';
     var optionTags = document.querySelectorAll('[data-setname]');
     SET.load();
     for (var i = 0; i < optionTags.length; i++) {
