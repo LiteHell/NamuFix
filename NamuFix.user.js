@@ -896,7 +896,7 @@ function mainFunc() {
               });
               var query = new FormData();
               var fn = "파일:" + SHA256(String(Date.now()) + file.name) + "_" + file.name;
-              if(/\.[A-Z]+$/.test(fn)) {
+              if (/\.[A-Z]+$/.test(fn)) {
                 var fnSplitted = fn.split('.');
                 fnSplitted[fnSplitted.length - 1] = fnSplitted[fnSplitted.length - 1].toLowerCase();
                 fn = fnSplitted.join('.');
@@ -1631,7 +1631,7 @@ function mainFunc() {
     // 빈 SVG 다운로드 방지 옵션
     if (SET.avoidBlankSVG) {
       var wikiImages = document.querySelectorAll('img.wiki-image');
-      for(var i = 0; i < wikiImages.length; i++) {
+      for (var i = 0; i < wikiImages.length; i++) {
         wikiImages[i].setAttribute('src', wikiImages[i].dataset.original);
       }
     }
@@ -1641,45 +1641,45 @@ function mainFunc() {
     // 보여지지 않은 쓰레드도 불려오기
     if (SET.loadUnvisibleReses) {
       var modifyFetchFuncScript = "discussFetch = function(topic, cb) {" +
-"var visibleDom = document.querySelector('#res-container div.res-loading[data-locked=\"false\"]');" +
-"if(!visibleDom) return;" +
-"visibleDom.setAttribute('data-locked', 'true');" +
-"var reqId = visibleDom.getAttribute('data-id');" +
-"discussXhr2 = $.ajax({" +
-"type: \"GET\"," +
-"url: \"/thread/\" + topic + \"/\" + reqId," +
-"async: true," +
-"dataType: 'html'," +
-"error: function() {" +
-"discussXhr2 = null;" +
-"if(!discussPolling) return;" +
-"location.reload();" +
-"}," +
-"success: function(data) {" +
-"discussXhr2 = null;" +
-"if(!discussPolling) return;" +
-"discussLastObserveTime = Date.now();" +
-"var dataObj = $(data);" +
-"dataObj.find(\"time\").each(function () {" +
-"var format = $(this).attr(\"data-format\");" +
-"var time = $(this).attr(\"datetime\");" +
-"$(this).text(formatDate(new Date(time), format));" +
-"});" +
-"dataObj.each(function() {" +
-"var thisObj = $(this);" +
-"var targetObj = $('#res-container div.res-loading[data-id=\"' + thisObj.data('id') + '\"]');" +
-"targetObj.after(thisObj);" +
-"targetObj.remove();" +
-"});" +
-"}" +
-"});" +
-"};";
-if(!document.querySelector('#namufix-modify-discuss-fetch-script')){
-var scriptTag = document.createElement("script");
-scriptTag.id = "namufix-modify-discuss-fetch-script"
-scriptTag.innerHTML = modifyFetchFuncScript;
-document.body.appendChild(scriptTag);
-}
+        "var visibleDom = document.querySelector('#res-container div.res-loading[data-locked=\"false\"]');" +
+        "if(!visibleDom) return;" +
+        "visibleDom.setAttribute('data-locked', 'true');" +
+        "var reqId = visibleDom.getAttribute('data-id');" +
+        "discussXhr2 = $.ajax({" +
+        "type: \"GET\"," +
+        "url: \"/thread/\" + topic + \"/\" + reqId," +
+        "async: true," +
+        "dataType: 'html'," +
+        "error: function() {" +
+        "discussXhr2 = null;" +
+        "if(!discussPolling) return;" +
+        "location.reload();" +
+        "}," +
+        "success: function(data) {" +
+        "discussXhr2 = null;" +
+        "if(!discussPolling) return;" +
+        "discussLastObserveTime = Date.now();" +
+        "var dataObj = $(data);" +
+        "dataObj.find(\"time\").each(function () {" +
+        "var format = $(this).attr(\"data-format\");" +
+        "var time = $(this).attr(\"datetime\");" +
+        "$(this).text(formatDate(new Date(time), format));" +
+        "});" +
+        "dataObj.each(function() {" +
+        "var thisObj = $(this);" +
+        "var targetObj = $('#res-container div.res-loading[data-id=\"' + thisObj.data('id') + '\"]');" +
+        "targetObj.after(thisObj);" +
+        "targetObj.remove();" +
+        "});" +
+        "}" +
+        "});" +
+        "};";
+      if (!document.querySelector('#namufix-modify-discuss-fetch-script')) {
+        var scriptTag = document.createElement("script");
+        scriptTag.id = "namufix-modify-discuss-fetch-script"
+        scriptTag.innerHTML = modifyFetchFuncScript;
+        document.body.appendChild(scriptTag);
+      }
     }
 
     // 아이덴티콘 설정들과 변수들
@@ -2420,12 +2420,12 @@ GM_xmlhttpRequest({
   }
 });
 
-if(document.querySelector('body').getAttribute('class').indexOf('senkawa') == -1) {
+if (document.querySelector('body').getAttribute('class').indexOf('senkawa') == -1) {
   SET.load();
-  if(!SET.ignoreNonSenkawaWarning) {
+  if (!SET.ignoreNonSenkawaWarning) {
     var win = TooSimplePopup();
     win.title('스킨 관련 안내');
-    win.content(function(element) {
+    win.content(function (element) {
       element.innerHTML = '<p><strong>안내:</strong> NamuFix는 senkawa 스킨이 아닌 경우 비정상적으로 작동할 수 있습니다.<br>가능하면 senkawa 스킨을 사용해주십시오.<br><em>(이 메세지는 한번만 보여집니다.)</em></p>'
     });
     win.button('닫기', win.close);
