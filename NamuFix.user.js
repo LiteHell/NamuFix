@@ -285,6 +285,8 @@ function INITSET() { // Storage INIT
     SET.ignoreNonSenkawaWarning = false;
   if (nOu(SET.avoidBlankSVG))
     SET.avoidBlankSVG = false;
+  if (nOu(SET.loadUnvisibleReses))
+    SET.loadUnvisibleReses = false;
   SET.save();
 }
 
@@ -1636,6 +1638,50 @@ function mainFunc() {
   }
 
   if (ENV.Discussing) {
+    // 보여지지 않은 쓰레드도 불려오기
+    if (SET.loadUnvisibleReses) {
+      var modifyFetchFuncScript = "discussFetch = function(topic, cb) {" +
+"var visibleDom = document.querySelector('#res-container div.res-loading[data-locked=\"false\"]');" +
+"if(!visibleDom) return;" +
+"visibleDom.setAttribute('data-locked', 'true');" +
+"var reqId = visibleDom.getAttribute('data-id');" +
+"discussXhr2 = $.ajax({" +
+"type: \"GET\"," +
+"url: \"/thread/\" + topic + \"/\" + reqId," +
+"async: true," +
+"dataType: 'html'," +
+"error: function() {" +
+"discussXhr2 = null;" +
+"if(!discussPolling) return;" +
+"location.reload();" +
+"}," +
+"success: function(data) {" +
+"discussXhr2 = null;" +
+"if(!discussPolling) return;" +
+"discussLastObserveTime = Date.now();" +
+"var dataObj = $(data);" +
+"dataObj.find(\"time\").each(function () {" +
+"var format = $(this).attr(\"data-format\");" +
+"var time = $(this).attr(\"datetime\");" +
+"$(this).text(formatDate(new Date(time), format));" +
+"});" +
+"dataObj.each(function() {" +
+"var thisObj = $(this);" +
+"var targetObj = $('#res-container div.res-loading[data-id=\"' + thisObj.data('id') + '\"]');" +
+"targetObj.after(thisObj);" +
+"targetObj.remove();" +
+"});" +
+"}" +
+"});" +
+"};";
+if(!document.querySelector('#namufix-modify-discuss-fetch-script')){
+var scriptTag = document.createElement("script");
+scriptTag.id = "namufix-modify-discuss-fetch-script"
+scriptTag.innerHTML = modifyFetchFuncScript;
+document.body.appendChild(scriptTag);
+}
+    }
+
     // 아이덴티콘 설정들과 변수들
     var isIcon = SET.discussIdenti == 'icon';
     var isThreadicLike = SET.discussIdenti == 'headBg';
@@ -1698,7 +1744,7 @@ function mainFunc() {
     }
 
     function previewAsQuote() {
-      var message = document.querySelector('.res:not([data-message-anchor-processed])');
+      var message = document.querySelector('.res-wrapper:not(.res-loading) > .res:not([data-message-anchor-processed])');
       if (message) {
         message.dataset.messageAnchorProcessed = true;
         var rbody = message.querySelector('.r-body');
@@ -1765,7 +1811,7 @@ function mainFunc() {
     // 아이덴티콘
     function identiconLoop() {
       if (/^https?:\/\/(?:no-ssl\.|)namu\.wiki\/discuss\/(.+?)/.test(location.href)) return;
-      var messages = document.querySelectorAll('.res:not([data-nfbeauty])');
+      var messages = document.querySelectorAll('.res-wrapper:not(.res-loading) > .res:not([data-nfbeauty])');
       var colorHash = isThreadicLike ? new ColorHash({
         lightness: Number(SET.discussIdentiLightness),
         saturation: Number(SET.discussIdentiSaturation)
@@ -1878,7 +1924,7 @@ function mainFunc() {
     }
 
     function checkIP(vpngateIP) {
-      var message = document.querySelector(".res:not([data-ip-checked])");
+      var message = document.querySelector(".res-wrapper:not(.res-loading) > .res:not([data-ip-checked])");
       if (message) {
         message.dataset.ipChecked = true;
         var ipLink = message.querySelector(".r-head > a");
@@ -2225,6 +2271,9 @@ addItemToMemberMenu("NamuFix 설정", function (evt) {
       '<h1 class="wsmall">토론에서 익명 기여자 IP주소 조회</h1>' +
       '<p>VPNGate 여부, 통신사, 국가이미지를 IP 주소 옆에 표시합니다. 요청 수가 많을 시 실패할 수 도 있습니다.</p>' +
       '<input type="checkbox" name="lookupIPonDiscuss" data-setname="lookupIPonDiscuss" data-as-boolean>토론시 익명 기여자 IP 주소 조회</input>' +
+      '<h1 class="wsmall">토론에서 보여지지 않은 쓰레도 불러오기<sub><small style="color: red;">[실험중!]</small></sub></h1>' +
+      '<p>보여지지 않은 쓰레드도 불러오도록 나무위키 토론 스크립트를 수정합니다.</p>' +
+      '<input type="checkbox" name="loadUnvisibleReses" data-setname="loadUnvisibleReses" data-as-boolean>보여지지 않은 토론 쓰레도 불러오기</input>' +
       '<h1 class="wsmall">토론 아이덴티콘 명도</h1>' +
       '<p>스레딕 헬퍼 방식을 사용하는 경우에만 적용됩니다.</p>' +
       '<label for="discussIdentiLightness">명도</label><input name="discussIdentiLightness" data-setname="discussIdentiLightness" type="range" max="1" min="0" step="0.01"><br>' +
