@@ -6,7 +6,7 @@
 // @include     http://namu.wiki/*
 // @include     https://namu.wiki/*
 // @include     http://issue.namu.wiki/*
-// @version     170829.0
+// @version     170929.0
 // @author      LiteHell
 // @downloadURL https://raw.githubusercontent.com/LiteHell/NamuFix/master/NamuFix.user.js
 // @require     https://cdn.rawgit.com/LiteHell/NamuFix/3bea33e76808ba9765f39135c17bfa46972131ac/mascott_pics.js
@@ -1661,46 +1661,50 @@ function mainFunc() {
   if (ENV.Discussing) {
     // 보여지지 않은 쓰레드도 불려오기
     if (SET.loadUnvisibleReses) {
-      var modifyFetchFuncScript = "discussFetch = function(topic, cb) {" +
-        "var visibleDom = document.querySelector('#res-container div.res-loading[data-locked=\"false\"]');" +
-        "if(!visibleDom) return;" +
-        "visibleDom.setAttribute('data-locked', 'true');" +
-        "var reqId = visibleDom.getAttribute('data-id');" +
-        "discussXhr2 = $.ajax({" +
-        "type: \"GET\"," +
-        "url: \"/thread/\" + topic + \"/\" + reqId," +
-        "async: true," +
-        "dataType: 'html'," +
-        "error: function() {" +
-        "discussXhr2 = null;" +
-        "if(!discussPolling) return;" +
-        "location.reload();" +
-        "}," +
-        "success: function(data) {" +
-        "discussXhr2 = null;" +
-        "if(!discussPolling) return;" +
-        "discussLastObserveTime = Date.now();" +
-        "var dataObj = $(data);" +
-        "dataObj.find(\"time\").each(function () {" +
-        "var format = $(this).attr(\"data-format\");" +
-        "var time = $(this).attr(\"datetime\");" +
-        "$(this).text(formatDate(new Date(time), format));" +
-        "});" +
-        "dataObj.each(function() {" +
-        "var thisObj = $(this);" +
-        "var targetObj = $('#res-container div.res-loading[data-id=\"' + thisObj.data('id') + '\"]');" +
-        "targetObj.after(thisObj);" +
-        "targetObj.remove();" +
-        "});" +
-        "}" +
-        "});" +
-        "};";
-      if (!document.querySelector('#namufix-modify-discuss-fetch-script')) {
+      function doLoadUnvisibleReses() {
         var scriptTag = document.createElement("script");
-        scriptTag.id = "namufix-modify-discuss-fetch-script"
-        scriptTag.innerHTML = modifyFetchFuncScript;
+        scriptTag.innerHTML = 'function nfformattime(){$("time[data-nf-format-this]").each(function(){var format = $(this).attr("data-format");var time = $(this).attr("datetime");$(this).text(formatDate(new Date(time), format));});}';
         document.body.appendChild(scriptTag);
+          var allUnlockedReses = document.querySelectorAll('#res-container div.res-loading[data-locked="false"]');
+        if (allUnlockedReses.length == 0) {
+            return;
+        }
+        for(var i = 0; i < allUnlockedReses.length; i++) {
+            allUnlockedReses[i].setAttribute('data-locked', 'true');
+        }
+        var reqId = parseInt(allUnlockedReses[0].dataset.id),
+            lastReqId = parseInt(allUnlockedReses[allUnlockedReses.length - 1].dataset.id);
+          console.log('starting to get responses : ' + reqId + ' to ' + lastReqId);
+          for(console.log('starting loadUnvisibleReses loop'); reqId <= lastReqId; reqId += 30) {
+              console.log('requesting reses, statring from' + reqId);
+              GM_xmlhttpRequest({
+                  method: "GET",
+                  url: "https://namu.wiki/thread/" + ENV.topicNo + "/" +reqId,
+                  onload: function(res) {
+                      console.log('got response, starting from ' + reqId);
+                      var parser = new DOMParser();
+                      var doc = parser.parseFromString(res.responseText, "text/html");
+                      var timeTags = doc.querySelectorAll('time');
+                      var resTags = doc.querySelectorAll('.res-wrapper');
+                      for(var i = 0; i < timeTags.length; i++)
+                          timeTags[i].dataset.nfFormatThis = "true";
+                      for (var i = 0; i <resTags.length; i++) {
+                          var resTag = resTags[i];
+                          var targetTag = document.querySelector('#res-container div.res-loading[data-id="' + resTag.dataset.id + '"]');
+                          if(targetTag == null) continue;
+                          targetTag.parentNode.insertBefore(resTag, targetTag.nextSibling);
+                          targetTag.parentNode.removeChild(targetTag);
+                      }
+                      var scriptTagId = 'nf-temp-s' + Date.now() + reqId;
+                      var scriptTag = document.createElement('script');
+                      scriptTag.id = scriptTagId;
+                      scriptTag.innerHTML = 'nfformattime(); var thisTag = document.querySelector("#' + scriptTagId + '"); thisTag.parentNode.removeChild(thisTag);';
+                      document.body.appendChild(scriptTag);
+                  }
+              });
+          }
       }
+      setTimeout(doLoadUnvisibleReses, 600);
     }
 
     // 아이덴티콘 설정들과 변수들
