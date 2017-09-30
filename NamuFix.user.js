@@ -124,7 +124,7 @@ GM_xmlhttpRequest({
           '설치 후 새로고침을 해야 적용됩니다.<br>버그 신고 및 건의는 <a href="https://github.com/LiteHell/NamuFix/issues">이슈 트래커</a>에서 해주시면 감사하겠습니다.';
         element.querySelector('#changeLog').innerHTML = obj.body;
       });
-
+      win.button('닫기', win.close);
       win.button('새로고침', function () {
         location.reload();
       });
