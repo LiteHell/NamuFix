@@ -6,7 +6,7 @@
 // @include     http://namu.wiki/*
 // @include     https://namu.wiki/*
 // @include     http://issue.namu.wiki/*
-// @version     171001.2
+// @version     171001.3
 // @author      LiteHell
 // @downloadURL https://raw.githubusercontent.com/LiteHell/NamuFix/master/NamuFix.user.js
 // @require     https://cdn.rawgit.com/LiteHell/NamuFix/3bea33e76808ba9765f39135c17bfa46972131ac/mascott_pics.js
@@ -242,7 +242,7 @@ function whoisPopup(ip) {
   win.content(function (container) {
     container.innerHTML = '조회중입니다. 잠시만 기다려주세요...';
     getIpWhois(ip, function (result) {
-      if (result.success) {
+      if (result.success && !result.raw) {
         var whoisObj = result.result;
         var currentView = 'table';
         container.innerHTML = '<p>NamuFix 서버를 통해 KISA WHOIS를 조회했습니다. 결과는 다음과 같습니다.(<a href="#" class="switchViewType">JSON 형식으로 보기</a>)</p><div class="whois-content"><table></table></div>';
@@ -354,6 +354,9 @@ function whoisPopup(ip) {
           }
         })
         useTableView();
+      } else if(result.success && result.raw) {
+        container.innerHTML = '<p>NamuFix 서버에서 다음과 같은 WHOIS 결과를 얻었습니다.</p><textarea readonly style="width: 50vw; height: 600px; max-height: 80vh;"></textarea>';
+        container.querySelector('textarea').value = result.result;
       } else if (result.error.namufix) {
         alert('NamuFix 서버측에서 오류가 발생했습니다.\n\n메세지 : ' + result.error.message + '\n오류 코드 : ' + result.error.code);
         win.close();
