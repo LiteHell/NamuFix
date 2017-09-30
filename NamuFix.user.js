@@ -1665,44 +1665,44 @@ function mainFunc() {
         var scriptTag = document.createElement("script");
         scriptTag.innerHTML = 'function nfformattime(){$("time[data-nf-format-this]").each(function(){var format = $(this).attr("data-format");var time = $(this).attr("datetime");$(this).text(formatDate(new Date(time), format));});}';
         document.body.appendChild(scriptTag);
-          var allUnlockedReses = document.querySelectorAll('#res-container div.res-loading[data-locked="false"]');
+        var allUnlockedReses = document.querySelectorAll('#res-container div.res-loading[data-locked="false"]');
         if (allUnlockedReses.length == 0) {
-            return;
+          return;
         }
-        for(var i = 0; i < allUnlockedReses.length; i++) {
-            allUnlockedReses[i].setAttribute('data-locked', 'true');
+        for (var i = 0; i < allUnlockedReses.length; i++) {
+          allUnlockedReses[i].setAttribute('data-locked', 'true');
         }
         var reqId = parseInt(allUnlockedReses[0].dataset.id),
-            lastReqId = parseInt(allUnlockedReses[allUnlockedReses.length - 1].dataset.id);
-          console.log('starting to get responses : ' + reqId + ' to ' + lastReqId);
-          for(console.log('starting loadUnvisibleReses loop'); reqId <= lastReqId; reqId += 30) {
-              console.log('requesting reses, statring from' + reqId);
-              GM_xmlhttpRequest({
-                  method: "GET",
-                  url: "https://namu.wiki/thread/" + ENV.topicNo + "/" +reqId,
-                  onload: function(res) {
-                      console.log('got response, starting from ' + reqId);
-                      var parser = new DOMParser();
-                      var doc = parser.parseFromString(res.responseText, "text/html");
-                      var timeTags = doc.querySelectorAll('time');
-                      var resTags = doc.querySelectorAll('.res-wrapper');
-                      for(var i = 0; i < timeTags.length; i++)
-                          timeTags[i].dataset.nfFormatThis = "true";
-                      for (var i = 0; i <resTags.length; i++) {
-                          var resTag = resTags[i];
-                          var targetTag = document.querySelector('#res-container div.res-loading[data-id="' + resTag.dataset.id + '"]');
-                          if(targetTag == null) continue;
-                          targetTag.parentNode.insertBefore(resTag, targetTag.nextSibling);
-                          targetTag.parentNode.removeChild(targetTag);
-                      }
-                      var scriptTagId = 'nf-temp-s' + Date.now() + reqId;
-                      var scriptTag = document.createElement('script');
-                      scriptTag.id = scriptTagId;
-                      scriptTag.innerHTML = 'nfformattime(); var thisTag = document.querySelector("#' + scriptTagId + '"); thisTag.parentNode.removeChild(thisTag);';
-                      document.body.appendChild(scriptTag);
-                  }
-              });
-          }
+          lastReqId = parseInt(allUnlockedReses[allUnlockedReses.length - 1].dataset.id);
+        console.log('starting to get responses : ' + reqId + ' to ' + lastReqId);
+        for (console.log('starting loadUnvisibleReses loop'); reqId <= lastReqId; reqId += 30) {
+          console.log('requesting reses, statring from' + reqId);
+          GM_xmlhttpRequest({
+            method: "GET",
+            url: "https://namu.wiki/thread/" + ENV.topicNo + "/" + reqId,
+            onload: function (res) {
+              console.log('got response, starting from ' + reqId);
+              var parser = new DOMParser();
+              var doc = parser.parseFromString(res.responseText, "text/html");
+              var timeTags = doc.querySelectorAll('time');
+              var resTags = doc.querySelectorAll('.res-wrapper');
+              for (var i = 0; i < timeTags.length; i++)
+                timeTags[i].dataset.nfFormatThis = "true";
+              for (var i = 0; i < resTags.length; i++) {
+                var resTag = resTags[i];
+                var targetTag = document.querySelector('#res-container div.res-loading[data-id="' + resTag.dataset.id + '"]');
+                if (targetTag == null) continue;
+                targetTag.parentNode.insertBefore(resTag, targetTag.nextSibling);
+                targetTag.parentNode.removeChild(targetTag);
+              }
+              var scriptTagId = 'nf-temp-s' + Date.now() + reqId;
+              var scriptTag = document.createElement('script');
+              scriptTag.id = scriptTagId;
+              scriptTag.innerHTML = 'nfformattime(); var thisTag = document.querySelector("#' + scriptTagId + '"); thisTag.parentNode.removeChild(thisTag);';
+              document.body.appendChild(scriptTag);
+            }
+          });
+        }
       }
       setTimeout(doLoadUnvisibleReses, 600);
     }
