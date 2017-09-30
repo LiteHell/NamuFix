@@ -2237,14 +2237,20 @@ function mainFunc() {
     if (typeof p !== 'undefined') insertBeforeTable(p);
   } else if (ENV.IsDiff) {
     setTimeout(function () {
-      var diffLinksHtml = '<a href="/diff/{0}?oldrev={1}&rev={2}">&lt;-- r{1} vs r{2}</a> r{2} vs r{3} <a href="/diff/{0}?oldrev={3}&rev={4}">r{3} vs r{4} --&gt;</a>'.format(
+      var diffLinksHtml = ('<nav>' +
+        '<ul class="pagination">' +
+        '<li class="page-item"><a href="/diff/{0}?oldrev={1}&rev={2}">&lt;-- r{1} vs r{2}</a></li>' +
+        '<li class="page-item"><a href="#" style="color: black; text-deocration: none;">r{2} vs r{3}</a></li>' +
+        '<li class="page-item"><a href="/diff/{0}?oldrev={3}&rev={4}">r{3} vs r{4} --&gt;</a></li>' +
+        '</ul>' +
+        '</nav>').format(
         ENV.docTitle, ENV.beforeRev - 1, ENV.beforeRev, ENV.afterRev, ENV.afterRev + 1
       );
-      var pTag = document.createElement("p");
+      var divTag = document.createElement("div");
       var articleTag = document.querySelector('article');
       if (articleTag == null) return;
-      pTag.innerHTML = diffLinksHtml;
-      articleTag.insertBefore(pTag, articleTag.firstChild);
+      divTag.innerHTML = diffLinksHtml;
+      articleTag.insertBefore(divTag, articleTag.querySelector('article h1').nextSibling);
     }, 500);
   }
 }
@@ -2339,7 +2345,7 @@ addItemToMemberMenu("NamuFix 설정", function (evt) {
     win.close();
   });
 });
-addItemToMemberMenu('NamuFix 이슈트래커', function (evt){
+addItemToMemberMenu('NamuFix 이슈트래커', function (evt) {
   evt.preventDefault();
 
   GM_openInTab("https://github.com/LiteHell/NamuFix/issues");
