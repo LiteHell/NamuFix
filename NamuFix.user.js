@@ -6,7 +6,7 @@
 // @include     http://namu.wiki/*
 // @include     https://namu.wiki/*
 // @include     http://issue.namu.wiki/*
-// @version     171001.0
+// @version     171001.1
 // @author      LiteHell
 // @downloadURL https://raw.githubusercontent.com/LiteHell/NamuFix/master/NamuFix.user.js
 // @require     https://cdn.rawgit.com/LiteHell/NamuFix/3bea33e76808ba9765f39135c17bfa46972131ac/mascott_pics.js
@@ -794,10 +794,11 @@ function mainFunc() {
   ENV.Discussing = /^https?:\/\/(?:no-ssl\.|)namu\.wiki\/thread\/([^#]+?)/.test(location.href);
   ENV.IsDocument = /^https?:\/\/(?:no-ssl\.|)namu\.wiki\/w\/(.+)/.test(location.href); //&& document.querySelector('p.wiki-edit-date');
   ENV.IsSettings = /^https?:\/\/(?:no-ssl\.|)namu\.wiki\/settings/.test(location.href);
-  ENV.IsUserPage = /^https?:\/\/(?:no-ssl\.|)namu\.wiki\/contribution\/(?:author|ip)\/.+\/(?:document|discuss)/.test(location.href);
+  ENV.IsUserContribsPage = /^https?:\/\/(?:no-ssl\.|)namu\.wiki\/contribution\/(?:author|ip)\/.+\/(?:document|discuss)/.test(location.href);
   ENV.IsUploadPage = /^https?:\/\/(?:no-ssl\.|)namu\.wiki\/Upload$/.test(location.href);
   ENV.IsDiff = /^https?:\/\/(?:no-ssl\.|)namu\.wiki\/diff\/.+/.test(location.href);
   ENV.IsLoggedIn = document.querySelectorAll('img.user-img').length == 1;
+  ENV.IsSearch = location.pathname.indexOf('/search/') == 0;
   if (ENV.IsLoggedIn) {
     ENV.UserName = document.querySelector('div.user-info > div.user-info > div:first-child').textContent.trim();
   }
@@ -815,6 +816,9 @@ function mainFunc() {
     //ENV.docTitle = /diff\/(.+?)\?/.exec(location.href)[1];
     ENV.beforeRev = Number(/[\&\?]oldrev=([0-9]+)/.exec(location.href)[1]);
     ENV.afterRev = Number(/[\&\?]rev=([0-9]+)/.exec(location.href)[1]);
+  }
+  if (ENV.IsSearch) {
+    ENV.SearchQuery = decodeURIComponent(location.pathname.substring(8));
   }
   if (nOu(ENV.section))
     ENV.section = -2;
@@ -1717,6 +1721,16 @@ function mainFunc() {
       }
     }
   } else if (ENV.IsDocument) {
+    console.log(ENV.docTitle);
+    if(ENV.docTitle.trim().indexOf('기여:') == 0) {
+      var ipPattern = /^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$/
+      var target = ENV.docTitle.trim().substring(3).trim();
+      if(ipPattern.test(target)) {
+        location.assign('/contribution/ip/' + target + '/document');
+      } else {
+        location.assign('/contribution/author/' + target + '/document');
+      }
+    }
     // 버튼 추가 함수
     function addButton(text, onclick) {
       var aTag = document.createElement("a");
@@ -2174,7 +2188,7 @@ function mainFunc() {
         GM_addStyle('.res .r-body del, .res .r-body del a {color: transparent; background: transparent;} .res .r-body del {border: dotted 1px red;}');
         break;
     }
-  } else if (ENV.IsUserPage) {
+  } else if (ENV.IsUserContribsPage) {
     function insertBeforeTable(element) {
       var bread = document.querySelector("article > ol.breadcrumb.link-nav");
       bread.parentNode.insertBefore(element, bread);
@@ -2416,6 +2430,16 @@ function mainFunc() {
       divTag.innerHTML = diffLinksHtml;
       articleTag.insertBefore(divTag, articleTag.querySelector('article h1').nextSibling);
     }, 500);
+  } else if (ENV.IsSearch) {
+    if(ENV.SearchQuery.indexOf('기여:') == 0) {
+      var ipPattern = /^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$/
+      var target = ENV.SearchQuery.substring(6).trim();
+      if(ipPattern.test(target)) {
+        location.pathname = '/contribution/ip/' + target + '/document';
+      } else {
+        location.pathname = '/contribution/author/' + target + '/document';
+      }
+    }
   }
 }
 
