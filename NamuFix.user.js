@@ -2242,7 +2242,7 @@ function mainFunc() {
       );
       var pTag = document.createElement("p");
       var articleTag = document.querySelector('article');
-      if(articleTag == null) return;
+      if (articleTag == null) return;
       pTag.innerHTML = diffLinksHtml;
       articleTag.insertBefore(pTag, articleTag.firstChild);
     }, 500);
