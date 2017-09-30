@@ -6,7 +6,7 @@
 // @include     http://namu.wiki/*
 // @include     https://namu.wiki/*
 // @include     http://issue.namu.wiki/*
-// @version     170929.0
+// @version     170930.0
 // @author      LiteHell
 // @downloadURL https://raw.githubusercontent.com/LiteHell/NamuFix/master/NamuFix.user.js
 // @require     https://cdn.rawgit.com/LiteHell/NamuFix/3bea33e76808ba9765f39135c17bfa46972131ac/mascott_pics.js
@@ -2237,17 +2237,14 @@ function mainFunc() {
     if (typeof p !== 'undefined') insertBeforeTable(p);
   } else if (ENV.IsDiff) {
     setTimeout(function () {
-      try {
-        var diffTitle = document.querySelector('#diffoutput thead th.texttitle');
-        if (diffTitle == null) return;
-        var baseUri = ENV.IsSSL ? "https://namu.wiki" : "http://no-ssl.namu.wiki";
-        var newDifftitle = '<span style="font-weight:lighter;"><a href="{0}/diff/{1}?oldrev={2}&rev={3}">(r{2} vs r{3})</a></span> <a href="{0}/w/{1}?rev={3}" title="r{3} 버전 보기">r{3}</a> vs. <a href="{0}/w/{1}?rev={4}" title="r{4} 버전 보기">r{4}</a> <span style="font-weight:lighter;"><a href="{0}/diff/{1}?oldrev={4}&rev={5}">(r{4} vs r{5})</a></span> <span style="font-weight: lighter;"><a href="{0}/history/{1}">(이 문서의 역사)</a></span>'.format(
-          baseUri /*{0}*/ , ENV.docTitle /*{1}*/ , ENV.beforeRev - 1 /*{2}*/ , ENV.beforeRev /*{3}*/ , ENV.afterRev /*{4}*/ , ENV.afterRev + 1 /*{5}*/
-        );
-        diffTitle.innerHTML = newDifftitle;
-      } catch (err) {
-        alert(err.message + '\n' + err.stack);
-      }
+      var diffLinksHtml = '<a href="/diff/{0}?oldrev={1}&rev={2}">&lt;-- r{1} vs r{2}</a> r{2} vs r{3} <a href="/diff/{0}?oldrev={3}&rev={4}">r{3} vs r{4} --&gt;</a>'.format(
+        ENV.docTitle, ENV.beforeRev - 1, ENV.beforeRev, ENV.afterRev, ENV.afterRev + 1
+      );
+      var pTag = document.createElement("p");
+      var articleTag = document.querySelector('article');
+      if(articleTag == null) return;
+      pTag.innerHTML = diffLinksHtml;
+      articleTag.insertBefore(pTag, articleTag.firstChild);
     }, 500);
   }
 }
