@@ -2433,7 +2433,7 @@ function mainFunc() {
   } else if (ENV.IsSearch) {
     if(ENV.SearchQuery.indexOf('기여:') == 0) {
       var ipPattern = /^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$/
-      var target = ENV.SearchQuery.substring(6).trim();
+      var target = ENV.SearchQuery.substring(3).trim();
       if(ipPattern.test(target)) {
         location.pathname = '/contribution/ip/' + target + '/document';
       } else {
