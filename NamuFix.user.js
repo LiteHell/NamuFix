@@ -32,6 +32,7 @@
 // @connect     archive.is
 // @connect     www.vpngate.net
 // @grant       GM_addStyle
+// @grant       GM_openInTab
 // @grant       GM_xmlhttpRequest
 // @grant       GM_getValue
 // @grant       GM_setValue
@@ -2338,6 +2339,11 @@ addItemToMemberMenu("NamuFix 설정", function (evt) {
     win.close();
   });
 });
+addItemToMemberMenu('NamuFix 이슈트래커', function (evt){
+  evt.preventDefault();
+
+  GM_openInTab("https://github.com/LiteHell/NamuFix/issues");
+});
 addItemToMemberMenu("Imgur 이미지 삭제 주소들", function (evt) {
   evt.preventDefault();
 
@@ -2398,7 +2404,6 @@ addItemToMemberMenu('설정 백업/복원', function (evt) {
     alert('취소됨.');
   }
 })
-
 mainFunc();
 listenPJAX(mainFunc);
 
