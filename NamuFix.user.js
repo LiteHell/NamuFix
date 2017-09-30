@@ -124,7 +124,6 @@ GM_xmlhttpRequest({
         element.querySelector('#changeLog').innerHTML = obj.body;
       });
 
-      win.button('닫기', win.close);
       win.button('새로고침', function () {
         location.reload();
       });
