@@ -789,13 +789,13 @@ function mainFunc() {
   // 환경 감지
   var ENV = {};
   ENV.IsSSL = /^https/.test(location.href);
-  ENV.IsEditing = location.pathname.toLower().indexOf('/edit/') == 0;
-  ENV.Discussing =  location.pathname.toLower().indexOf('/thread/') == 0;
-  ENV.IsDocument =  location.pathname.toLower().indexOf('/w/') == 0; //&& document.querySelector('p.wiki-edit-date');
-  ENV.IsSettings =  location.pathname.toLower().indexOf('/settings/') == 0;;
+  ENV.IsEditing = location.pathname.toLowerCase().indexOf('/edit/') == 0;
+  ENV.Discussing =  location.pathname.toLowerCase().indexOf('/thread/') == 0;
+  ENV.IsDocument =  location.pathname.toLowerCase().indexOf('/w/') == 0; //&& document.querySelector('p.wiki-edit-date');
+  ENV.IsSettings =  location.pathname.toLowerCase().indexOf('/settings/') == 0;;
   ENV.IsUserContribsPage = /^\/contribution\/(?:author|ip)\/.+\/(?:document|discuss)/.test(location.pathname);
-  ENV.IsUploadPage = location.pathname.toLower().indexOf('/upload/') == 0;
-  ENV.IsDiff = location.pathname.toLower().indexOf('/diff/') == 0;
+  ENV.IsUploadPage = location.pathname.toLowerCase().indexOf('/upload/') == 0;
+  ENV.IsDiff = location.pathname.toLowerCase().indexOf('/diff/') == 0;
   ENV.IsLoggedIn = document.querySelectorAll('img.user-img').length == 1;
   ENV.IsSearch = location.pathname.indexOf('/search/') == 0;
   if (ENV.IsLoggedIn) {
