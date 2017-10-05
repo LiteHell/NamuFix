@@ -1294,6 +1294,45 @@ function mainFunc() {
       insertablesDropDown.button('<span class="ion-ios-play-outline" style="color: Aqua;"></span>', '다음 TV팟 동영상').click(DaumTVPotMarkUp);
       insertablesDropDown.button('<span class="ion-images" style="color: #008275;"></span>', '나무위키 이미지 업로드').click(namuUpload);
 
+      Designer.button('<span class="ion-ios-grid-view"></span>').hoverMessage('간단한 표 만들기').click(function(){
+        var numbers = prompt('행과 열을 행숫x열숫 형태로 입력해주세요. 예시: 2x3').split('x').map(v => parseInt(v.trim()));
+        var win = TooSimplePopup();
+        win.title('간단한 표 만들기');
+        win.content(function (container) {
+          // cell: align( left=(, center=:, right=) ), rowspan (^|0-9 |0-9 v|0-9), colspan bgcolor, width, height
+          // row: rowbgcolor
+          // table: align, bgcolor, bordercolor, width
+          container.innerHTML = '<strong>현재 실험중인 기능입니다. 불안정할 수 있습니다.</strong><br>표를 만듭니다.... 공대 감성을 듬뿍 담아 디자인했습니다.<br>칸 안에는 나무마크 위키텍스트를 입력하면 됩니다.<br><br>' +
+          '<style>#target-table td {border: 1px solid #dddddd; padding: 5px 10px} #target-table tr {background-color: #f5f5f5 border-collapse: collapse;}</style>' +
+          '<table id="target-table"></table>' +
+          '<div style="display: none;"><button id="disableShortcut" onclick="window.namu.disableShortcutKey=true;"></button><button id="enableShortcut" onclick="window.namu.disableShortcutKey=false;"></button></div>';
+          var table = container.querySelector('table');
+          document.querySelector('#disableShortcut').click();
+          for(var i = 0; i < numbers[1]; i++) {
+            var row = document.createElement("tr");
+            for(var j = 0; j < numbers[0]; j++)
+              row.innerHTML += '<td contenteditable="true">Enter wikitext here</td>';
+            table.appendChild(row);
+          }
+          win.button('닫기', function(){ document.querySelector('#enableShortcut').click(); win.close();});
+          win.button('삽입', function(){
+            var rows = table.querySelectorAll('tr');
+            var result = '';
+            for(var i = 0; i < rows.length; i++) {
+              result += '||';
+              var cols = rows[i].querySelectorAll('td');
+              for(var j = 0; j < cols.length; j++) {
+                result += cols[j].innerHTML + '||';
+              }
+              result += '\n';
+            }
+            TextProc.selectionText(TextProc.selectionText() + '\n' + result);
+            document.querySelector('#enableShortcut').click();
+            win.close();
+          });
+        });
+      })
+
       Designer.button('<span class="ion-ios-timer-outline"></span>').hoverMessage('아카이브하고 외부링크 삽입').click(function () {
         var win = TooSimplePopup();
         win.title("아카이브 한후 외부링크 삽입");
