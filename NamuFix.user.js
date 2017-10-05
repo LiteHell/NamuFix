@@ -1,11 +1,10 @@
 // ==UserScript==
 // @name        NamuFix
 // @namespace   http://litehell.info/
-// @description 나무위키 편집 인터페이스 등을 개선합니다.
-// @include     http://no-ssl.namu.wiki/*
-// @include     http://namu.wiki/*
+// @description 나무위키 등 더시드 사용 위키의 편집 인터페이스 등을 개선합니다.
 // @include     https://namu.wiki/*
-// @include     http://issue.namu.wiki/*
+// @include     https://theseed.io/*
+// @include     https://awiki.theseed.io/*
 // @version     171001.3
 // @author      LiteHell
 // @downloadURL https://raw.githubusercontent.com/LiteHell/NamuFix/master/NamuFix.user.js
@@ -65,9 +64,6 @@ WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 */
-if (/^http:\/\/issue\.namu\.wiki/.test(location.href)) {
-  location.href = location.href.replace(/^http:\/\//, 'https://');
-}
 
 function emReset() {
   if (confirm('정말로 초기화하시겠습니까? 초기화하면 임시저장, 설정, 템플릿 목록.... 등등 모든 것이 초기화됩니다.\n' +
@@ -517,7 +513,7 @@ function getVPNGateIPList(callback) {
 function getRAW(title, onfound, onnotfound) {
   GM_xmlhttpRequest({
     method: 'GET',
-    url: 'https://namu.wiki/raw/' + title,
+    url: 'https://' + location.host + '/raw/' + title,
     onload: function (res) {
       if (res.status == 404) {
         onnotfound(title);
@@ -793,13 +789,13 @@ function mainFunc() {
   // 환경 감지
   var ENV = {};
   ENV.IsSSL = /^https/.test(location.href);
-  ENV.IsEditing = /^https?:\/\/(?:no-ssl\.|)namu\.wiki\/edit\/(.+?)/.test(location.href);
-  ENV.Discussing = /^https?:\/\/(?:no-ssl\.|)namu\.wiki\/thread\/([^#]+?)/.test(location.href);
-  ENV.IsDocument = /^https?:\/\/(?:no-ssl\.|)namu\.wiki\/w\/(.+)/.test(location.href); //&& document.querySelector('p.wiki-edit-date');
-  ENV.IsSettings = /^https?:\/\/(?:no-ssl\.|)namu\.wiki\/settings/.test(location.href);
-  ENV.IsUserContribsPage = /^https?:\/\/(?:no-ssl\.|)namu\.wiki\/contribution\/(?:author|ip)\/.+\/(?:document|discuss)/.test(location.href);
-  ENV.IsUploadPage = /^https?:\/\/(?:no-ssl\.|)namu\.wiki\/Upload$/.test(location.href);
-  ENV.IsDiff = /^https?:\/\/(?:no-ssl\.|)namu\.wiki\/diff\/.+/.test(location.href);
+  ENV.IsEditing = location.pathname.toLower().indexOf('/edit/') == 0;
+  ENV.Discussing =  location.pathname.toLower().indexOf('/thread/') == 0;
+  ENV.IsDocument =  location.pathname.toLower().indexOf('/w/') == 0; //&& document.querySelector('p.wiki-edit-date');
+  ENV.IsSettings =  location.pathname.toLower().indexOf('/settings/') == 0;;
+  ENV.IsUserContribsPage = /^\/contribution\/(?:author|ip)\/.+\/(?:document|discuss)/.test(location.pathname);
+  ENV.IsUploadPage = location.pathname.toLower().indexOf('/upload/') == 0;
+  ENV.IsDiff = location.pathname.toLower().indexOf('/diff/') == 0;
   ENV.IsLoggedIn = document.querySelectorAll('img.user-img').length == 1;
   ENV.IsSearch = location.pathname.indexOf('/search/') == 0;
   if (ENV.IsLoggedIn) {
@@ -812,7 +808,7 @@ function mainFunc() {
   else if (document.querySelector("h1.title"))
     ENV.docTitle = document.querySelector("h1.title").innerHTML;
   if (ENV.Discussing) {
-    ENV.topicNo = /^https?:\/\/(?:no-ssl\.|)namu\.wiki\/thread\/([^#]+)/.exec(location.href)[1];
+    ENV.topicNo = /^\/thread\/([^#]+)/.exec(location.pathname)[1];
     ENV.topicTitle = document.querySelector('article > h2').innerHTML;
   }
   if (ENV.IsDiff) {
@@ -874,7 +870,7 @@ function mainFunc() {
         tabs.tab("비교").click(function () {
           hideAndShow(2);
           diffTab.innerHTML = '<span style="font-size: 15px;">처리중입니다...</span>';
-          var editUrl = 'https://namu.wiki/edit/'.concat(ENV.docTitle, ENV.section != -2 ? '?section='.concat(ENV.section) : '');
+          var editUrl = 'https://' + location.host + '/edit/'.concat(ENV.docTitle, ENV.section != -2 ? '?section='.concat(ENV.section) : '');
           GM_xmlhttpRequest({
             url: editUrl,
             method: "GET",
@@ -1095,9 +1091,9 @@ function mainFunc() {
               query.append('identifier', (ENV.IsLoggedIn ? "m" : "i") + ":" + ENV.UserName);
               GM_xmlhttpRequest({
                 method: 'POST',
-                url: 'https://namu.wiki/Upload',
+                url: 'https://' + location.host + '/Upload',
                 headers: {
-                  "Referer": 'https://namu.wiki/Upload'
+                  "Referer": 'https://' + location.host + '/Upload'
                 },
                 data: query,
                 onload: function (res) {
@@ -1615,7 +1611,7 @@ function mainFunc() {
           return function () {
             GM_xmlhttpRequest({
               method: 'GET',
-              url: 'https://namu.wiki/raw/' + na,
+              url: 'https://' + location.host + '/raw/' + na,
               onload: function (res) {
                 if (res.status == 404) {
                   alert('존재하지 않는 템플릿/틀입니다.');
@@ -1751,7 +1747,7 @@ function mainFunc() {
 
       var redirectFrom = prompt('어느 문서에서 지금 이문서로 리다이렉트?');
       if (redirectFrom != null && redirectFrom.trim().length != 0)
-        location.href = 'https://namu.wiki/edit/' + redirectFrom + '?redirectTo=' + ENV.docTitle;
+        location.href = 'https://' + location.host + '/edit/' + redirectFrom + '?redirectTo=' + ENV.docTitle;
     });
 
     // 리다이렉트로 왔을 시 그 라디이렉트 문서 편집/삭제 링크 추가
@@ -1847,7 +1843,7 @@ function mainFunc() {
           console.log('requesting reses, statring from' + reqId);
           GM_xmlhttpRequest({
             method: "GET",
-            url: "https://namu.wiki/thread/" + ENV.topicNo + "/" + reqId,
+            url: "https://" + location.host + "/thread/" + ENV.topicNo + "/" + reqId,
             onload: function (res) {
               console.log('got response, starting from ' + reqId);
               var parser = new DOMParser();
@@ -2003,7 +1999,7 @@ function mainFunc() {
 
     // 아이덴티콘
     function identiconLoop() {
-      if (/^https?:\/\/(?:no-ssl\.|)namu\.wiki\/discuss\/(.+?)/.test(location.href)) return;
+      if (/^\/discuss\/(.+?)/.test(location.pathname)) return;
       var messages = document.querySelectorAll('.res-wrapper:not(.res-loading) > .res:not([data-nfbeauty])');
       var colorHash = isThreadicLike ? new ColorHash({
         lightness: Number(SET.discussIdentiLightness),
@@ -2448,7 +2444,7 @@ function mainFunc() {
 
 // 아이덴티콘 버그 수정
 setInterval(function () {
-  if (!/^https?:\/\/(?:no-ssl\.|)namu\.wiki\/discuss\/(.+?)/.test(location.href)) {
+  if (!/^\/discuss\/(.+?)/.test(location.pathname)) {
     return;
   }
   var identicons = document.querySelectorAll('.nf-identicon');
