@@ -1038,7 +1038,11 @@ function mainFunc() {
       });
 
       // Insertable Media Functions
-      function namuUpload() {
+      function namuUpload(present_files, present_finisher) {
+        if(typeof present_files === 'undefined')
+          var present_files = null;
+        if(typeof present_finisher === 'undefined')
+          var present_finisher = function(){};
         function getCopyrightInfo(callback) {
           var win = TooSimplePopup();
           var contelem;
@@ -1066,7 +1070,7 @@ function mainFunc() {
           win.button("닫기", win.close);
         }
         getCopyrightInfo(function (docuText) {
-          getFile(function (files, finish) {
+          function getFileCallback (files, finish) {
             if (files.length < 0) {
               alert('선택된 파일이 없습니다');
               return finish();
@@ -1115,7 +1119,12 @@ function mainFunc() {
                 }
               })
             })
-          }, true);
+          }
+          if(present_files) {
+            getFileCallback(present_files, present_finisher);
+          } else {
+            getFile(getFileCallback, true);
+          }
         })
       }
 
@@ -1703,6 +1712,41 @@ function mainFunc() {
         }
         return false;
       });
+
+      // Support drag-drop file upload
+      // from https://developer.mozilla.org/en-US/docs/Web/API/HTML_Drag_and_Drop_API/File_drag_and_drop
+      // from https://stackoverflow.com/questions/7237436/how-to-listen-for-drag-and-drop-plain-text-in-textarea-with-jquery
+      txtarea.addEventListener('dragover', function(evt){
+        evt.preventDefault();
+      });
+      txtarea.addEventListener('dragend', function(evt) {
+        evt.preventDefault();
+      });
+      txtarea.addEventListener('dragenter', function(evt) {
+        evt.preventDefault();
+      });
+      txtarea.addEventListener('drop', function(evt){
+        evt.preventDefault();
+        var dt = evt.dataTransfer;
+        var files = [];
+        if (dt.items) {
+          for(var i = 0; i < dt.items.length; i++)
+            if (dt.items[i].kind == "file") {
+              var f = dt.items[i].getAsFile();
+              if(f.type.indexOf('image/') == 0)
+                files.push(f);
+            }
+        } else {
+          for(var i = 0; i < dt.files.length; i++) {
+            var f = dt.files[i];
+            if(f.type.indexOf('image/') == 0)
+              files.push(f);
+          }
+        }
+        if(files.length > 0) {
+          namuUpload(files, function(){});
+        }
+      })
 
       // Add NamuFix Div
       var oldTextarea = document.querySelector("textarea");
