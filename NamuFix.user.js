@@ -3,6 +3,7 @@
 // @namespace   http://litehell.info/
 // @description 나무위키 등 더시드 사용 위키의 편집 인터페이스 등을 개선합니다.
 // @include     https://namu.wiki/*
+// @include     https://no-ssl.namu.wiki/*
 // @include     https://awiki.theseed.io/*
 // @version     171001.3
 // @author      LiteHell
@@ -63,6 +64,9 @@ WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 */
+
+if(location.hostname == 'no-ssl.namu.wiki')
+  location.hostname = 'namu.wiki';
 
 function emReset() {
   if (confirm('정말로 초기화하시겠습니까? 초기화하면 임시저장, 설정, 템플릿 목록.... 등등 모든 것이 초기화됩니다.\n' +
