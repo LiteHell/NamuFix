@@ -1,0 +1,42 @@
+// ==UserScript==
+// @name        NamuFix
+// @namespace   http://litehell.info/
+// @description 나무위키 등 더시드 사용 위키의 편집 인터페이스 등을 개선합니다.
+// @include     https://namu.wiki/*
+// @include     https://no-ssl.namu.wiki/*
+// @include     https://awiki.theseed.io/*
+// @version     171006.0
+// @author      LiteHell
+// @downloadURL https://raw.githubusercontent.com/LiteHell/NamuFix/master/NamuFix.user.js
+// @require     https://cdn.rawgit.com/LiteHell/NamuFix/3bea33e76808ba9765f39135c17bfa46972131ac/mascott_pics.js
+// @require     https://cdn.rawgit.com/LiteHell/NamuFix/c7f7cf07933889a9d068a558dd90432109be6a95/engCountryNames.js
+// @require     https://cdn.rawgit.com/LiteHell/NamuFix/5326c9aada134f65bba171d12f5ca5d042fd4fca/korCountryNames.js
+// @require     https://cdn.rawgit.com/LiteHell/NamuFix/0ea78119c377402a10bbdfc33365c5195ce7fccc/FlexiColorPicker.js
+// @require     https://cdn.rawgit.com/Caligatio/jsSHA/v2.3.1/src/sha.js
+// @require     https://cdn.rawgit.com/zenozeng/color-hash/v1.0.3/dist/color-hash.js
+// @require     http://www.xarg.org/download/pnglib.js
+// @require     https://cdn.rawgit.com/stewartlord/identicon.js/7c4b4efdb7e2aba458eba14b24ba14e8e2bcdb2a/identicon.js
+// @require     https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.3.0/katex.min.js
+// @require     https://cdn.rawgit.com/LiteHell/TooSimplePopupLib/7f2a8a81f11f980c1dfa6b5b2213cd38b8bbde3c/TooSimplePopupLib.js
+// @require     https://cdn.rawgit.com/wkpark/jsdifflib/dc19d085db5ae71cdff990aac8351607fee4fd01/difflib.js
+// @require     https://cdn.rawgit.com/wkpark/jsdifflib/dc19d085db5ae71cdff990aac8351607fee4fd01/diffview.js
+// @connect     cdn.rawgit.com
+// @connect     cdnjs.cloudflare.com
+// @connect     api.github.com
+// @connect     ipinfo.io
+// @connect     wtfismyip.com
+// @connect     www.googleapis.com
+// @connect     web.archive.org
+// @connect     archive.is
+// @connect     www.vpngate.net
+// @connect     namufix.wikimasonry.org
+// @grant       GM_addStyle
+// @grant       GM_openInTab
+// @grant       GM_xmlhttpRequest
+// @grant       GM_getValue
+// @grant       GM_setValue
+// @grant       GM_deleteValue
+// @grant       GM_listValues
+// @grant       GM_info
+// @run-at      document-end
+// ==/UserScript==

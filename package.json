@@ -1,0 +1,36 @@
+{
+  "name": "namufix",
+  "version": "171006.0.0",
+  "description": "An useful userscript for namuwiki",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "webpack --config webpack.config.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/LiteHell/NamuFix.git"
+  },
+  "keywords": [
+    "namu",
+    "wiki",
+    "namuwiki",
+    "userscript"
+  ],
+  "author": "LiteHell",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/LiteHell/NamuFix/issues"
+  },
+  "homepage": "https://github.com/LiteHell/NamuFix#readme",
+  "devDependencies": {
+    "babel-loader": "^7.1.2",
+    "uglifyjs-webpack-plugin": "^0.4.6",
+    "url-loader": "^0.6.2",
+    "webpack": "^3.6.0"
+  },
+  "dependencies": {
+    "async": "^2.5.0",
+    "banner-webpack-plugin": "^0.2.3",
+    "jssha": "^2.3.1"
+  }
+}
