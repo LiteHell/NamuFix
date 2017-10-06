@@ -801,15 +801,22 @@ function mainFunc() {
   ENV.IsDiff = location.pathname.toLowerCase().indexOf('/diff/') == 0;
   ENV.IsLoggedIn = document.querySelectorAll('img.user-img').length == 1;
   ENV.IsSearch = location.pathname.indexOf('/search/') == 0;
+  ENV.IsEditingRequest = /^\/edit_request\/([0-9]+)\/edit/.test(location.pathname);
+  ENV.IsWritingRequest = /^\/new_edit_request\/.+/.test(location.pathname);
+  if (location.pathname.indexOf('/edit_request') == 0)
+    ENV.EditRequestNo = /^\/edit_request\/([0-9]+)/.exec(location.pathname);
   if (ENV.IsLoggedIn) {
     ENV.UserName = document.querySelector('div.user-info > div.user-info > div:first-child').textContent.trim();
   }
   if (document.querySelector("input[name=section]"))
     ENV.section = document.querySelector("input[name=section]").value;
-  if (document.querySelector("h1.title > a"))
+  if (ENV.IsWritingRequest)
+    ENV.docTitle = decodeURIComponent(location.pathname.substring(18));
+  else if (document.querySelector("h1.title > a"))
     ENV.docTitle = document.querySelector("h1.title > a").innerHTML;
   else if (document.querySelector("h1.title"))
     ENV.docTitle = document.querySelector("h1.title").innerHTML;
+  ENV.docTitle = ENV.docTitle.trim();
   if (ENV.Discussing) {
     ENV.topicNo = /^\/thread\/([^#]+)/.exec(location.pathname)[1];
     ENV.topicTitle = document.querySelector('article > h2').innerHTML;
@@ -837,10 +844,10 @@ function mainFunc() {
   // 설정 초기화
   INITSET();
 
-  if (ENV.IsEditing || ENV.Discussing) {
+  if (ENV.IsEditing || ENV.Discussing || ENV.IsEditingRequest || ENV.IsWritingRequest) {
     if (document.querySelectorAll("textarea").length == 1 && !document.querySelector("textarea").hasAttribute("readonly")) {
       var rootDiv = document.createElement("div");
-      if (ENV.IsEditing) {
+      if (ENV.IsEditing || ENV.IsEditingRequest || ENV.IsWritingRequest) {
         // 탭 추가
         var previewTab = document.createElement("div");
         var diffTab = document.createElement("div");
@@ -873,7 +880,9 @@ function mainFunc() {
         tabs.tab("비교").click(function () {
           hideAndShow(2);
           diffTab.innerHTML = '<span style="font-size: 15px;">처리중입니다...</span>';
-          var editUrl = 'https://' + location.host + '/edit/'.concat(ENV.docTitle, ENV.section != -2 ? '?section='.concat(ENV.section) : '');
+          var editUrl = 'https://' + location.host + (ENV.IsWritingRequest ? '/new_edit_request/' : '/edit/').concat(ENV.docTitle, ENV.section != -2 ? '?section='.concat(ENV.section) : '');
+          if(ENV.IsEditingRequest)
+            editUrl = location.href; // 귀찮음....
           GM_xmlhttpRequest({
             url: editUrl,
             method: "GET",
