@@ -65,7 +65,7 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 */
 
-if(location.hostname == 'no-ssl.namu.wiki')
+if (location.hostname == 'no-ssl.namu.wiki')
   location.hostname = 'namu.wiki';
 
 function emReset() {
@@ -204,11 +204,37 @@ function getIpInfo(ip, cb) {
     onload: function (res) {
       var resObj = JSON.parse(res.responseText);
       if (res.status === 200 || res.status === 304) {
-        if(/^AS[0-9]+ /.test(resObj.org)) {
+        if (/^AS[0-9]+ /.test(resObj.org)) {
           resObj.org = resObj.org.replace(/^AS[0-9]+ /, '');
         }
-        ipDictionary[ip] = resObj;
-        cb(resObj);
+        if (SET.ipInfoDefaultOrg != 'ipinfo.io') {
+          getIpWhois(ip, function (whoisRes) {
+            if (!whoisRes.success || whoisRes.raw) {
+              ipDictionary[ip] = resObj;
+              cb(resObj);
+              return;
+            }
+            var koreanISP = null, koreanUser = null;
+            if (whoisRes.result.korean && whoisRes.result.korean.ISP && whoisRes.result.korean.ISP.netinfo && whoisRes.result.korean.ISP.netinfo.orgName) {
+              koreanISP = whoisRes.result.korean.ISP.netinfo.orgName;
+            } else if (whoisRes.result.korean && whoisRes.result.korean.user && whoisRes.result.korean.user.netinfo && whoisRes.result.korean.user.netinfo.orgName) {
+              koreanUser = whoisRes.result.korean.user.netinfo.orgName;
+            }
+            if(SET.ipInfoDefaultOrg === 'KISAuser' && koreanUser !== null) {
+              resObj.org = koreanUser;
+            } else if(SET.ipInfoDefaultOrg === 'KISAISP' && koreanISP !== null) {
+              resObj.org = koreanISP;
+            } else if (SET.ipInfoDefaultOrg === 'KISAuserOrISP' && (koreanUser !== null || koreanISP !== null)) {
+              resObj.org = koreanUser !== null ? koreanUser : koreanISP;
+            }
+            ipDictionary[ip] = resObj;
+            cb(resObj);
+            return;
+          });
+        } else {
+          ipDictionary[ip] = resObj;
+          cb(resObj);
+        }
       } else {
         cb(null);
       }
@@ -356,7 +382,7 @@ function whoisPopup(ip) {
           }
         })
         useTableView();
-      } else if(result.success && result.raw) {
+      } else if (result.success && result.raw) {
         container.innerHTML = '<p>NamuFix 서버에서 다음과 같은 WHOIS 결과를 얻었습니다.</p><textarea readonly style="width: 50vw; height: 600px; max-height: 80vh;"></textarea>';
         container.querySelector('textarea').value = result.result;
       } else if (result.error.namufix) {
@@ -471,6 +497,8 @@ function INITSET() { // Storage INIT
     SET.ignoreNonSenkawaWarning = false;
   if (nOu(SET.loadUnvisibleReses))
     SET.loadUnvisibleReses = false;
+  if (nOu(SET.ipInfoDefaultOrg))
+    SET.ipInfoDefaultOrg = "ipinfo.io"; //ipinfo.io, KISAISP, KISAuser, KISAuserOrISP
   SET.save();
 }
 
@@ -796,9 +824,9 @@ function mainFunc() {
   var ENV = {};
   ENV.IsSSL = /^https/.test(location.href);
   ENV.IsEditing = location.pathname.toLowerCase().indexOf('/edit/') == 0;
-  ENV.Discussing =  location.pathname.toLowerCase().indexOf('/thread/') == 0;
-  ENV.IsDocument =  location.pathname.toLowerCase().indexOf('/w/') == 0; //&& document.querySelector('p.wiki-edit-date');
-  ENV.IsSettings =  location.pathname.toLowerCase().indexOf('/settings/') == 0;;
+  ENV.Discussing = location.pathname.toLowerCase().indexOf('/thread/') == 0;
+  ENV.IsDocument = location.pathname.toLowerCase().indexOf('/w/') == 0; //&& document.querySelector('p.wiki-edit-date');
+  ENV.IsSettings = location.pathname.toLowerCase().indexOf('/settings/') == 0;;
   ENV.IsUserContribsPage = /^\/contribution\/(?:author|ip)\/.+\/(?:document|discuss)/.test(location.pathname);
   ENV.IsUploadPage = location.pathname.toLowerCase().indexOf('/upload/') == 0;
   ENV.IsDiff = location.pathname.toLowerCase().indexOf('/diff/') == 0;
@@ -884,7 +912,7 @@ function mainFunc() {
           hideAndShow(2);
           diffTab.innerHTML = '<span style="font-size: 15px;">처리중입니다...</span>';
           var editUrl = 'https://' + location.host + (ENV.IsWritingRequest ? '/new_edit_request/' : '/edit/').concat(ENV.docTitle, ENV.section != -2 ? '?section='.concat(ENV.section) : '');
-          if(ENV.IsEditingRequest)
+          if (ENV.IsEditingRequest)
             editUrl = location.href; // 귀찮음....
           GM_xmlhttpRequest({
             url: editUrl,
@@ -1020,7 +1048,11 @@ function mainFunc() {
               sliderCo, pickerCo
             );
             color = hex;
-            var reversedColor = {r:255 - rgb.r, g:255 - rgb.g, b: 255 - rgb.b};
+            var reversedColor = {
+              r: 255 - rgb.r,
+              g: 255 - rgb.g,
+              b: 255 - rgb.b
+            };
             colorPreview.style.color = "rgb({0}, {1}, {2})".format(reversedColor.r, reversedColor.g, reversedColor.b);
             colorPreview.style.background = color;
             colorPreview.innerText = color;
@@ -1059,10 +1091,11 @@ function mainFunc() {
 
       // Insertable Media Functions
       function namuUpload(present_files, present_finisher) {
-        if(typeof present_files === 'undefined')
+        if (typeof present_files === 'undefined')
           var present_files = null;
-        if(typeof present_finisher === 'undefined')
-          var present_finisher = function(){};
+        if (typeof present_finisher === 'undefined')
+          var present_finisher = function () {};
+
         function getCopyrightInfo(callback) {
           var win = TooSimplePopup();
           var contelem;
@@ -1090,7 +1123,7 @@ function mainFunc() {
           win.button("닫기", win.close);
         }
         getCopyrightInfo(function (docuText) {
-          function getFileCallback (files, finish) {
+          function getFileCallback(files, finish) {
             if (files.length < 0) {
               alert('선택된 파일이 없습니다');
               return finish();
@@ -1140,7 +1173,7 @@ function mainFunc() {
               })
             })
           }
-          if(present_files) {
+          if (present_files) {
             getFileCallback(present_files, present_finisher);
           } else {
             getFile(getFileCallback, true);
@@ -1314,9 +1347,9 @@ function mainFunc() {
       insertablesDropDown.button('<span class="ion-ios-play-outline" style="color: Aqua;"></span>', '다음 TV팟 동영상').click(DaumTVPotMarkUp);
       insertablesDropDown.button('<span class="ion-images" style="color: #008275;"></span>', '나무위키 이미지 업로드').click(namuUpload);
 
-      Designer.button('<span class="ion-ios-grid-view"></span>').hoverMessage('간단한 표 만들기').click(function(){
+      Designer.button('<span class="ion-ios-grid-view"></span>').hoverMessage('간단한 표 만들기').click(function () {
         var numbers = prompt('행과 열을 행숫x열숫 형태로 입력해주세요. 예시: 2x3').split('x').map(v => parseInt(v.trim()));
-        if(numbers.length != 2) {
+        if (numbers.length != 2) {
           alert('입력이 올바르지 않습니다.');
           return;
         }
@@ -1327,25 +1360,28 @@ function mainFunc() {
           // row: rowbgcolor
           // table: align, bgcolor, bordercolor, width
           container.innerHTML = '<strong>현재 실험중인 기능입니다. 불안정할 수 있습니다.</strong><br>표를 만듭니다.... 공대 감성을 듬뿍 담아 디자인했습니다.<br>칸 안에는 나무마크 위키텍스트를 입력하면 됩니다.<br><br>' +
-          '<style>#target-table td {border: 1px solid #dddddd; padding: 5px 10px} #target-table tr {background-color: #f5f5f5 border-collapse: collapse;}</style>' +
-          '<table id="target-table"></table>' +
-          '<div style="display: none;"><button id="disableShortcut" onclick="window.namu.disableShortcutKey=true;"></button><button id="enableShortcut" onclick="window.namu.disableShortcutKey=false;"></button></div>';
+            '<style>#target-table td {border: 1px solid #dddddd; padding: 5px 10px} #target-table tr {background-color: #f5f5f5 border-collapse: collapse;}</style>' +
+            '<table id="target-table"></table>' +
+            '<div style="display: none;"><button id="disableShortcut" onclick="window.namu.disableShortcutKey=true;"></button><button id="enableShortcut" onclick="window.namu.disableShortcutKey=false;"></button></div>';
           var table = container.querySelector('table');
           document.querySelector('#disableShortcut').click();
-          for(var i = 0; i < numbers[1]; i++) {
+          for (var i = 0; i < numbers[1]; i++) {
             var row = document.createElement("tr");
-            for(var j = 0; j < numbers[0]; j++)
+            for (var j = 0; j < numbers[0]; j++)
               row.innerHTML += '<td contenteditable="true">Enter wikitext here</td>';
             table.appendChild(row);
           }
-          win.button('닫기', function(){ document.querySelector('#enableShortcut').click(); win.close();});
-          win.button('삽입', function(){
+          win.button('닫기', function () {
+            document.querySelector('#enableShortcut').click();
+            win.close();
+          });
+          win.button('삽입', function () {
             var rows = table.querySelectorAll('tr');
             var result = '';
-            for(var i = 0; i < rows.length; i++) {
+            for (var i = 0; i < rows.length; i++) {
               result += '||';
               var cols = rows[i].querySelectorAll('td');
-              for(var j = 0; j < cols.length; j++) {
+              for (var j = 0; j < cols.length; j++) {
                 result += cols[j].innerHTML + '||';
               }
               result += '\n';
@@ -1779,35 +1815,35 @@ function mainFunc() {
       // Support drag-drop file upload
       // from https://developer.mozilla.org/en-US/docs/Web/API/HTML_Drag_and_Drop_API/File_drag_and_drop
       // from https://stackoverflow.com/questions/7237436/how-to-listen-for-drag-and-drop-plain-text-in-textarea-with-jquery
-      txtarea.addEventListener('dragover', function(evt){
+      txtarea.addEventListener('dragover', function (evt) {
         evt.preventDefault();
       });
-      txtarea.addEventListener('dragend', function(evt) {
+      txtarea.addEventListener('dragend', function (evt) {
         evt.preventDefault();
       });
-      txtarea.addEventListener('dragenter', function(evt) {
+      txtarea.addEventListener('dragenter', function (evt) {
         evt.preventDefault();
       });
-      txtarea.addEventListener('drop', function(evt){
+      txtarea.addEventListener('drop', function (evt) {
         evt.preventDefault();
         var dt = evt.dataTransfer;
         var files = [];
         if (dt.items) {
-          for(var i = 0; i < dt.items.length; i++)
+          for (var i = 0; i < dt.items.length; i++)
             if (dt.items[i].kind == "file") {
               var f = dt.items[i].getAsFile();
-              if(f.type.indexOf('image/') == 0)
+              if (f.type.indexOf('image/') == 0)
                 files.push(f);
             }
         } else {
-          for(var i = 0; i < dt.files.length; i++) {
+          for (var i = 0; i < dt.files.length; i++) {
             var f = dt.files[i];
-            if(f.type.indexOf('image/') == 0)
+            if (f.type.indexOf('image/') == 0)
               files.push(f);
           }
         }
-        if(files.length > 0) {
-          namuUpload(files, function(){});
+        if (files.length > 0) {
+          namuUpload(files, function () {});
         }
       })
 
@@ -1831,10 +1867,10 @@ function mainFunc() {
     }
   } else if (ENV.IsDocument) {
     console.log(ENV.docTitle);
-    if(ENV.docTitle.trim().indexOf('기여:') == 0) {
+    if (ENV.docTitle.trim().indexOf('기여:') == 0) {
       var ipPattern = /^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$/
       var target = ENV.docTitle.trim().substring(3).trim();
-      if(ipPattern.test(target)) {
+      if (ipPattern.test(target)) {
         location.assign('/contribution/ip/' + target + '/document');
       } else {
         location.assign('/contribution/author/' + target + '/document');
@@ -2540,10 +2576,10 @@ function mainFunc() {
       articleTag.insertBefore(divTag, articleTag.querySelector('article h1').nextSibling);
     }, 500);
   } else if (ENV.IsSearch) {
-    if(ENV.SearchQuery.indexOf('기여:') == 0) {
+    if (ENV.SearchQuery.indexOf('기여:') == 0) {
       var ipPattern = /^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$/
       var target = ENV.SearchQuery.substring(3).trim();
-      if(ipPattern.test(target)) {
+      if (ipPattern.test(target)) {
         location.pathname = '/contribution/ip/' + target + '/document';
       } else {
         location.pathname = '/contribution/author/' + target + '/document';
@@ -2589,6 +2625,12 @@ addItemToMemberMenu("NamuFix 설정", function (evt) {
       '<h1 class="wsmall">토론에서 익명 기여자 IP주소 조회</h1>' +
       '<p>VPNGate 여부, 통신사, 국가이미지를 IP 주소 옆에 표시합니다. 요청 수가 많을 시 실패할 수 도 있습니다.</p>' +
       '<input type="checkbox" name="lookupIPonDiscuss" data-setname="lookupIPonDiscuss" data-as-boolean>토론시 익명 기여자 IP 주소 조회</input>' +
+      '<h1 class="wsmall">IP정보 조회시 기관명</h1>' +
+      '<p>IP정보 조회시에 무슨 기관명을 이용할지 결정합니다. 아래 설정에서 KISA WHOIS 결과에서의 기관명이 선택됐는데 KISA WHOIS 결과가 조회되지 않을 시 자동으로 ipinfo.io에서 조회됩니다. 이 설정은 KISA WHOIS 조회를 제외한 모든 IP정보 조회를 동반한 기능(예: 토론시 익명 기여자 IP주소 조회, 익명 기여자 기여목록에서의 IP 정보 등)에 영향을 끼칩니다.</p>' +
+      '<input type="radio" name="ipInfoDefaultOrg" data-setname="ipInfoDefaultOrg" data-setvalue="ipinfo.io">ipinfo.io에서 조회 (기본값)<br>' +
+      '<input type="radio" name="ipInfoDefaultOrg" data-setname="ipInfoDefaultOrg" data-setvalue="KISAuser">KISA WHOIS 결과에서 IP 이용 기관명<br>' +
+      '<input type="radio" name="ipInfoDefaultOrg" data-setname="ipInfoDefaultOrg" data-setvalue="KISAISP">KISA WHOIS 결과에서 IP 보유 기관명<br>' +
+      '<input type="radio" name="ipInfoDefaultOrg" data-setname="ipInfoDefaultOrg" data-setvalue="KISAuserOrISP">KISA WHOIS 결과에서 IP 보유 기관명 혹은 IP 이용 기관명<br>' +
       '<h1 class="wsmall">토론에서 보여지지 않은 쓰레도 불러오기<sub><small style="color: red;">[실험중!]</small></sub></h1>' +
       '<p>보여지지 않은 쓰레드도 불러오도록 나무위키 토론 스크립트를 수정합니다.</p>' +
       '<input type="checkbox" name="loadUnvisibleReses" data-setname="loadUnvisibleReses" data-as-boolean>보여지지 않은 토론 쓰레도 불러오기</input>' +
