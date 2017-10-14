@@ -204,6 +204,9 @@ function getIpInfo(ip, cb) {
     onload: function (res) {
       var resObj = JSON.parse(res.responseText);
       if (res.status === 200 || res.status === 304) {
+        if(/^AS[0-9]+ /.test(resObj.org)) {
+          resObj.org = resObj.org.replace(/^AS[0-9]+ /, '');
+        }
         ipDictionary[ip] = resObj;
         cb(resObj);
       } else {
