@@ -1313,6 +1313,10 @@ function mainFunc() {
 
       Designer.button('<span class="ion-ios-grid-view"></span>').hoverMessage('간단한 표 만들기').click(function(){
         var numbers = prompt('행과 열을 행숫x열숫 형태로 입력해주세요. 예시: 2x3').split('x').map(v => parseInt(v.trim()));
+        if(numbers.length != 2) {
+          alert('입력이 올바르지 않습니다.');
+          return;
+        }
         var win = TooSimplePopup();
         win.title('간단한 표 만들기');
         win.content(function (container) {
