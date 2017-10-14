@@ -98,7 +98,7 @@ function insertCSS(url) {
   });
 }
 
-insertCSS("https://cdn.rawgit.com/LiteHell/NamuFix/0ea78119c377402a10bbdfc33365c5195ce7fccc/NamuFix.css");
+insertCSS("https://cdn.rawgit.com/LiteHell/NamuFix/7d3335a08ff956aa95edfadfe508c98ba76d775d/NamuFix.css");
 insertCSS("https://cdn.rawgit.com/LiteHell/TooSimplePopupLib/edad912e28eeacdc3fd8b6e6b7ac5cafc46d95b6/TooSimplePopupLib.css");
 insertCSS("https://cdn.rawgit.com/wkpark/jsdifflib/dc19d085db5ae71cdff990aac8351607fee4fd01/diffview.css");
 
@@ -992,6 +992,7 @@ function mainFunc() {
           var slider = document.createElement('div');
           var pickerIndicator = document.createElement('div');
           var sliderIndicator = document.createElement('div');
+          var colorPreview = document.createElement('div');
           pickerWrapper.appendChild(picker);
           pickerWrapper.appendChild(pickerIndicator);
           sliderWrapper.appendChild(slider);
@@ -1003,21 +1004,28 @@ function mainFunc() {
           sliderIndicator.className = "NamaEditor FlexiColorPicker SliderIndicator";
           pickerWrapper.className = "NamaEditor FlexiColorPicker PickerWrapper";
           sliderWrapper.className = "NamaEditor FlexiColorPicker SliderWrapper";
+          colorPreview.className = "NamaEditor FlexiColorPicker ColorPreview";
 
           ColorPicker.fixIndicators(
             sliderIndicator,
             pickerIndicator
-          )
+          );
           ColorPicker(slider, picker, function (hex, hsv, rgb, pickerCo, sliderCo) {
             ColorPicker.positionIndicators(
               sliderIndicator,
               pickerIndicator,
               sliderCo, pickerCo
-            )
+            );
             color = hex;
+            var reversedColor = {r:255 - rgb.r, g:255 - rgb.g, b: 255 - rgb.b};
+            colorPreview.style.color = "rgb({0}, {1}, {2})".format(reversedColor.r, reversedColor.g, reversedColor.b);
+            colorPreview.style.background = color;
+            colorPreview.innerText = color;
           }).setHex(color);
+
           e.appendChild(pickerWrapper);
           e.appendChild(sliderWrapper);
+          e.appendChild(colorPreview);
         }).button('지정', function () {
           TextProc.selectionText('{{{' + color + ' ' + text + '}}}');
           c();
