@@ -1091,7 +1091,7 @@ function mainFunc() {
 
       // Insertable Media Functions
       function namuUpload(present_files, present_finisher) {
-        if (typeof present_files === 'undefined')
+        if (typeof present_files === 'undefined' || present_files.screenX)
           var present_files = null;
         if (typeof present_finisher === 'undefined')
           var present_finisher = function () {};
@@ -1117,14 +1117,14 @@ function mainFunc() {
               var cpinfo = cpinfos[i];
               result += "|| " + cpinfo.dataset.name + " || " + cpinfo.value + " ||\n";
             }
-            result += "\n\n== 기타 ==\nNamuFix {0} 버전을 이용하여 업로드된 이미지입니다.".format(GM_info.script.version);
+            result += "\n\n== 기타 ==\n[[NamuFix]] {0} 버전을 이용하여 업로드된 이미지입니다.".format(GM_info.script.version);
             callback(result);
           });
           win.button("닫기", win.close);
         }
         getCopyrightInfo(function (docuText) {
           function getFileCallback(files, finish) {
-            if (files.length < 0) {
+            if (files.length == 0) {
               alert('선택된 파일이 없습니다');
               return finish();
             }
@@ -1142,11 +1142,15 @@ function mainFunc() {
                 var fnSplitted = fn.split('.');
                 fnSplitted[fnSplitted.length - 1] = fnSplitted[fnSplitted.length - 1].toLowerCase();
                 fn = fnSplitted.join('.');
+              } else if(/\.jpeg$/i.test(fn)) {
+                alert('확장자가 jpeg인 경우 오류가 발생합니다. jpg로 변경해주세요.');
+                win.close();
+                return next();
               }
               query.append('file', file);
               query.append('document', fn);
               query.append('text', docuText);
-              query.append('log', "NamuFix로 자동으로 업로드됨");
+              query.append('log', "NamuFix " + GM_info.script.version + "버전으로 자동으로 업로드됨");
               query.append('baserev', 0);
               query.append('identifier', (ENV.IsLoggedIn ? "m" : "i") + ":" + ENV.UserName);
               GM_xmlhttpRequest({
@@ -1161,8 +1165,10 @@ function mainFunc() {
                   if (parser.parseFromString(res.responseText, "text/html").querySelector("p.wiki-edit-date") != null) {
                     TextProc.selectionText(TextProc.selectionText() + '[[' + fn + ']]');
                   } else {
-                    alert("업로드에 실패함 : " + file.name);
-                    prompt("copy this, for debugging", res.responseText)
+                    var errorWin = TooSimplePopup();
+                    errorWin.title("이미지 업로드 오류 로그");
+                    errorWin.content(function(elem){elem.innerHTML = "<p>업로드에 실패했습니다.<br>추후 NamuFix 이슈트래커에 해당 오류를 이슈를 남기실 때 다음 내용을 같이 첨부해주세요.</p><textarea readonly style=\"max-width: 80vw; width: 500px; max-height: 80vh; height: 500px;\"></textarea>"; elem.querySelector('textarea').value = res.responseText;});
+                    errorWin.button("닫기", errorWin.close);
                   }
                   if (isLastItem) {
                     finish();
@@ -1173,7 +1179,7 @@ function mainFunc() {
               })
             })
           }
-          if (present_files) {
+          if (present_files != null) {
             getFileCallback(present_files, present_finisher);
           } else {
             getFile(getFileCallback, true);
