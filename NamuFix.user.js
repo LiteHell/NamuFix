@@ -5,7 +5,7 @@
 // @include     https://namu.wiki/*
 // @include     https://no-ssl.namu.wiki/*
 // @include     https://awiki.theseed.io/*
-// @version     171015.1
+// @version     171016.0
 // @author      LiteHell
 // @downloadURL https://raw.githubusercontent.com/LiteHell/NamuFix/master/NamuFix.user.js
 // @require     https://cdn.rawgit.com/LiteHell/NamuFix/3bea33e76808ba9765f39135c17bfa46972131ac/mascott_pics.js
