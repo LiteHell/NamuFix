@@ -2060,6 +2060,14 @@ function mainFunc() {
             obj = {
               talker: "?????????",
               message: "존재하지 않는 메세지입니다.",
+              isFirstAuthor: false,
+              notExists: true
+            }
+          } else if (anchorDirection.parentNode.parentNode.parentNode.parentNode.className.indexOf('res-loading') != -1) { 
+            obj = {
+              talker: "NOT LOADED YET",
+              message: "아직 불러오지 않은 메세지입니다.",
+              isFirstAuthor: false,
               notExists: true
             }
           } else {
@@ -2067,17 +2075,18 @@ function mainFunc() {
             obj = {
               talker: anchorTarget.querySelector('.r-head > a').textContent,
               message: anchorTarget.querySelector('.r-body').innerHTML,
+              isFirstAuthor: anchorTarget.querySelector('.r-head.first-author') !== null,
               notExists: false
             };
           }
+          var headBackground = obj.notExists ? "red" : obj.isFirstAuthor ? "#a5df9f" : "#b3b3b3";
           var elem = document.createElement("div");
           elem.className = 'nfTopicMessage';
-          elem.innerHTML = '<div style="font-size: 18px; font-weight: 500; font-family: sans-serif; height: 18px;">{0}</div><div style="margin-top: 15px;">{1}</div>'.format(obj.talker, obj.message);
+          elem.innerHTML = '<div style="font-size: 17px; font-family: sans-serif; background: {2}; padding: 7px 10px 7px 15px;">{0}</div><div style="padding: 15px; font-size: 11px;">{1}</div>'.format(obj.talker, obj.message, headBackground);
           elem.style.position = 'absolute';
-          elem.style.padding = '10px';
-          elem.style.color = 'white';
+          elem.style.color = 'black';
           elem.style.borderRadius = '4px';
-          elem.style.background = obj.notExists ? 'red' : 'black';
+          elem.style.background = obj.notExists ? 'darkred' : '#d9d9d9';
           elem.style.zIndex = 3;
           evt.target.appendChild(elem);
           evt.target.title = '';
