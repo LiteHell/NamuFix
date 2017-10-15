@@ -1847,6 +1847,23 @@ function mainFunc() {
         }
       })
 
+      // Support image upload by pasting
+      txtarea.addEventListener('paste', function (evt){
+        var items = (event.clipboardData || event.originalEvent.clipboardData).items;
+        var files = [];
+        for (index in items) {
+          var item = items[index];
+          if (item.kind === 'file') {
+            var file = item.getAsFile();
+            if(file.type.indexOf('image/') == 0)
+              files.push(file);
+          }
+        }
+        if (files.length > 0) {
+          namuUpload(files, function () {});
+        }
+      })
+
       // Add NamuFix Div
       var oldTextarea = document.querySelector("textarea");
       var wText = oldTextarea.value;
