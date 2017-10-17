@@ -834,6 +834,8 @@ function mainFunc() {
   ENV.IsSearch = location.pathname.indexOf('/search/') == 0;
   ENV.IsEditingRequest = /^\/edit_request\/([0-9]+)\/edit/.test(location.pathname);
   ENV.IsWritingRequest = /^\/new_edit_request\/.+/.test(location.pathname);
+  ENV.IsIPACL = /^\/admin\/ipacl/.test(location.pathname);
+  ENV.IsSuspendAccount = /^\/admin\/suspend_account/.test(location.pathname);
   if (location.pathname.indexOf('/edit_request') == 0)
     ENV.EditRequestNo = /^\/edit_request\/([0-9]+)/.exec(location.pathname);
   if (ENV.IsLoggedIn) {
@@ -1907,7 +1909,8 @@ function mainFunc() {
       aTag.innerHTML = text;
       aTag.href = "#NothingToLink";
       aTag.addEventListener('click', onclick);
-      document.querySelector('.wiki-article-menu > div.btn-group').appendChild(aTag);
+      var buttonGroup = document.querySelector('.wiki-article-menu > div.btn-group');
+      buttonGroup.insertBefore(aTag, buttonGroup.firstChild);
     };
 
     // 리다이렉트 버튼 추가
@@ -2616,6 +2619,30 @@ function mainFunc() {
       } else {
         location.pathname = '/contribution/author/' + target + '/document';
       }
+    }
+  } else if (ENV.IsIPACL || ENV.IsSuspendAccount) {
+    var expireSelect = document.querySelector('select[name=expire]');
+    function replaceExpireSelect() {
+      var newExpireInput = document.createElement('input');
+      newExpireInput.setAttribute("type", "number");
+      newExpireInput.setAttribute("class", "form-control");
+      newExpireInput.setAttribute("name", "expire");
+      var explain = document.createElement("p");
+      explain.innerText = "차단기간은 초 단위로 입력해야 하며, 영구차단시에는 0을, 사용자 차단에서 차단 해제시에는 -1을 입력하시면 됩니다.";
+      expireSelect.parentNode.insertBefore(newExpireInput, expireSelect);
+      expireSelect.parentNode.insertBefore(explain, expireSelect);
+      expireSelect.parentNode.removeChild(expireSelect);
+    }
+    if(expireSelect != null) {
+      var replaceExpireLink = document.createElement("a");
+      replaceExpireLink.href = "#";
+      replaceExpireLink.innerText = "초 단위로 차단 기간 입력하기";
+      replaceExpireLink.addEventListener('click', function(evt){
+        evt.preventDefault();
+        replaceExpireSelect();
+        replaceExpireLink.parentNode.removeChild(replaceExpireLink);
+      });
+      expireSelect.parentNode.insertBefore(replaceExpireLink, expireSelect.nextSibling);
     }
   }
 }
