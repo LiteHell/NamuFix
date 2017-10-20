@@ -109,7 +109,7 @@ GM_xmlhttpRequest({
   onload: function (res) {
     var obj = JSON.parse(res.responseText);
     if(typeof obj.message !== 'undefined' && obj.message.indexOf('API rate limit') != -1) {
-      console.log('NamuFix 업데이트 건너뜀!');
+      console.log('NamuFix 업데이트 연기! (GitHub API 제한에 따른 오류)');
       return; // GitHub API 오류
     }
     var currentVersion = GM_info.script.version;
