@@ -173,6 +173,46 @@ function formatDateTime(t) {
   return '{0}년 {1}월 {2}일 {7}요일 {6} {3}시 {4}분 {5}초'.format(d.getFullYear(), d.getMonth() + 1, d.getDate(), d.getHours() - (d.getHours() > 12 ? 12 : 0), d.getMinutes(), d.getSeconds(), d.getHours() > 12 ? '오후' : '오전', (['일', '월', '화', '수', '목', '금', '토'])[d.getDay()]);
 }
 
+function formatTimespan(timespan) {
+  var units = [{
+      name: "주",
+      unit: 60 * 60 * 24 * 7,
+      value: 0
+    },
+    {
+      name: "일",
+      unit: 60 * 60 * 24,
+      value: 0
+    },
+    {
+      name: "시간",
+      unit: 60 * 60,
+      value: 0
+    },
+    {
+      name: "분",
+      unit: 60,
+      value: 0
+    },
+    {
+      name: "초",
+      unit: 1,
+      value: 0
+    }
+  ];
+  for (var i = 0; i < units.length; i++) {
+    while (timespan >= units[i].unit) {
+      timespan -= units[i].unit;
+      units[i].value++;
+    }
+  }
+  return units.filter(function (x) {
+    return x.value != 0;
+  }).map(function (x) {
+    return x.value + x.name
+  }).join(' ');
+}
+
 var hashDictionary = {};
 var hashDictionary256 = {};
 var ipDictionary = {};
@@ -836,6 +876,7 @@ function mainFunc() {
   ENV.IsWritingRequest = /^\/new_edit_request\/.+/.test(location.pathname);
   ENV.IsIPACL = /^\/admin\/ipacl/.test(location.pathname);
   ENV.IsSuspendAccount = /^\/admin\/suspend_account/.test(location.pathname);
+  ENV.IsBlockHistory = /^\/BlockHistory/.test(location.pathname);
   if (location.pathname.indexOf('/edit_request') == 0)
     ENV.EditRequestNo = /^\/edit_request\/([0-9]+)/.exec(location.pathname);
   if (ENV.IsLoggedIn) {
@@ -2700,6 +2741,24 @@ function mainFunc() {
         replaceExpireLink.parentNode.removeChild(replaceExpireLink);
       });
       expireSelect.parentNode.insertBefore(replaceExpireLink, expireSelect.nextSibling);
+    }
+  } else if (ENV.IsBlockHistory) {
+    var items = document.querySelectorAll('article .wiki-list li');
+    var durationPattern = /\(([0-9]+) 동안\)/;
+    for(var i = 0; i < items.length; i++) {
+      var durationTag = items[i].querySelector('i').nextSibling;
+      if(durationTag == null)
+        continue;
+      if(!durationPattern.test(durationTag.textContent))
+        continue;
+      var beautified = '';
+      var matches = durationPattern.exec(durationTag.textContent);
+      if(parseInt(matches[1]) == 0) {
+        beautified = '(영구)';
+      } else {
+        beautified = '(' + formatTimespan(matches[1]) + '동안)';
+      }
+      durationTag.textContent = durationTag.textContent.replace(matches[0], beautified);
     }
   }
 }
