@@ -117,6 +117,7 @@ GM_xmlhttpRequest({
       win.title('업데이트 확인 실패');
       win.content(function(element){element.innerHTML = "GitHub에 너무 많은 요청을 한 관계를 NamuFix 업데이트 확인을 다음 시간까지 연기합니다.<br>" + (new Date(dt)).toString()});
       win.button('닫기', win.close);
+      setTimeout(win.close, 200);
       return; // GitHub API 오류
     }
     var currentVersion = GM_info.script.version;
