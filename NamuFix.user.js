@@ -1194,13 +1194,15 @@ function mainFunc() {
                 win.close();
                 return next();
               }
-              function sendUploadReq(){
+              function sendUploadReq(recaptchaKey){
                 query.append('file', file);
                 query.append('document', fn);
                 query.append('text', docuText);
                 query.append('log', "NamuFix " + GM_info.script.version + "버전으로 자동으로 업로드됨");
                 query.append('baserev', 0);
                 query.append('identifier', (ENV.IsLoggedIn ? "m" : "i") + ":" + ENV.UserName);
+                if(recaptchaKey !== null)
+                  query.append(recaptchaKey);
                 GM_xmlhttpRequest({
                   method: 'POST',
                   url: 'https://' + location.host + '/Upload',
@@ -1212,6 +1214,8 @@ function mainFunc() {
                     var parser = new DOMParser();
                     if (parser.parseFromString(res.responseText, "text/html").querySelector("p.wiki-edit-date") != null) {
                       TextProc.selectionText(TextProc.selectionText() + '[[' + fn + ']]');
+                    //} else if(res.responseText.indexOf('CAPTCHA를 체크하지 않은 경우입니다.') != -1){
+                    //  var captchaWin = TooSimplePopup();
                     } else {
                       var errorWin = TooSimplePopup();
                       errorWin.title("이미지 업로드 오류 로그");
@@ -1226,7 +1230,7 @@ function mainFunc() {
                   }
                 });
               }
-              sendUploadReq();
+              sendUploadReq(null);
             })
           }
           if (present_files != null) {
