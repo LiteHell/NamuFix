@@ -1234,6 +1234,7 @@ function mainFunc() {
                   }
                 });
               }
+              sendUploadReq();
             })
           }
           if (present_files != null) {
