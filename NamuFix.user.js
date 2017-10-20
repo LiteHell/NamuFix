@@ -103,21 +103,13 @@ insertCSS("https://cdn.rawgit.com/LiteHell/TooSimplePopupLib/edad912e28eeacdc3fd
 insertCSS("https://cdn.rawgit.com/wkpark/jsdifflib/dc19d085db5ae71cdff990aac8351607fee4fd01/diffview.css");
 
 // 업데이트 확인
-if(sessionStorage.getItem('updateResetDateTime') || -1 < Date.now())
 GM_xmlhttpRequest({
   method: "GET",
   url: "https://api.github.com/repos/LiteHell/NamuFix/releases/latest",
   onload: function (res) {
     var obj = JSON.parse(res.responseText);
-    if(parseInt(res.responseHeaders['X-RateLimit-Remaining']) == 0) {
+    if(typeof obj.message !== 'undefined' && obj.message.indexOf('API rate limit') != -1) {
       console.log('NamuFix 업데이트 건너뜀!');
-      var dt = parseInt(res.responseHeaders['X-RateLimit-Reset']) * 1000;
-      sessionStorage.setItem('updateResetDateTime', dt);
-      var win = TooSimplePopup();
-      win.title('업데이트 확인 실패');
-      win.content(function(element){element.innerHTML = "GitHub에 너무 많은 요청을 한 관계를 NamuFix 업데이트 확인을 다음 시간까지 연기합니다.<br>" + (new Date(dt)).toString()});
-      win.button('닫기', win.close);
-      setTimeout(win.close, 200);
       return; // GitHub API 오류
     }
     var currentVersion = GM_info.script.version;
