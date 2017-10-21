@@ -455,6 +455,40 @@ function getFlagIcon(countryCode, cb) {
   });
 }
 
+function resolveRecaptcha(callback) {
+  GM_xmlhttpRequest({
+    method: 'GET',
+    url: 'https://namu.wiki/check',
+    onload: function (res) {
+      var siteKey = /["']sitekey["']: ["']([^"']+)["']/.exec(res.responseText)[1];
+      console.log('reCAPTCHA sitekey : ' + siteKey);
+      var captchaWin = TooSimplePopup();
+      captchaWin.title('reCAPTCHA 해결');
+      captchaWin.content(function(winContainer) {
+        var id = "nf-recaptcha-" + Date.now();
+        var btnId = 'nf-communicate-' + Date.now();
+        var cbName = "nfreCAPTCHACallback" + Date.now(); 
+        winContainer.innerHTML = '<p>reCAPTCHA를 해결해주세요.</p><div id="' + id + '"></div><button style="display: none;" type="button" id="' + btnId + '"></button>';
+        var injectedButton = winContainer.querySelector('#' + btnId);
+        winContainer.querySelector('#' + id).dataset.callback = cbName;
+        winContainer.querySelector('#' + id).dataset.sitekey = siteKey;
+        injectedButton.addEventListener('click', function(evt){
+          evt.preventDefault();
+          callback(injectedButton.dataset.recaptchaResponse);
+          captchaWin.close();
+        })
+        var scriptTag = document.createElement("script");
+        scriptTag.innerHTML = 'function ' + cbName + '(recaptcha_response){var btn = document.getElementById("' + btnId + '"); btn.dataset.recaptchaResponse = recaptcha_response; btn.click();}function renderNFReCAPTCHA(){if(!window.grecaptcha) return setTimeout(renderNFReCAPTCHA, 200); window.grecaptcha.render(document.getElementById("' + id + '"));} setTimeout(renderNFReCAPTCHA, 200);';
+        winContainer.appendChild(scriptTag);
+      });
+      captchaWin.button('닫기', function(){
+        callback(null);
+        captchaWin.close();
+      })
+    }
+  });
+}
+
 function uniqueID() {
   var dt = Date.now();
   var url = location.href;
@@ -1202,7 +1236,7 @@ function mainFunc() {
                 query.append('baserev', 0);
                 query.append('identifier', (ENV.IsLoggedIn ? "m" : "i") + ":" + ENV.UserName);
                 if(recaptchaKey !== null)
-                  query.append(recaptchaKey);
+                  query.append('g-recaptcha-response', recaptchaKey);
                 GM_xmlhttpRequest({
                   method: 'POST',
                   url: 'https://' + location.host + '/Upload',
@@ -1214,8 +1248,18 @@ function mainFunc() {
                     var parser = new DOMParser();
                     if (parser.parseFromString(res.responseText, "text/html").querySelector("p.wiki-edit-date") != null) {
                       TextProc.selectionText(TextProc.selectionText() + '[[' + fn + ']]');
-                    //} else if(res.responseText.indexOf('CAPTCHA를 체크하지 않은 경우입니다.') != -1){
-                    //  var captchaWin = TooSimplePopup();
+                    } else if(res.responseText.indexOf('CAPTCHA를 체크하지 않은 경우입니다.') != -1){
+                      resolveRecaptcha(function(res){
+                        if(res == null) {
+                          if (isLastItem)
+                            finish();
+                          win.close();
+                          next();
+                          return;
+                        }
+                        sendUploadReq(res);
+                      });
+                      return;
                     } else {
                       var errorWin = TooSimplePopup();
                       errorWin.title("이미지 업로드 오류 로그");
