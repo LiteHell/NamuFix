@@ -455,6 +455,18 @@ function getFlagIcon(countryCode, cb) {
   });
 }
 
+// 문서/역사/편집 페이지 등에서 버튼 추가 함수
+function addArticleButton(text, onclick) {
+  var aTag = document.createElement("a");
+  aTag.className = "btn btn-secondary";
+  aTag.setAttribute("role", "button");
+  aTag.innerHTML = text;
+  aTag.href = "#NothingToLink";
+  aTag.addEventListener('click', onclick);
+  var buttonGroup = document.querySelector('.wiki-article-menu > div.btn-group');
+  buttonGroup.insertBefore(aTag, buttonGroup.firstChild);
+};
+
 function resolveRecaptcha(callback) {
   GM_xmlhttpRequest({
     method: 'GET',
@@ -904,7 +916,8 @@ function mainFunc() {
   ENV.IsEditing = location.pathname.toLowerCase().indexOf('/edit/') == 0;
   ENV.Discussing = location.pathname.toLowerCase().indexOf('/thread/') == 0;
   ENV.IsDocument = location.pathname.toLowerCase().indexOf('/w/') == 0; //&& document.querySelector('p.wiki-edit-date');
-  ENV.IsSettings = location.pathname.toLowerCase().indexOf('/settings/') == 0;;
+  ENV.IsSettings = location.pathname.toLowerCase().indexOf('/settings/') == 0;
+  ENV.IsHistory = location.pathname.toLowerCase().indexOf('/history/') == 0;
   ENV.IsUserContribsPage = /^\/contribution\/(?:author|ip)\/.+\/(?:document|discuss)/.test(location.pathname);
   ENV.IsUploadPage = location.pathname.toLowerCase().indexOf('/upload/') == 0;
   ENV.IsDiff = location.pathname.toLowerCase().indexOf('/diff/') == 0;
@@ -1997,20 +2010,9 @@ function mainFunc() {
         location.assign('/contribution/author/' + target + '/document');
       }
     }
-    // 버튼 추가 함수
-    function addButton(text, onclick) {
-      var aTag = document.createElement("a");
-      aTag.className = "btn btn-secondary";
-      aTag.setAttribute("role", "button");
-      aTag.innerHTML = text;
-      aTag.href = "#NothingToLink";
-      aTag.addEventListener('click', onclick);
-      var buttonGroup = document.querySelector('.wiki-article-menu > div.btn-group');
-      buttonGroup.insertBefore(aTag, buttonGroup.firstChild);
-    };
 
     // 리다이렉트 버튼 추가
-    addButton('리다이렉트', function (evt) {
+    addArticleButton('리다이렉트', function (evt) {
       evt.preventDefault();
 
       var redirectFrom = prompt('어느 문서에서 지금 이문서로 리다이렉트?');
@@ -2807,6 +2809,66 @@ function mainFunc() {
         beautified = '(' + formatTimespan(matches[1]) + '동안)';
       }
       durationTag.textContent = durationTag.textContent.replace(matches[0], beautified);
+    }
+  } else if (ENV.IsHistory) {
+    addArticleButton('리버전 점프', function(){
+      var revNo = prompt('보고 싶은 리버전 번호를 입력하세요.').trim();
+      if(revNo.indexOf('r') == 0) revNo = revNo.substring(1);
+      if(/[^0-9]/.test(revNo)) {
+        alert('올바른 일력이 아닙니다! r1 혹은 1과 같이 입력해주세요.');
+        return;
+      }
+      location.href = "/w/" + encodeURIComponent(ENV.docTitle) + "?rev=" + revNo;
+    })
+    var historyRows = document.querySelectorAll('article .wiki-list li');
+    for(var hi = 0; hi < historyRows.length; hi++) {
+      var historyRow = historyRows[hi];
+      var italicTag = historyRow.querySelector('i');
+      if(italicTag) {
+        var pattern = /\(([a-zA-Z,]+?)으로 ACL 변경\)/;
+        // 열람 수정 삭제 (한국) 토론 이동
+        var valuePatternWithBlockKorea = /(admin|member|everyone),(admin|member|everyone),(admin|member|everyone),(true|false),(admin|member|everyone),(admin|member|everyone)/;
+        var valuePattern = /(admin|member|everyone),(admin|member|everyone),(admin|member|everyone),(admin|member|everyone),(admin|member|everyone)/;
+        var icons = ['ion-eye', 'ion-edit', 'ion-trash-a', 'ion-android-textsms', 'ion-arrow-right-c', 'ion-flag'];
+        var koreanAclConds = {
+          'member': '회원',
+          'admin': '관리자',
+          'everyone': '모두'
+        };
+        if(pattern.test(italicTag.innerHTML)) {
+          var aclText = pattern.exec(italicTag.innerHTML)[1];
+          var newAclText = '';
+          var acl = null, isKoreaBlocked = null;
+          var matched = false;
+          if(aclText == 'delete') {
+            newAclText = '(ACL 초기화)';
+            matched = true;
+          } else if(valuePatternWithBlockKorea.test(aclText)) {
+            acl = valuePatternWithBlockKorea.exec(aclText);
+            isKoreaBlocked = acl[4] == 'true';
+            acl = [acl[0], acl[1], acl[2], acl[3], acl[5], acl[6]];
+            matched = true;
+          } else if(valuePattern.test(aclText)) {
+            acl = valuePattern.exec(aclText);
+            matched = true;
+          }
+          if (!matched)
+            continue;
+          if(newAclText == '') {
+            newAclText = '(';
+            for(var i = 1; i <= 5; i++) {
+              var color = acl[i] == 'admin' ? 'red' : acl[i] == 'member' ? 'orange' : null;
+              newAclText += '<span ' + (color ? 'style="color:' + color + '" ' : '' ) + '><span class="icon ' + icons[i-1] + '"></span>' + koreanAclConds[acl[i]] + '</span>,';
+            }
+            if(isKoreaBlocked) {
+              newAclText += '<span style="color: blue;"><span class="icon ' + icons[5] + '"></span>한국 IP 차단</span>,';
+            }
+            newAclText = newAclText.substring(0, newAclText.length - 1);
+            newAclText += '으로 ACL 변경)';
+          }
+          italicTag.innerHTML = italicTag.innerHTML.replace(pattern.exec(italicTag.innerHTML)[0], newAclText);
+        }
+      }
     }
   }
 }
