@@ -2173,7 +2173,7 @@ function mainFunc() {
           } else if (anchorDirection.parentNode.parentNode.parentNode.parentNode.className.indexOf('res-loading') != -1) { 
             obj = {
               talker: "NOT LOADED YET",
-              message: "아직 불러오지 않은 메세지입니다.",
+              message: "아직 불려오지 않은 메세지입니다.",
               isFirstAuthor: false,
               notExists: true
             }
@@ -2916,9 +2916,9 @@ addItemToMemberMenu("NamuFix 설정", function (evt) {
       '<input type="radio" name="ipInfoDefaultOrg" data-setname="ipInfoDefaultOrg" data-setvalue="KISAuser">KISA WHOIS 결과에서 IP 이용 기관명<br>' +
       '<input type="radio" name="ipInfoDefaultOrg" data-setname="ipInfoDefaultOrg" data-setvalue="KISAISP">KISA WHOIS 결과에서 IP 보유 기관명<br>' +
       '<input type="radio" name="ipInfoDefaultOrg" data-setname="ipInfoDefaultOrg" data-setvalue="KISAuserOrISP">KISA WHOIS 결과에서 IP 보유 기관명 혹은 IP 이용 기관명<br>' +
-      '<h1 class="wsmall">토론에서 보여지지 않은 쓰레도 불러오기<sub><small style="color: red;">[실험중!]</small></sub></h1>' +
-      '<p>보여지지 않은 쓰레드도 불러오도록 나무위키 토론 스크립트를 수정합니다.</p>' +
-      '<input type="checkbox" name="loadUnvisibleReses" data-setname="loadUnvisibleReses" data-as-boolean>보여지지 않은 토론 쓰레도 불러오기</input>' +
+      '<h1 class="wsmall">토론에서 보여지지 않은 쓰레도 불려오기<sub><small style="color: red;">[실험중!]</small></sub></h1>' +
+      '<p>보여지지 않은 쓰레드도 불려오도록 나무위키 토론 스크립트를 수정합니다.</p>' +
+      '<input type="checkbox" name="loadUnvisibleReses" data-setname="loadUnvisibleReses" data-as-boolean>보여지지 않은 토론 쓰레도 불려오기</input>' +
       '<h1 class="wsmall">토론 아이덴티콘 명도</h1>' +
       '<p>스레딕 헬퍼 방식을 사용하는 경우에만 적용됩니다.</p>' +
       '<label for="discussIdentiLightness">명도</label><input name="discussIdentiLightness" data-setname="discussIdentiLightness" type="range" max="1" min="0" step="0.01"><br>' +
