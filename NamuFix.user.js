@@ -2522,13 +2522,6 @@ function mainFunc() {
     var ipPattern = /\/ip\/([a-zA-Z0-9:\.]+)\/(?:document|discuss)(?:#.+|)$/;
     if (ipPattern.test(location.href)) {
       // ip
-      // insert CSS if not exists
-      if (document.querySelector('link[href$="flag-icon.min.css"]') == null) {
-        var link = document.createElement("link");
-        link.href = "/css/lib/flag-icon-css/css/flag-icon.min.css";
-        link.setAttribute("rel", "stylesheet");
-        document.head.appendChild(link);
-      }
       // check ip
       var ip = ipPattern.exec(location.href)[1];
       var ipInfo = document.createElement("p");
@@ -2918,41 +2911,6 @@ addItemToMemberMenu('NamuFix 이슈트래커', function (evt) {
   evt.preventDefault();
 
   GM_openInTab("https://github.com/LiteHell/NamuFix/issues");
-});
-addItemToMemberMenu("Imgur 이미지 삭제 주소들", function (evt) {
-  evt.preventDefault();
-
-  SET.load();
-  var win = TooSimplePopup();
-  var divWithScrolls = document.createElement("div");
-  divWithScrolls.style.overflow = 'scroll';
-  divWithScrolls.style.maxHeight = '800px';
-  divWithScrolls.style.maxWidth = '1200px';
-
-  var table = document.createElement("table");
-  table.innerHTML = '<tr><th style="min-width: 200px;">업로드한 날짜/시각</th><th>이름</th><th>이미지 주소(다이렉트)</th><th>이미지 삭제 주소</th></tr>';
-  var addRow = function (dt, dna, dil, del) {
-    var tr = document.createElement("tr");
-    var appendTd = function (t) {
-      var td = document.createElement("td");
-      td.innerHTML = t;
-      tr.appendChild(td);
-    }
-    appendTd(formatDateTime(dt));
-    appendTd(dna == null ? '<span style="color: red;">정보 없음</span>' : dna);
-    appendTd('<a href="' + dil + '" target="_blank">' + dil + '</a>');
-    appendTd('<a href="' + del + '" target="_blank">' + del + '</a>');
-    table.appendChild(tr);
-  }
-  for (var i = 0; i < SET.imgurDeletionLinks.length; i++) {
-    var ii = SET.imgurDeletionLinks[i];
-    addRow(ii.uploadedAt, typeof ii.name !== "undefined" ? ii.name : null, ii.imgUrl, ii.deleteionUrl);
-  }
-  win.content(function (el) {
-    el.appendChild(table);
-  });
-  win.title('이미지 삭제 주소들');
-  win.button('닫기', win.close);
 });
 addItemToMemberMenu('설정 백업/복원', function (evt) {
   evt.preventDefault();
