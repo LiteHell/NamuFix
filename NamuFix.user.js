@@ -589,6 +589,8 @@ function INITSET() { // Storage INIT
     SET.loadUnvisibleReses = false;
   if (nOu(SET.ipInfoDefaultOrg))
     SET.ipInfoDefaultOrg = "ipinfo.io"; //ipinfo.io, KISAISP, KISAuser, KISAuserOrISP
+  if (nOu(SET.alwaysUnfold))
+    SET.alwaysUnfold = false;
   SET.save();
 }
 
@@ -2090,6 +2092,14 @@ function mainFunc() {
         }
       }
     }
+
+    // 항상 펼치기
+    if(SET.alwaysUnfold) {
+      var wikiFoldings = document.querySelectorAll('dl.wiki-folding dd'); 
+      for(var i = 0; i < wikiFoldings.length; i++)
+        wikiFoldings[i].style.display = 'block';
+
+    }
   }
 
   if (ENV.Discussing) {
@@ -2604,14 +2614,14 @@ function mainFunc() {
         '<tr><td>삭제한 문서 수</td><td>{3}개</td></tr>' +
         '<tr><td>새로 만든 문서 수</td><td>{4}개</td></tr>' +
         '<tr><td>한 문서당 평균 기여 바이트</td><td>{5}자</td></tr>' +
-        '<tr><td>시간대별 기여/활동 횟수 총합(문서 기여)</td><td><a href="#NothingToLink" id="punch">여기를 눌러 확인</a></td></tr>' +
+        '<tr><td>시간대별 기여/활동 횟수 분포(문서 기여)</td><td><a href="#NothingToLink" id="punch">여기를 눌러 확인</a></td></tr>' +
         '</tbody>' +
         '</table>').format(contCount, contTotalBytes, documents.length, deletedDocuments.length, createdDocuments.length, (contTotalBytes / documents.length));
       p.querySelector('a#punch').addEventListener('click', function (evt) {
         evt.preventDefault();
 
         var win = TooSimplePopup();
-        win.title('시간대별 기여/활동 횟수 총합(문서 기여)');
+        win.title('시간대별 기여/활동 횟수 분포(문서 기여)');
         win.content(function (element) {
           element.appendChild(makeHeatTable(contributedAt));
         });
@@ -2667,14 +2677,14 @@ function mainFunc() {
         '<tr><td>참여한 토론 수</td><td>{1}</td></tr>' +
         '<tr><td>한 토론당 평균 발언 수</td><td>{2}</td></tr>' +
         '<tr><td>한 토론당 발언 수 표준편차</td><td>{3}</td></tr>' +
-        '<tr><td>시간대별 기여/활동 횟수 총합(토론)</td><td><a href="#NothingToLink" id="punch">여기를 눌러 확인</a></td></tr>' +
+        '<tr><td>시간대별 기여/활동 횟수 분포(토론)</td><td><a href="#NothingToLink" id="punch">여기를 눌러 확인</a></td></tr>' +
         '</tbody>' +
         '</table>').format(totalTalks, discussCount, avgTalks, standardDeviation(Talks));
       p.querySelector('a#punch').addEventListener('click', function (evt) {
         evt.preventDefault();
 
         var win = TooSimplePopup();
-        win.title('시간대별 기여/활동 횟수 총합(토론)');
+        win.title('시간대별 기여/활동 횟수 분포(토론)');
         win.content(function (container) {
           container.appendChild(makeHeatTable(talkedAt));
         });
@@ -2931,7 +2941,10 @@ addItemToMemberMenu("NamuFix 설정", function (evt) {
       '<input type="radio" name="discussAnchorPreviewType" data-setname="discussAnchorPreviewType" data-setvalue="0">사용하지 않음<br>' +
       '<input type="radio" name="discussAnchorPreviewType" data-setname="discussAnchorPreviewType" data-setvalue="1">마우스를 올리면 미리보기 표시<br>' +
       '<input type="radio" name="discussAnchorPreviewType" data-setname="discussAnchorPreviewType" data-setvalue="2">토론 메세지 위에 인용형식으로 표시<br>' +
-      '<input type="checkbox" name="removeNFQuotesInAnchorPreview" data-setname="removeNFQuotesInAnchorPreview" data-as-boolean>토론 메세지 위에 인용형식으로 표시할때, 인용문 안에 인용 형식으로 표시된 미리보기 제거';
+      '<input type="checkbox" name="removeNFQuotesInAnchorPreview" data-setname="removeNFQuotesInAnchorPreview" data-as-boolean>토론 메세지 위에 인용형식으로 표시할때, 인용문 안에 인용 형식으로 표시된 미리보기 제거' +
+      '<h1 class="wsmall">항상 펼치기</h1>' +
+      '<p>접기 문법(folding)을 이용해 접혀진 내용을 바로 펼칩니다.</p>' +
+      '<input type="checkbox" name="alwaysUnfold" data-setname="alwaysUnfold" data-as-boolean>항상 펼치기</input>';
     var optionTags = document.querySelectorAll('[data-setname]');
     SET.load();
     for (var i = 0; i < optionTags.length; i++) {
