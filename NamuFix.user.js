@@ -1478,7 +1478,7 @@ function mainFunc() {
           // cell: align( left=(, center=:, right=) ), rowspan (^|0-9 |0-9 v|0-9), colspan bgcolor, width, height
           // row: rowbgcolor
           // table: align, bgcolor, bordercolor, width
-          container.innerHTML = '<strong>현재 실험중인 기능입니다. 불안정할 수 있습니다.</strong><br>표를 만듭니다.... 공대 감성을 듬뿍 담아 디자인했습니다.<br>칸 안에는 나무마크 위키텍스트를 입력하면 됩니다.<br><br>' +
+          container.innerHTML = '<strong>현재 실험중인 기능입니다. 불안정할 수 있습니다.</strong><br>표를 만듭니다.... 공대 감성을 듬뿍 담아 디자인했습니다.<br>칸 안에는 나무마크 위키텍스트를 입력하면 됩니다.<br>Ctrl + 화살표 단축키로 칸 사이를 이동할 수 있습니다.' +
             '<style>#target-table td {border: 1px solid #dddddd; padding: 5px 10px} #target-table tr {background-color: #f5f5f5 border-collapse: collapse;}</style>' +
             '<table id="target-table"></table>' +
             '<div style="display: none;"><button id="disableShortcut" onclick="window.namu.disableShortcutKey=true;"></button><button id="enableShortcut" onclick="window.namu.disableShortcutKey=false;"></button></div>';
@@ -1487,7 +1487,29 @@ function mainFunc() {
           for (var i = 0; i < numbers[1]; i++) {
             var row = document.createElement("tr");
             for (var j = 0; j < numbers[0]; j++)
-              row.innerHTML += '<td contenteditable="true">Enter wikitext here</td>';
+              row.innerHTML += '<td contenteditable="true"></td>';
+            var cols = row.querySelectorAll('td');
+            for (var j = 0; j < cols.length; j++) {
+              cols[j].addEventListener('keyup', function(evt) {
+                var doPreventDefault = true;
+                var cellOrder = [].indexOf.call(evt.target.parentNode.querySelectorAll('td'), evt.target);
+                if(evt.key == "ArrowDown" && evt.ctrlKey) {
+                  var nearCols = evt.target.parentNode.nextElementSibling.querySelectorAll('td');
+                  nearCols[cellOrder < nearCols.length ? cellOrder : 0].focus();
+                } else if (evt.key == "ArrowUp" && evt.ctrlKey) {
+                  var nearCols = evt.target.parentNode.previousElementSibling.querySelectorAll('td');
+                  nearCols[cellOrder < nearCols.length ? cellOrder : 0].focus();
+                } else if (evt.key == "ArrowRight" && evt.ctrlKey) {
+                  evt.target.nextSibling.focus();
+                } else if (evt.key == "ArrowLeft" && evt.ctrlKey) {
+                  evt.target.previousSibling.focus();
+                } else {
+                  doPreventDefault = false;
+                }
+                if(doPreventDefault)
+                  evt.preventDefault();
+              });
+            }
             table.appendChild(row);
           }
           win.button('닫기', function () {
