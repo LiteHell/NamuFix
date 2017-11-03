@@ -1906,8 +1906,52 @@ function mainFunc() {
         rootDiv.style.height = '600px';
 
       // Add Keyboard Shortcut
+      function overrideBrowserDefaultShortcutKey(evt){
+        var overrideShortcutKey = true;
+        if (evt.ctrlKey && !evt.shiftKey && !evt.altKey) {
+          switch (evt.keyCode) { // Ctrl
+            case 66: // B
+            case 98:
+            case 73: // I
+            case 105:
+            case 68: // D
+            case 100:
+            case 85: // U
+            case 117:
+            case 219:
+            case 123:
+            case 91: // [
+            case 221:
+            case 125:
+            case 93: // ]
+            case 83: // S
+            case 115:
+              break;
+            default:
+              overrideShortcutKey = false;
+              break;
+          }
+        } else if (evt.ctrlKey && evt.altKey && !evt.shiftKey) {
+          switch (evt.keyCode) { // Ctrl + Alt
+            case 73: // I
+            case 105:
+            default:
+              overrideShortcutKey = false;
+              break;
+          }
+        } else {
+          overrideShortcutKey = false;
+        }
+        if(overrideShortcutKey) {
+          evt.preventDefault();
+          evt.stopPropagation();
+        }
+      }
+      txtarea.addEventListener('keydown', overrideBrowserDefaultShortcutKey);
+      txtarea.addEventListener('keypress', overrideBrowserDefaultShortcutKey);
       txtarea.addEventListener('keyup', function (evt) {
-        if (evt.ctrlKey && evt.altKey) {
+        var overrideShortcutKey = true;
+        if (evt.ctrlKey && !evt.shiftKey && !evt.altKey) {
           switch (evt.keyCode) { // Ctrl
             case 66: // B
             case 98:
@@ -1935,22 +1979,31 @@ function mainFunc() {
             case 93: // ]
               FontSizeChanger(true);
               break;
-          }
-        } else if (evt.ctrlKey && evt.shiftKey) { // Ctrl + Shift
-          switch (evt.keyCode) {
             case 83: // S
             case 115:
               tempsaveManager.save(ENV.docTitle, ENV.section, Date.now(), txtarea.value);
               break;
+            default:
+              overrideShortcutKey = false;
+              break;
+          }
+        } else if (evt.ctrlKey && evt.altKey && !evt.shiftKey) {
+          switch (evt.keyCode) { // Ctrl + Alt
             case 73: // I
             case 105:
               namuUpload();
               break;
+            default:
+              overrideShortcutKey = false;
+              break;
           }
         } else {
-          return;
+          overrideShortcutKey = false;
         }
-        return false;
+        if(overrideShortcutKey) {
+          evt.preventDefault();
+          evt.stopPropagation();
+        }
       });
 
       // Support drag-drop file upload
