@@ -2755,8 +2755,8 @@ function mainFunc() {
           hour: 60 * 60,
           day: 60 * 60 * 24,
           week: 60 * 60 * 24 * 7,
-          month: 60 * 60 * 24 * 30,
-          year: 60 * 60 * 24 * 365
+          month: 60 * 60 * 24 * 7 * 4, // 4 주
+          year: 60 * 60 * 24 * 7 * 48 // 48주
         }
         winContainer.innerHTML = '<div class="timespan-container">' +
         ' <input type="number" data-unit="year" class="timespan-input" value="0">년' + 
@@ -2766,21 +2766,9 @@ function mainFunc() {
         ' <input type="number" data-unit="hour" class="timespan-input" value="0">시간' + 
         ' <input type="number" data-unit="minute" class="timespan-input" value="0">분' + 
         ' <input type="number" data-unit="second" class="timespan-input" value="0">초' +
-        '</div>' +
-        '<style>.timespan-input {width: 40px;}</style>' +
-        '<div>' + 
-        '1개월 계산방법 : <input type="radio" name="monthLength" value="28" checked>28일(4주)</input> <input type="radio" name="monthLength" value="30">30일</input><br>' +
-        '1년 계산방법 : <input type="radio" name="yearLength" value="336">336일</input> <input type="radio" name="yearLength" value="360">360일</input> <input type="radio" name="yearLength" value="365" checked>365일</input>' +
         '</div>';
         win.button('닫기', win.close);
         win.button('입력', function(){
-          if(winContainer.querySelector('input[name="monthLength"][value="28"]').checked)
-            units.month = 60 * 60 * 24 * 28;
-          var yearLengthOptions = winContainer.querySelectorAll('input[name="yearLength"]')
-          for(var i = 0; i < yearLengthOptions.length; i++) {
-            if(yearLengthOptions[i].checked)
-              units.year = 60 * 60 * 24 * yearLengthOptions[i].value;
-          }
           var result = 0;
           var isNumberic = function(v){return !isNaN(parseFloat(v)) && isFinite(v);} // https://stackoverflow.com/a/9716488
           var timespanInputs = winContainer.querySelectorAll('input.timespan-input')
