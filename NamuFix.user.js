@@ -1233,7 +1233,7 @@ function mainFunc() {
                 el.innerHTML = '<p>파일을 업로드하고 있습니다. 잠시만 기다려주세요.</p><p>현재 업로드중 : ' + file.name + '</p>';
               });
               var query = new FormData();
-              var fn = "파일:" + SHA256(String(Date.now()) + file.name) + "_" + file.name;
+              var fn = "파일:" + SHA256(String(Date.now()) + file.name).substring(0, 12) + "_" + file.name;
               if (/\.[A-Z]+$/.test(fn)) {
                 var fnSplitted = fn.split('.');
                 fnSplitted[fnSplitted.length - 1] = fnSplitted[fnSplitted.length - 1].toLowerCase();
