@@ -1347,28 +1347,26 @@ function mainFunc() {
         // 검색 기능
         win.content(function (el) {
           // https://developers.google.com/youtube/v3/docs/search/list
-          var baseUri = 'https://www.googleapis.com/youtube/v3/search?key=AIzaSyAqi9PjUr_F54U0whrbMeavFfvNap3kjvA&';
-          var basicSearchUri = baseUri + 'part=snippet&safeSearch=none&type=video&maxResults=20&videoEmbeddable=true&q=';
           var vidSearchFunc = function () {
             var q = el.querySelector('#vidQuery').value;
             var resultDiv = el.querySelector('#results');
             resultDiv.innerHTML = '<span style="color:orange;">검색중입니다.</span>'
             GM_xmlhttpRequest({
               method: "GET",
-              url: basicSearchUri + encodeURIComponent(q),
+              url: 'https://namufix.wikimasonry.org/youtube/search?q=' + encodeURIComponent(q),
               onload: function (res) {
+                var jobj = JSON.parse(res.responseText);
                 resultDiv.innerHTML = '<ul></ul>';
                 var ul = resultDiv.querySelector('ul');
-                if (res.status != 200) {
+                if (res.status != 200 || !jobj.success) {
                   resultDiv.innerHTML = '<span style="color:red;">검색중 오류가 발생했습니다.</span>';
                   return;
                 }
-                var jobj = JSON.parse(res.responseText);
                 for (var i = 0; i < jobj.items.length; i++) {
                   var vidNow = jobj.items[i];
                   var li = document.createElement("li");
                   li.height = '90px';
-                  li.innerHTML = '<img style="height: 90px;" src="' + vidNow.snippet.thumbnails.default.url + '"></img>' +
+                  li.innerHTML = '<img style="height: 90px;" src="//namufix.wikimasonry.org/youtube/thumb/' + vidNow.id.videoId + '"></img>' +
                     '<div style="position: relative; display: inline-block; margin-left: 5px; overflow: hidden; width: 670px; max-width: 100vw;">' +
                     '<span style="font-weight: bold; font-size: 12pt; margin-bottom: 3px;">' + vidNow.snippet.title + '</span><button name="insertThis" class="moreFlat">삽입</button><button name="preview" class="moreFlat">미리보기</button><br><span style="font-size:10pt;">' + vidNow.snippet.description + '</span>' +
                     '</div>';
