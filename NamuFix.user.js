@@ -1767,10 +1767,10 @@ function mainFunc() {
         tempsaveDropdown.button('<span class="ion-ios-pricetag-outline"></span>', '임시저장').click(function () {
           tempsaveManager.save(ENV.docTitle, ENV.section, Date.now(), txtarea.value);
         });
-        tempsaveDropdown.button('<span class="ion-filing"></span>', '임시저장 불려오기').click(function () {
+        tempsaveDropdown.button('<span class="ion-filing"></span>', '임시저장 불러오기').click(function () {
           // title(text), content(callback), foot(callback), button(text,onclick), close
           var win = TooSimplePopup();
-          win.title('임시저장 불려오기')
+          win.title('임시저장 불러오기')
           var tempsaveList = tempsaveManager.getByTitle(ENV.docTitle);
           win.content(function (el) {
             el.innerHTML = '<p>현재 편집중인 문단인 경우 문단 번호가 <strong>굵게</strong> 표시됩니다.<br>문단 번호가 -2인 경우는 문단 번호가 감지되지 않은 경우입니다.</p>';
@@ -1779,7 +1779,7 @@ function mainFunc() {
             divWithscrollbars.style.overflow = 'auto';
             var table = document.createElement("table");
             var headrow = document.createElement("tr");
-            headrow.innerHTML = '<th>문단 번호</th><th>저장된 날짜와 시간</th><th>불려오기 버튼</th>';
+            headrow.innerHTML = '<th>문단 번호</th><th>저장된 날짜와 시간</th><th>불러오기 버튼</th>';
             table.appendChild(headrow);
             for (var i = 0; i < tempsaveList.length; i++) {
               var now = tempsaveList[i];
@@ -1788,7 +1788,7 @@ function mainFunc() {
               var td = document.createElement("td");
               var btn = document.createElement("button");
               btn.setAttribute("type", "button");
-              btn.innerHTML = "불려오기";
+              btn.innerHTML = "불러오기";
               btn.dataset.json = JSON.stringify(now);
               btn.addEventListener('click', function (evt) {
                 var now = JSON.parse(evt.target.dataset.json);
@@ -2176,7 +2176,7 @@ function mainFunc() {
   }
 
   if (ENV.Discussing) {
-    // 보여지지 않은 쓰레드도 불려오기
+    // 보여지지 않은 쓰레드도 불러오기
     if (SET.loadUnvisibleReses) {
       function doLoadUnvisibleReses() {
         var scriptTag = document.createElement("script");
@@ -2256,7 +2256,7 @@ function mainFunc() {
           } else if (anchorDirection.parentNode.parentNode.parentNode.parentNode.className.indexOf('res-loading') != -1) { 
             obj = {
               talker: "NOT LOADED YET",
-              message: "아직 불려오지 않은 메세지입니다.",
+              message: "아직 불러오지 않은 메세지입니다.",
               isFirstAuthor: false,
               notExists: true
             }
@@ -2987,9 +2987,9 @@ addItemToMemberMenu("NamuFix 설정", function (evt) {
       '<input type="radio" name="ipInfoDefaultOrg" data-setname="ipInfoDefaultOrg" data-setvalue="KISAuser">KISA WHOIS 결과에서 IP 이용 기관명<br>' +
       '<input type="radio" name="ipInfoDefaultOrg" data-setname="ipInfoDefaultOrg" data-setvalue="KISAISP">KISA WHOIS 결과에서 IP 보유 기관명<br>' +
       '<input type="radio" name="ipInfoDefaultOrg" data-setname="ipInfoDefaultOrg" data-setvalue="KISAuserOrISP">KISA WHOIS 결과에서 IP 보유 기관명 혹은 IP 이용 기관명<br>' +
-      '<h1 class="wsmall">토론에서 보여지지 않은 쓰레도 불려오기<sub><small style="color: red;">[실험중!]</small></sub></h1>' +
-      '<p>보여지지 않은 쓰레드도 불려오도록 나무위키 토론 스크립트를 수정합니다.</p>' +
-      '<input type="checkbox" name="loadUnvisibleReses" data-setname="loadUnvisibleReses" data-as-boolean>보여지지 않은 토론 쓰레도 불려오기</input>' +
+      '<h1 class="wsmall">토론에서 보여지지 않은 쓰레도 불러오기<sub><small style="color: red;">[실험중!]</small></sub></h1>' +
+      '<p>보여지지 않은 쓰레드도 불러오도록 나무위키 토론 스크립트를 수정합니다.</p>' +
+      '<input type="checkbox" name="loadUnvisibleReses" data-setname="loadUnvisibleReses" data-as-boolean>보여지지 않은 토론 쓰레도 불러오기</input>' +
       '<h1 class="wsmall">토론 아이덴티콘 명도</h1>' +
       '<p>스레딕 헬퍼 방식을 사용하는 경우에만 적용됩니다.</p>' +
       '<label for="discussIdentiLightness">명도</label><input name="discussIdentiLightness" data-setname="discussIdentiLightness" type="range" max="1" min="0" step="0.01"><br>' +
