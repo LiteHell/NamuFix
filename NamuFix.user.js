@@ -1590,7 +1590,7 @@ function mainFunc() {
               return;
             }
             win.content(function(winel){
-              winel.innerHTML = '<p>맞춤법 검사 결과입니다. 아직 개발중인 기능이라 나사 빠진듯이 돌아갑니다.</p><style>table.spellresult tbody td, tr {border: #9D75D9 1px solid; border-collapse: collapse;}table.spellresult tbody td:not(.spellhelp) {padding: 3px 7px;word-break: keep-all; white-space: nowrap;}table.spellresult tbody td.spellhelp {word-break: keep-all;}</style><table class="spellresult"><thead><tr><th>틀린말</th><th>대체어</th><th>도움말</th></tr></thead><tbody></tbody></table>';
+              winel.innerHTML = '<p>맞춤법 검사 결과입니다. 아직 개발중인 기능이라 나사 빠진듯이 돌아갑니다.</p><style>table.spellresult tbody td, tr {border: #9D75D9 1px solid; border-collapse: collapse;}table.spellresult tbody td:not(.spellhelp) {padding: 3px 7px;word-break: keep-all; white-space: nowrap;}table.spellresult tbody td.spellhelp {word-break: keep-all;}table.spellresult tbody td.spellerror {color: red;}table.spellresult tbody td.spellsuggest {color: darkgreen;}</style><table class="spellresult"><thead><tr><th>틀린말</th><th>대체어</th><th>도움말</th></tr></thead><tbody></tbody></table>';
               for(var i = 0; i < resObj.result.length; i++) {
                 var resultEntry = resObj.result[i];
                 var row = document.createElement('tr');
