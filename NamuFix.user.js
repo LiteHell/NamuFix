@@ -1494,8 +1494,11 @@ function mainFunc() {
       insertablesDropDown.button('<span class="ion-images" style="color: #008275;"></span>', '나무위키 이미지 업로드').click(namuUpload);
 
       Designer.button('<span class="ion-ios-grid-view"></span>').hoverMessage('간단한 표 만들기').click(function () {
-        var numbers = prompt('행과 열을 행숫x열숫 형태로 입력해주세요. 예시: 2x3').split('x').map(v => parseInt(v.trim()));
-        if (numbers.length != 2) {
+        var numbers = prompt('행과 열을 행숫x열숫 형태로 입력해주세요. 예시: 2x3, 2*3')
+        if(/([0-9]+).([0-9]+)/.test(numbers)) {
+          var num_matches = /([0-9]+).([0-9]+)/.exec(numbers)
+          numbers = [parseInt(num_matches[1]), parseInt(num_matches[2])];
+        } else {
           alert('입력이 올바르지 않습니다.');
           return;
         }
