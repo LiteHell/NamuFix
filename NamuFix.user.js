@@ -2213,8 +2213,19 @@ function mainFunc() {
       var wikiFoldings = document.querySelectorAll('dl.wiki-folding dd'); 
       for(var i = 0; i < wikiFoldings.length; i++)
         wikiFoldings[i].style.display = 'block';
-
     }
+
+    // 문단 접기 이탤릭 표시
+    GM_addStyle('.namufix-folded-heading {font-style: italic; color: darkgray;}');
+    var wikiHeadings = document.querySelectorAll('.wiki-heading')
+    for(var i = 0; i < wikiHeadings.length; i++) wikiHeadings[i].addEventListener('click', function(evt){
+      if(evt.target.tagName === 'A') return;
+      if(evt.target.nextSibling.style.display === 'none') {
+        evt.target.className += ' namufix-folded-heading';
+      } else {
+        evt.target.className = evt.target.className.replace('namufix-folded-heading', '');
+      }
+    })
   }
 
   if (ENV.Discussing) {
