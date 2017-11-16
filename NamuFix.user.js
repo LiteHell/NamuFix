@@ -1094,6 +1094,35 @@ function mainFunc() {
         TextProc.select(s, s + t.length);
       }
 
+      function NewHeadingMacro() {
+        var headingPattern = /^(=+) (.+?) (=+)$/;
+        function repeatString(str, count) { var r = ""; for(var i = 0; i < count; i++) r += str; return r;}
+        if(TextProc.selectionTest(headingPattern)) {
+          var matches = headingPattern.exec(TextProc.selectionText());
+          var headingLevel, headingLevel_Left = matches[1].length, headingContent = matches[2], headingLevel_Right = matches[3].length;
+          if(headingLevel_Left != headingLevel_Right) {
+            // normalize
+            TextProc.selectionText(repeatString("=", headingLevel_Left) + " " + headingContent + " " + repeatString("=", headingLevel_Left));
+            return;
+          } else {
+            headingLevel = headingLevel_Left;
+            if(headingLevel < 6) headingLevel++;
+            else if (headingLevel == 6) headingLevel = 1;
+            else if (headingLevel > 6) headingLevel = 6;
+            TextProc.selectionText(repeatString("=", headingLevel) + " " + headingContent + " " + repeatString("=", headingLevel));
+            return;
+          }
+        } else if(TextProc.selectionText().length == 0) {
+          TextProc.selectionText("\n== 제목 ==\n")
+          TextProc.selectionStart(TextProc.selectionStart()+1);
+          TextProc.selectionEnd(TextProc.selectionEnd()-1);
+        } else if(TextProc.selectionText().length != 0) {
+          TextProc.selectionText("\n== " + TextProc.selectionText().replace(/\n/mg, '[br]') + " ==\n")
+          TextProc.selectionStart(TextProc.selectionStart()+1);
+          TextProc.selectionEnd(TextProc.selectionEnd()-1);
+        }
+      }
+
       function TextColorChange() {
         var colorMarkUpPattern = /^{{{(#[a-zA-Z0-9]+) (.*)}}}$/;
         var color = '#000000',
@@ -1958,6 +1987,8 @@ function mainFunc() {
             case 100:
             case 85: // U
             case 117:
+            case 72: // H
+            case 104:
             case 219:
             case 123:
             case 91: // [
@@ -2008,6 +2039,10 @@ function mainFunc() {
             case 85: // U
             case 117:
               TextProc.ToggleWrapSelection("__");
+              break;
+            case 72:
+            case 104:
+              NewHeadingMacro();
               break;
             case 219:
             case 123:
