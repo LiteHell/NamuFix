@@ -2251,7 +2251,7 @@ function mainFunc() {
     }
 
     // 문단 접기 이탤릭 표시
-    GM_addStyle('.namufix-folded-heading {color: darkgray;}');
+    GM_addStyle('.namufix-folded-heading {color: darkgray; opacity: 0.5;}');
     var wikiHeadings = document.querySelectorAll('.wiki-heading')
     for(var i = 0; i < wikiHeadings.length; i++) wikiHeadings[i].addEventListener('click', function(evt){
       if(evt.target.tagName === 'A') return;
