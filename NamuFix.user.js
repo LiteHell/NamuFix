@@ -1532,6 +1532,48 @@ function mainFunc() {
         });
       })
 
+      Designer.button('<span class="ion-checkmark-round"></span>').hoverMessage('맞춤법 검사기').click(function() {
+        var win = TooSimplePopup();
+        win.title('나사 빠진 맞춤법 검사기');
+        win.content(function(el){el.innerHTML = "진행중입니다...."});
+        var textToCheck = TextProc.selectionText().length == 0 ? TextProc.value() : TextProc.selectionText();
+        GM_xmlhttpRequest({
+          url: 'https://namufix.wikimasonry.org/kospell',
+          method: 'POST',
+          data: JSON.stringify({text: textToCheck, unstripNamumark: true}),
+          headers: {
+            "Content-Type": "application/json"
+          },
+          onload: function (res) {
+            try{
+              var resObj = JSON.parse(res.responseText);
+              if(!resObj.success) {
+                alert('서버에서 오류가 발생했습니다.\n\n오류 코드 : ' + resObj.error.code + '\n메세지 : ' + resObj.error.message);
+                win.close();
+                return;
+              }
+            } catch(errr) {
+              alert('서버에서 알 수 없는 오류가 발생했습니다.');
+              win.close();
+              return;
+            }
+            win.content(function(winel){
+              winel.innerHTML = '<p>맞춤법 검사 결과입니다. 아직 개발중인 기능이라 나사 빠진듯이 돌아갑니다.</p><style>table.spellresult tbody td, tr {border: #9D75D9 1px solid; border-collapse: collapse;}table.spellresult tbody td {padding: 3px 7px;word-break: keep-all;}</style><table class="spellresult"><thead><tr><th>틀린말</th><th>대체어</th><th>도움말</th></tr></thead><tbody></tbody></table>';
+              for(var i = 0; i < resObj.result.length; i++) {
+                var resultEntry = resObj.result[i];
+                var row = document.createElement('tr');
+                row.innerHTML = '<td class="spellerror"></td><td class="spellsuggest"></td><td class="spellhelp"></td>';
+                row.querySelector('.spellerror').innerHTML = resultEntry.errors.join('<br>');
+                row.querySelector('.spellsuggest').innerHTML = resultEntry.replacements.join('<br>');
+                row.querySelector('.spellhelp').innerHTML = encodeHTMLComponent(resultEntry.help);
+                winel.querySelector('tbody').appendChild(row);
+              }
+            });
+            win.button('닫기', win.close);
+          }
+        })
+      });
+
       Designer.button('<span class="ion-ios-timer-outline"></span>').hoverMessage('아카이브하고 외부링크 삽입').click(function () {
         var win = TooSimplePopup();
         win.title("아카이브 한후 외부링크 삽입");
