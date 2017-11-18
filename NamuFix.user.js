@@ -2755,7 +2755,8 @@ function mainFunc() {
               '<tr><td>IP차단기록(/32 마스크)</td><td class="nf_isipblocked">차단기록을 검색하고 있습니다... 잠시만 기다려주세요.</td></tr>' +
               "</tbody>" +
               '<tfoot>' +
-              '<tr><td colspan="2" style="border-top: 1px solid black;">기술적인 한계로, VPNGATE 여부는 "현재 VPNGATE VPN인가?"의 여부이지, "작성 당시에 VPNGATE VPN인가?"의 여부가 아닙니다.<br>또한 차단기록의 경우 /32 마스크만 검색하며, 사측의 비공개 차단은 검색이 불가능합니다.</td></tr>' +
+              '<tr><td colspan="2" style="border-top: 1px solid black;">기술적인 한계로, VPNGATE 여부는 "현재 VPNGATE VPN인가?"의 여부이지, "작성 당시에 VPNGATE VPN인가?"의 여부가 아닙니다.<br>' + 
+              '또한 차단기록의 경우 /32 마스크만 검색하며, 사측의 비공개 차단은 검색이 불가능합니다. (추후 업데이트 예정)</td></tr>' +
               '</foot>' +
               "</table>"
             ).format(countryIcon, countryName, isp, result.indexOf(ip) != -1 ? "<span style=\"color: red;\">YES! This is currently WORKING VPNGATE IP!</span>" : "Not a vpngate ip");
