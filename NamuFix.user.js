@@ -2766,7 +2766,6 @@ function mainFunc() {
             })
             searchBlockHistory(ip + '/32', false, function(result) {
               var filtered = result.filter(function(v){return v.blocked == ip + '/32'});
-              console.log(filtered);
               if(filtered.length == 0) {
                 return ipInfo.querySelector('.nf_isipblocked').innerHTML = "차단기록 없음.";
               }
