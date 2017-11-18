@@ -650,6 +650,39 @@ function getRAW(title, onfound, onnotfound) {
   })
 }
 
+function searchBlockHistory(query, isAuthor, callback) {
+  GM_xmlhttpRequest({
+    method: 'GET',
+    url: 'https://' + location.host + '/BlockHistory?target=' + (isAuthor ? "author" : "text") +  '&query=' + encodeURIComponent(query),
+    onload: function (res) {
+      var parser = new DOMParser();
+      var doc = parser.parseFromString(res.responseText, "text/html");
+      if(doc.querySelector('article ul.wiki-list > li') == null)
+        return callback([]);
+      var logs = doc.querySelectorAll('article ul.wiki-list > li');
+      var result = [];
+      // get first entry only
+      for(var i = 0; i < logs.length; i++) {
+        var curLog = logs[i];
+        var durationMatch = /\((.+?)\)/.exec(curLog.querySelector('i').nextSibling.textContent.trim());
+        var entry = {
+          blocker: curLog.querySelector('strong > a').textContent.trim(),
+          blocked: /^사용자가\s+(.+)/.exec(curLog.querySelector('strong').nextSibling.textContent.trim())[1],
+          duration: durationMatch == null ? null : durationMatch[1],
+          reason: curLog.querySelector('span[style]') ? curLog.querySelector('span[style]').textContent : "",
+          type: /\((.+?)\)/.exec(curLog.querySelector('i').textContent)[1],
+          at: new Date(curLog.querySelector('time').getAttribute('datetime'))
+        };
+        if(entry.type == "IP 주소 차단") entry.type = "blockIP";
+        else if(entry.type == "IP 주소 차단 해제") entry.type = "unblockIP"
+        else if(entry.type == "사용자 차단") entry.type = "blockUser";
+        else if(entry.type == "사용자 차단 해제") entry.type = "unblockUser";
+        result.push(entry);
+      }
+      callback(result);
+    }
+  })
+}
 function makeTabs() {
   var div = document.createElement("div");
   div.className = "nf-tabs";
@@ -2719,9 +2752,10 @@ function mainFunc() {
               "<tr><td>통신사</td><td>{2}</td></tr>" +
               "<tr><td>VPNGATE?</td><td>{3}</td></tr>" +
               '<tr><td>KISA WHOIS</td><td><a href="#" class="get-whois">조회하기</a></td></tr>' +
+              '<tr><td>IP차단기록(/32 마스크)</td><td class="nf_isipblocked">차단기록을 검색하고 있습니다... 잠시만 기다려주세요.</td></tr>' +
               "</tbody>" +
               '<tfoot>' +
-              '<tr><td colspan="2" style="border-top: 1px solid black;">기술적인 한계로, VPNGATE 여부는 "현재 VPNGATE VPN인가?"의 여부이지, "작성 당시에 VPNGATE VPN인가?"의 여부가 아닙니다.</td></tr>' +
+              '<tr><td colspan="2" style="border-top: 1px solid black;">기술적인 한계로, VPNGATE 여부는 "현재 VPNGATE VPN인가?"의 여부이지, "작성 당시에 VPNGATE VPN인가?"의 여부가 아닙니다.<br>또한 차단기록의 경우 /32 마스크만 검색하며, 사측의 비공개 차단은 검색이 불가능합니다.</td></tr>' +
               '</foot>' +
               "</table>"
             ).format(countryIcon, countryName, isp, result.indexOf(ip) != -1 ? "<span style=\"color: red;\">YES! This is currently WORKING VPNGATE IP!</span>" : "Not a vpngate ip");
@@ -2729,6 +2763,21 @@ function mainFunc() {
               evt.preventDefault();
               whoisPopup(ip);
             })
+            searchBlockHistory(ip + '/32', false, function(result) {
+              var filtered = result.filter(function(v){return v.blocked == ip + '/32'});
+              console.log(filtered);
+              if(filtered.length == 0) {
+                return ipInfo.querySelector('.nf_isipblocked').innerHTML = "차단기록 없음.";
+              }
+              var actType = filtered[0].type;
+              if(actType == "blockIP") {
+                ipInfo.querySelector('.nf_isipblocked').innerHTML = filtered[0].blocker + '에 의해 <span style="color:red">차단됨.</span> (일시 : ' + formatDateTime(filtered[0].at) + ')';
+              } else if(actType == "unblockIP") {
+                ipInfo.querySelector('.nf_isipblocked').innerHTML = filtered[0].blocker + '에 의해 <span style="color:green">차단이 해제됨.</span> (일시 : ' + formatDateTime(iltered[0].at) + ')';
+              } else {
+                ipInfo.querySelector('.nf_isipblocked').innerHTML = "??? 기록 검색에 실패함.";
+              }
+            });
           });
         });
       });
