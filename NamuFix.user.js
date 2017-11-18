@@ -2776,7 +2776,7 @@ function mainFunc() {
               } else if(actType == "unblockIP") {
                 ipInfo.querySelector('.nf_isipblocked').innerHTML = filtered[0].blocker + '에 의해 <span style="color:green">차단이 해제됨.</span> (일시 : ' + formatDateTime(iltered[0].at) + ')';
               } else {
-                ipInfo.querySelector('.nf_isipblocked').innerHTML = "??? 기록 검색에 실패함.";
+                ipInfo.querySelector('.nf_isipblocked').innerHTML = "??? 기록 검색중 오류가 발생함.";
               }
             });
           });
