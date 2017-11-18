@@ -109,7 +109,7 @@ GM_xmlhttpRequest({
   onload: function (res) {
     var obj = JSON.parse(res.responseText);
     if(typeof obj.message !== 'undefined' && obj.message.indexOf('API rate limit') != -1) {
-      console.log('NamuFix 업데이트 연기! (GitHub API 제한에 따른 오류)');
+      console.log('[NamuFix] NamuFix 업데이트 연기! (GitHub API 제한에 따른 오류)');
       return; // GitHub API 오류
     }
     var currentVersion = GM_info.script.version;
@@ -473,7 +473,6 @@ function resolveRecaptcha(callback) {
     url: 'https://namu.wiki/check',
     onload: function (res) {
       var siteKey = /["']sitekey["']: ["']([^"']+)["']/.exec(res.responseText)[1];
-      console.log('reCAPTCHA sitekey : ' + siteKey);
       var captchaWin = TooSimplePopup();
       captchaWin.title('reCAPTCHA 해결');
       captchaWin.content(function(winContainer) {
@@ -631,7 +630,6 @@ function getVPNGateIPList(callback) {
       }
     })
   } else {
-    console.log('returned cached vpngate ip list');
     callback(_vpngateList);
   }
 }
@@ -2188,7 +2186,6 @@ function mainFunc() {
       }
     }
   } else if (ENV.IsDocument) {
-    console.log(ENV.docTitle);
     if (ENV.docTitle.trim().indexOf('기여:') == 0) {
       var ipPattern = /^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$/
       var target = ENV.docTitle.trim().substring(3).trim();
@@ -2315,14 +2312,14 @@ function mainFunc() {
         }
         var reqId = parseInt(allUnlockedReses[0].dataset.id),
           lastReqId = parseInt(allUnlockedReses[allUnlockedReses.length - 1].dataset.id);
-        console.log('starting to get responses : ' + reqId + ' to ' + lastReqId);
-        for (console.log('starting loadUnvisibleReses loop'); reqId <= lastReqId; reqId += 30) {
-          console.log('requesting reses, statring from' + reqId);
+        console.log('[NamuFix] 보이지 않은 레스 불러오기를 시작합니다. 범위 : ' + reqId + ' 에서 ' + lastReqId);
+        for (console.log('[NamuFix] loadUnvisibleReses 루프 시작!'); reqId <= lastReqId; reqId += 30) {
+          console.log('[NamuFix] 레스 요청중, 시작 번호는 ' + reqId);
           GM_xmlhttpRequest({
             method: "GET",
             url: "https://" + location.host + "/thread/" + ENV.topicNo + "/" + reqId,
             onload: function (res) {
-              console.log('got response, starting from ' + reqId);
+              console.log('[NamuFix] 레스 응답 받음, 시작 번호는 ' + reqId);
               var parser = new DOMParser();
               var doc = parser.parseFromString(res.responseText, "text/html");
               var timeTags = doc.querySelectorAll('time');
@@ -2612,16 +2609,12 @@ function mainFunc() {
           span.style.color = "red";
           span.innerHTML = "[IP 조회중]";
           ipLink.parentNode.insertBefore(span, ipLink.nextSibling);
-          console.log(ip);
           // get ip info
           getIpInfo(ip, function (resObj) {
             if (resObj !== null) {
               var country = resObj.country;
               var countryName = korCountryNames[country.toUpperCase()] ? korCountryNames[country.toUpperCase()] : engCountryNames[country.toUpperCase()];
               var isp = resObj.org;
-              console.log(country);
-              console.log(countryName);
-              console.log(isp);
               getFlagIcon(country.toLowerCase(), function (data) {
                 span.innerHTML = '[<img src="{0}" style="height: 0.9rem;" title="{3}"></img> {1}{2}]<a href="#" class="get-whois">[WHOIS]</a>'.format(data, isp, vpngateIP.indexOf(ip) != -1 ? " (VPNGATE)" : "", countryName);
                 span.querySelector('a.get-whois').addEventListener('click', function (evt) {
@@ -2741,9 +2734,6 @@ function mainFunc() {
           var country = resObj.country;
           var countryName = korCountryNames[country.toUpperCase()] ? korCountryNames[country.toUpperCase()] : engCountryNames[country.toUpperCase()];
           var isp = resObj.org;
-          console.log(country);
-          console.log(countryName);
-          console.log(isp);
           getFlagIcon(country.toLowerCase(), function (countryIcon) {
             ipInfo.innerHTML = (
               "<table class=\"contInfo\">" +
