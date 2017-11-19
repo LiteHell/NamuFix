@@ -5,6 +5,7 @@
 // @include     https://namu.wiki/*
 // @include     https://no-ssl.namu.wiki/*
 // @include     https://awiki.theseed.io/*
+// @include     https://theseed.io/*
 // @version     171118.0
 // @author      LiteHell
 // @downloadURL https://raw.githubusercontent.com/LiteHell/NamuFix/master/NamuFix.user.js
@@ -98,7 +99,7 @@ function insertCSS(url) {
   });
 }
 
-insertCSS("https://cdn.rawgit.com/LiteHell/NamuFix/7d3335a08ff956aa95edfadfe508c98ba76d775d/NamuFix.css");
+insertCSS("https://cdn.rawgit.com/LiteHell/NamuFix/284db44ac1d89ff0cbd1155c3372db38be3bc140/NamuFix.css");
 insertCSS("https://cdn.rawgit.com/LiteHell/TooSimplePopupLib/edad912e28eeacdc3fd8b6e6b7ac5cafc46d95b6/TooSimplePopupLib.css");
 insertCSS("https://cdn.rawgit.com/wkpark/jsdifflib/dc19d085db5ae71cdff990aac8351607fee4fd01/diffview.css");
 
@@ -170,6 +171,10 @@ function forLoop(array, callback) {
     }
   }
   doNext();
+}
+
+function validateIP(ip) {
+  return  /^(25[0-5]|2[0-4][0-9]|1?[0-9][0-9]{1,2})(\.(25[0-5]|2[0-4][0-9]|1?[0-9]{1,2})){3}$/.test(ip) || /^([0-9a-f]){1,4}(:([0-9a-f]){1,4}){7}$/i.test(ip);
 }
 
 function formatDateTime(t) {
@@ -463,7 +468,7 @@ function addArticleButton(text, onclick) {
   aTag.innerHTML = text;
   aTag.href = "#NothingToLink";
   aTag.addEventListener('click', onclick);
-  var buttonGroup = document.querySelector('.wiki-article-menu > div.btn-group');
+  var buttonGroup = document.querySelector('body.Liberty .liberty-content .content-tools .btn-group , .wiki-article-menu > div.btn-group');
   buttonGroup.insertBefore(aTag, buttonGroup.firstChild);
 };
 
@@ -590,6 +595,8 @@ function INITSET() { // Storage INIT
     SET.ipInfoDefaultOrg = "ipinfo.io"; //ipinfo.io, KISAISP, KISAuser, KISAuserOrISP
   if (nOu(SET.alwaysUnfold))
     SET.alwaysUnfold = false;
+  if (nOu(SET.addAdminLinksForLiberty))
+    SET.addAdminLinksForLiberty = false;
   SET.save();
 }
 
@@ -954,30 +961,33 @@ function mainFunc() {
   ENV.IsUserContribsPage = /^\/contribution\/(?:author|ip)\/.+\/(?:document|discuss)/.test(location.pathname);
   ENV.IsUploadPage = location.pathname.toLowerCase().indexOf('/upload/') == 0;
   ENV.IsDiff = location.pathname.toLowerCase().indexOf('/diff/') == 0;
-  ENV.IsLoggedIn = document.querySelectorAll('img.user-img').length == 1;
+  ENV.IsLoggedIn = document.querySelectorAll('body.Liberty img.profile-img, .Liberty img.user-img').length == 1;
   ENV.IsSearch = location.pathname.indexOf('/search/') == 0;
   ENV.IsEditingRequest = /^\/edit_request\/([0-9]+)\/edit/.test(location.pathname);
   ENV.IsWritingRequest = /^\/new_edit_request\/.+/.test(location.pathname);
   ENV.IsIPACL = /^\/admin\/ipacl/.test(location.pathname);
   ENV.IsSuspendAccount = /^\/admin\/suspend_account/.test(location.pathname);
   ENV.IsBlockHistory = /^\/BlockHistory/.test(location.pathname);
+  ENV.skinName = /(senkawa|Liberty|namuvector)/i.exec(document.body.className)[1].toLowerCase();
   if (location.pathname.indexOf('/edit_request') == 0)
     ENV.EditRequestNo = /^\/edit_request\/([0-9]+)/.exec(location.pathname);
   if (ENV.IsLoggedIn) {
-    ENV.UserName = document.querySelector('div.user-info > div.user-info > div:first-child').textContent.trim();
+    ENV.UserName = document.querySelector('body.Liberty .navbar-login .login-menu .dropdown-menu .dropdown-item:first-child, div.user-info > div.user-info > div:first-child').textContent.trim();
   }
   if (document.querySelector("input[name=section]"))
     ENV.section = document.querySelector("input[name=section]").value;
-  if (ENV.IsWritingRequest)
-    ENV.docTitle = decodeURIComponent(location.pathname.substring(18));
-  else if (document.querySelector("h1.title > a"))
-    ENV.docTitle = document.querySelector("h1.title > a").innerHTML;
-  else if (document.querySelector("h1.title"))
-    ENV.docTitle = document.querySelector("h1.title").innerHTML;
+  if (document.querySelector("body.senkawa h1.title > a"))
+    ENV.docTitle = document.querySelector("body.senkawa h1.title > a").innerHTML;
+  else if (document.querySelector("body.senkawa h1.title"))
+    ENV.docTitle = document.querySelector("body.senkawa h1.title").innerHTML;
+  else if (ENV.skinName == "liberty" && ENV.IsDiscussing)
+    ENV.docTitle = /^(.+) \(토론\)/.exec(document.querySelector('.liberty-content .liberty-content-header .title h1').textContent.trim())[1]
+  else if(/^\/[a-zA-Z_]+\/(.+)/.test(location.pathname))
+    ENV.docTitle = decodeURIComponent(/^\/[a-zA-Z_]+\/(.+)/.exec(location.pathname)[1]);
   ENV.docTitle = ENV.docTitle.trim();
   if (ENV.Discussing) {
     ENV.topicNo = /^\/thread\/([^#]+)/.exec(location.pathname)[1];
-    ENV.topicTitle = document.querySelector('article > h2').innerHTML;
+    ENV.topicTitle = document.querySelector('body.Liberty .wiki-article h2.wiki-heading:first-child , article > h2').innerHTML;
   }
   if (ENV.IsDiff) {
     //ENV.docTitle = /diff\/(.+?)\?/.exec(location.href)[1];
@@ -1014,7 +1024,7 @@ function mainFunc() {
         document.querySelector('textarea').parentNode.insertBefore(diffTab, document.querySelector('textarea').nextSibling);
 
         // 나무위키 자체 편집/미리보기 탭 제거
-        document.querySelector('.nav.nav-tabs').setAttribute("style", "display:none;");
+        document.querySelector('#editForm .nav.nav-tabs').setAttribute("style", "display:none;");
 
         function hideAndShow(no) {
           rootDiv.style.display = no == 0 ? '' : 'none';
@@ -2187,9 +2197,8 @@ function mainFunc() {
     }
   } else if (ENV.IsDocument) {
     if (ENV.docTitle.trim().indexOf('기여:') == 0) {
-      var ipPattern = /^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$/
       var target = ENV.docTitle.trim().substring(3).trim();
-      if (ipPattern.test(target)) {
+      if (validateIP(target)) {
         location.assign('/contribution/ip/' + target + '/document');
       } else {
         location.assign('/contribution/author/' + target + '/document');
@@ -2206,8 +2215,8 @@ function mainFunc() {
     });
 
     // 리다이렉트로 왔을 시 그 라디이렉트 문서 편집/삭제 링크 추가
-    if (document.querySelector('article .alert.alert-info') && document.querySelector('article .alert.alert-info').innerHTML.indexOf('에서 넘어옴') != -1) {
-      var redirectAlert = document.querySelector('article .alert.alert-info');
+    if (document.querySelector('article .alert.alert-info, .Liberty .wiki-article .alert.alert-info') && document.querySelector('article .alert.alert-info, .Liberty .wiki-article .alert.alert-info').innerHTML.indexOf('에서 넘어옴') != -1) {
+      var redirectAlert = document.querySelector('article .alert.alert-info, .Liberty .wiki-article .alert.alert-info');
       var origDocuName = decodeURIComponent(/\/w\/(.+?)\?noredirect=1/.exec(redirectAlert.querySelector('a.document').href)[1]);
       var editUrl = '/edit/' + origDocuName;
       var deleteUrl = '/delete/' + origDocuName;
@@ -2249,7 +2258,7 @@ function mainFunc() {
         if (i == higherDocs.length - 1) {
           var hdinid = setInterval(function () {
             if (codwe + codwnf != higherDocs.length) return;
-            var docTitleTag = document.querySelector('h1.title');
+            var docTitleTag = document.querySelector('h1.title, body.Liberty .liberty-content .liberty-content-header h1.title');
             var hdsPT = document.createElement("p");
             var sstl = 0;
             for (var i = 0; i < higherDocs.length; i++) {
@@ -2908,6 +2917,13 @@ function mainFunc() {
         '</nav>').format(
         ENV.docTitle, ENV.beforeRev - 1, ENV.beforeRev, ENV.afterRev, ENV.afterRev + 1
       );
+      if(ENV.skinName == "liberty") {
+        var divTag = document.createElement("div");
+        var articleTag = document.querySelector('.wiki-article');
+        if (articleTag.querySelector('.diff') == null) return;
+        divTag.innerHTML = diffLinksHtml;
+        articleTag.insertBefore(divTag, articleTag.firstChild.nextSibling);
+      }
       var divTag = document.createElement("div");
       var articleTag = document.querySelector('article');
       if (articleTag == null) return;
@@ -2916,9 +2932,8 @@ function mainFunc() {
     }, 500);
   } else if (ENV.IsSearch) {
     if (ENV.SearchQuery.indexOf('기여:') == 0) {
-      var ipPattern = /^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$/
       var target = ENV.SearchQuery.substring(3).trim();
-      if (ipPattern.test(target)) {
+      if (validateIP(target)) {
         location.pathname = '/contribution/ip/' + target + '/document';
       } else {
         location.pathname = '/contribution/author/' + target + '/document';
@@ -2993,24 +3008,6 @@ function mainFunc() {
       });
       expireSelect.parentNode.insertBefore(replaceExpireLink, expireSelect.nextSibling);
     }
-  } else if (ENV.IsBlockHistory) {
-    var items = document.querySelectorAll('article .wiki-list li');
-    var durationPattern = /\(([0-9]+) 동안\)/;
-    for(var i = 0; i < items.length; i++) {
-      var durationTag = items[i].querySelector('i').nextSibling;
-      if(durationTag == null)
-        continue;
-      if(!durationPattern.test(durationTag.textContent))
-        continue;
-      var beautified = '';
-      var matches = durationPattern.exec(durationTag.textContent);
-      if(parseInt(matches[1]) == 0) {
-        beautified = '(영구)';
-      } else {
-        beautified = '(' + formatTimespan(matches[1]) + '동안)';
-      }
-      durationTag.textContent = durationTag.textContent.replace(matches[0], beautified);
-    }
   } else if (ENV.IsHistory) {
     addArticleButton('리버전 점프', function(){
       var revNo = prompt('보고 싶은 리버전 번호를 입력하세요.').trim();
@@ -3021,7 +3018,7 @@ function mainFunc() {
       }
       location.href = "/w/" + encodeURIComponent(ENV.docTitle) + "?rev=" + revNo;
     })
-    var historyRows = document.querySelectorAll('article .wiki-list li');
+    var historyRows = document.querySelectorAll('article .wiki-list li, body.Liberty .wiki-article .wiki-list li');
     for(var hi = 0; hi < historyRows.length; hi++) {
       var historyRow = historyRows[hi];
       var italicTag = historyRow.querySelector('i');
@@ -3072,7 +3069,29 @@ function mainFunc() {
       }
     }
   }
+
+  if(ENV.skinName == "liberty") {
+    if(SET.addAdminLinksForLiberty) {
+      // 관리자 링크 추가
+      document.querySelector('nav.navbar ul.nav li.nav-item.dropdown .dropdown-menu').innerHTML += '<div class="dropdown-divider"></div>' +
+      '<a class="dropdown-item" href="/admin/suspend_account">계정 차단</a>' +
+      '<a class="dropdown-item" href="/admin/ipacl">IP 차단</a>' +
+      '<a class="dropdown-item" href="/admin/grant">권한 부여</a>';
+      if(ENV.IsDocument) {
+        addArticleButton("ACL", function(){
+          location.href = "/admin/acl/" + ENV.docTitle;
+        })
+      }
+    }
+    if(ENV.IsDocument && ENV.docTitle.indexOf('사용자:') == 0) {
+      addArticleButton("기여내역", function(){
+        var userName = ENV.docTitle.substring(4);
+        location.href = "/contribution/" + (validateIP(userName) ? "ip/" : "author/") + userName + "/document";
+      })
+    }
+  }
 }
+
 
 // 아이덴티콘 버그 수정
 setInterval(function () {
@@ -3135,7 +3154,10 @@ addItemToMemberMenu("NamuFix 설정", function (evt) {
       '<input type="checkbox" name="removeNFQuotesInAnchorPreview" data-setname="removeNFQuotesInAnchorPreview" data-as-boolean>토론 메세지 위에 인용형식으로 표시할때, 인용문 안에 인용 형식으로 표시된 미리보기 제거' +
       '<h1 class="wsmall">항상 펼치기</h1>' +
       '<p>접기 문법(folding)을 이용해 접혀진 내용을 바로 펼칩니다.</p>' +
-      '<input type="checkbox" name="alwaysUnfold" data-setname="alwaysUnfold" data-as-boolean>항상 펼치기</input>';
+      '<input type="checkbox" name="alwaysUnfold" data-setname="alwaysUnfold" data-as-boolean>항상 펼치기</input>' +
+      '<h1 class="wsmall">liberty 스킨에서 관리자 링크 추가</h1>' +
+      '<p>Liberty 스킨에 관리자 기능 링크를 추가합니다. 어처피 권한 없으면 못쓰니까 이상한 생각하지 마세요.</p>' +
+      '<input type="checkbox" name="addAdminLinksForLiberty" data-setname="addAdminLinksForLiberty" data-as-boolean>관리자 링크 추가하기</input>';
     var optionTags = document.querySelectorAll('[data-setname]');
     SET.load();
     for (var i = 0; i < optionTags.length; i++) {
@@ -3211,13 +3233,13 @@ addItemToMemberMenu('KISA WHOIS', function (evt) {
 mainFunc();
 listenPJAX(mainFunc);
 
-if (document.querySelector('body').getAttribute('class').indexOf('senkawa') == -1) {
+if (document.querySelector('body').getAttribute('class').indexOf('senkawa') == -1 && document.querySelector('body').getAttribute('class').indexOf('Liberty') == -1) {
   SET.load();
   if (!SET.ignoreNonSenkawaWarning) {
     var win = TooSimplePopup();
     win.title('스킨 관련 안내');
     win.content(function (element) {
-      element.innerHTML = '<p><strong>안내:</strong> NamuFix는 senkawa 스킨이 아닌 경우 비정상적으로 작동할 수 있습니다.<br>가능하면 senkawa 스킨을 사용해주십시오.<br><em>(이 메세지는 한번만 보여집니다.)</em></p>'
+      element.innerHTML = '<p><strong>안내:</strong> NamuFix는 senkawa/liberty 스킨이 아닌 경우 비정상적으로 작동할 수 있습니다.<br>가능하면 senkawa/liberty 스킨을 사용해주십시오.<br><em>(이 메세지는 한번만 보여집니다.)</em></p>'
     });
     win.button('닫기', win.close);
     SET.ignoreNonSenkawaWarning = true;
