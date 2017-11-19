@@ -601,13 +601,20 @@ function INITSET() { // Storage INIT
 }
 
 var nfMenuDivider = document.createElement("div");
-(function () {
-  nfMenuDivider.className = "dropdown-divider";
-  var secondDivider = document.querySelectorAll('.dropdown-divider')[1];
-  secondDivider.parentNode.insertBefore(nfMenuDivider, secondDivider);
-})();
-
-function addItemToMemberMenu(text, onclick) {
+if(document.querySelectorAll('.dropdown-divider').length == 0) {
+  (function () {
+    nfMenuDivider.className = "dropdown-divider";
+    document.querySelector('nav.navbar ul.nav li.nav-item.dropdown .dropdown-menu').appendChild(nfMenuDivider);
+    document.querySelector('nav.navbar ul.nav li.nav-item.dropdown .dropdown-menu').appendChild(document.createElement("div"));
+  })();
+} else {
+  (function () {
+    nfMenuDivider.className = "dropdown-divider";
+    var secondDivider = document.querySelectorAll('.dropdown-divider')[1];
+    secondDivider.parentNode.insertBefore(nfMenuDivider, secondDivider);
+  })();
+}
+function addItemToMemberMenu (text, onclick) {
   var menuItem = document.createElement("a");
   menuItem.className = "dropdown-item";
   menuItem.href = "#NothingToLink";
