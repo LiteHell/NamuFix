@@ -991,6 +991,8 @@ function mainFunc() {
     ENV.docTitle = /^(.+) \(토론\)/.exec(document.querySelector('.liberty-content .liberty-content-header .title h1').textContent.trim())[1]
   else if(/^\/[a-zA-Z_]+\/(.+)/.test(location.pathname))
     ENV.docTitle = decodeURIComponent(/^\/[a-zA-Z_]+\/(.+)/.exec(location.pathname)[1]);
+  else
+    ENV.docTitle = document.querySelector('body.Liberty .liberty-content-header .title h1').textContent;
   ENV.docTitle = ENV.docTitle.trim();
   if (ENV.Discussing) {
     ENV.topicNo = /^\/thread\/([^#]+)/.exec(location.pathname)[1];
