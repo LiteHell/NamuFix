@@ -2686,7 +2686,7 @@ function mainFunc() {
     }
   } else if (ENV.IsUserContribsPage) {
     function insertBeforeTable(element) {
-      var bread = document.querySelector("article > ol.breadcrumb.link-nav");
+      var bread = document.querySelector("article > ol.breadcrumb.link-nav, body.Liberty .wiki-article ol.breadcrumb.link-nav");
       bread.parentNode.insertBefore(element, bread);
     }
 
