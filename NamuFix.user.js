@@ -1243,7 +1243,7 @@ function mainFunc() {
       }
 
       // Add Basic MarkUp Buttons
-      var decoDropdown = Designer.dropdown('<span class="ion-wand"></span>').hoverMessage('텍스트 꾸미기');
+      var decoDropdown = Designer.dropdown('<span class="ion-wand fa fa-magic"></span>').hoverMessage('텍스트 꾸미기');
       decoDropdown.button('<strong>A</strong>', '굵게').click(function () {
         TextProc.ToggleWrapSelection("'''");
       });
@@ -1537,13 +1537,13 @@ function mainFunc() {
         }
       };
       // Add Insertable Things
-      var insertablesDropDown = Designer.dropdown('<span class="ion-paperclip"></span>').hoverMessage('삽입 가능한 미디어');
-      insertablesDropDown.button('<span class="ion-social-youtube" style="color:red;"></span>', 'YouTube 동영상').click(InsertYouTube);
-      insertablesDropDown.button('<span class="ion-map"></span>', '지도').click(MapMacro);
-      insertablesDropDown.button('<span class="ion-ios-play-outline" style="color: Aqua;"></span>', '다음 TV팟 동영상').click(DaumTVPotMarkUp);
-      insertablesDropDown.button('<span class="ion-images" style="color: #008275;"></span>', '나무위키 이미지 업로드').click(namuUpload);
+      var insertablesDropDown = Designer.dropdown('<span class="ion-paperclip fa fa-paperclip"></span>').hoverMessage('삽입 가능한 미디어');
+      insertablesDropDown.button('<span class="ion-social-youtube fa fa-youtube-play" style="color:red;"></span>', 'YouTube 동영상').click(InsertYouTube);
+      insertablesDropDown.button('<span class="ion-map fa fa-map"></span>', '지도').click(MapMacro);
+      insertablesDropDown.button('<span class="ion-ios-play-outline fa fa-play" style="color: Aqua;"></span>', '다음 TV팟 동영상').click(DaumTVPotMarkUp);
+      insertablesDropDown.button('<span class="ion-images fa fa-picture-o" style="color: #008275;"></span>', '나무위키 이미지 업로드').click(namuUpload);
 
-      Designer.button('<span class="ion-ios-grid-view"></span>').hoverMessage('간단한 표 만들기').click(function () {
+      Designer.button('<span class="ion-ios-grid-view fa fa-table"></span>').hoverMessage('간단한 표 만들기').click(function () {
         var numbers = prompt('행과 열을 행숫x열숫 형태로 입력해주세요. 예시: 2x3, 2*3')
         if(/([0-9]+).([0-9]+)/.test(numbers)) {
           var num_matches = /([0-9]+).([0-9]+)/.exec(numbers)
@@ -1614,7 +1614,7 @@ function mainFunc() {
         });
       })
 
-      Designer.button('<span class="ion-checkmark-round"></span>').hoverMessage('맞춤법 검사기').click(function() {
+      Designer.button('<span class="ion-checkmark-round fa fa-check"></span>').hoverMessage('맞춤법 검사기').click(function() {
         var win = TooSimplePopup();
         win.title('나사 빠진 맞춤법 검사기');
         win.content(function(el){el.innerHTML = "진행중입니다...."});
@@ -1656,7 +1656,7 @@ function mainFunc() {
         })
       });
 
-      Designer.button('<span class="ion-ios-timer-outline"></span>').hoverMessage('아카이브하고 외부링크 삽입').click(function () {
+      Designer.button('<span class="ion-ios-timer-outline fa fa-clock-o"></span>').hoverMessage('아카이브하고 외부링크 삽입').click(function () {
         var win = TooSimplePopup();
         win.title("아카이브 한후 외부링크 삽입");
         var linkTo = "",
@@ -1887,11 +1887,11 @@ function mainFunc() {
         }
         tempsaveManager.MigrateIfThereIs();
         // Tempsave Menu
-        var tempsaveDropdown = Designer.dropdown('<span class="ion-ios-pricetags-outline"></span>').hoverMessage('임시저장');
-        tempsaveDropdown.button('<span class="ion-ios-pricetag-outline"></span>', '임시저장').click(function () {
+        var tempsaveDropdown = Designer.dropdown('<span class="ion-ios-pricetags-outline fa fa-save"></span>').hoverMessage('임시저장');
+        tempsaveDropdown.button('<span class="ion-ios-pricetag-outline fa fa-save"></span>', '임시저장').click(function () {
           tempsaveManager.save(ENV.docTitle, ENV.section, Date.now(), txtarea.value);
         });
-        tempsaveDropdown.button('<span class="ion-filing"></span>', '임시저장 불러오기').click(function () {
+        tempsaveDropdown.button('<span class="ion-filing fa fa-folder-open-o"></span>', '임시저장 불러오기').click(function () {
           // title(text), content(callback), foot(callback), button(text,onclick), close
           var win = TooSimplePopup();
           win.title('임시저장 불러오기')
@@ -1927,13 +1927,13 @@ function mainFunc() {
           });
           win.button('닫기', win.close);
         });
-        tempsaveDropdown.button('<span class="ion-trash-a" style="color:red;"></span>', '이 문서의 모든 임시저장 삭제').click(function () {
+        tempsaveDropdown.button('<span class="ion-trash-a fa fa-trash" style="color:red;"></span>', '이 문서의 모든 임시저장 삭제').click(function () {
           tempsaveManager.delete(ENV.docTitle);
         });
-        tempsaveDropdown.button('<span class="ion-trash-a" style="color:orangered;"></span>', '이 문서의 이 문단의 모든 임시저장 삭제').click(function () {
+        tempsaveDropdown.button('<span class="ion-trash-a fa fa-trash" style="color:orangered;"></span>', '이 문서의 이 문단의 모든 임시저장 삭제').click(function () {
           tempsaveManager.delete(ENV.docTitle, ENV.section);
         });
-        tempsaveDropdown.button('<span class="ion-trash-a" style="color:orange;"></span>', '특정 임시저장만 삭제').click(function () {
+        tempsaveDropdown.button('<span class="ion-trash-a fa fa-trash" style="color:orange;"></span>', '특정 임시저장만 삭제').click(function () {
           // title(text), content(callback), foot(callback), button(text,onclick), close
           var win = TooSimplePopup();
           var tempsaveList = tempsaveManager.getByTitle(ENV.docTitle);
@@ -1975,7 +1975,7 @@ function mainFunc() {
         }, 600000);
       }
       // Template Insert Feature
-      var templatesDropdown = Designer.dropdown('<span class="ion-ios-copy-outline"></span>').hoverMessage('템플릿/틀 삽입과 최근에 사용/삽입한 템플릿/틀 기록');
+      var templatesDropdown = Designer.dropdown('<span class="ion-ios-copy-outline fa fa-file"></span>').hoverMessage('템플릿/틀 삽입과 최근에 사용/삽입한 템플릿/틀 기록');
       var refreshTemplatesDropdown = function () {
         SET.load();
         templatesDropdown.clear();
@@ -2004,15 +2004,15 @@ function mainFunc() {
           };
         }
         for (var i = 0; i < (rutl < 9 ? rutl : 9); i++) {
-          templatesDropdown.button('<span class="ion-ios-paper-outline"></span>', SET.recentlyUsedTemplates[i]).click(InsertTemplateClosure(SET.recentlyUsedTemplates[i]));
+          templatesDropdown.button('<span class="ion-ios-paper-outline fa fa-file"></span>', SET.recentlyUsedTemplates[i]).click(InsertTemplateClosure(SET.recentlyUsedTemplates[i]));
         }
-        templatesDropdown.button('<span class="ion-close-round"></span>', '기록 삭제').click(function () {
+        templatesDropdown.button('<span class="ion-close-round fa fa-times"></span>', '기록 삭제').click(function () {
           SET.load();
           SET.recentlyUsedTemplates = [];
           SET.save();
           setTimeout(refreshTemplatesDropdown, 300);
         });
-        templatesDropdown.button('<span class="ion-plus-round"></span>', '템플릿/틀 삽입').click(function () {
+        templatesDropdown.button('<span class="ion-plus-round fa fa-plus"></span>', '템플릿/틀 삽입').click(function () {
           var templateName = prompt('템플릿/틀 이름을 입력하세요.');
           if (!/^(?:템플릿|Template|틀):.+/.test(templateName) && !confirm('올바른 템플릿/틀 이름이 아닌 것 같습니다. 계속할까요?')) return;
           InsertTemplateClosure(templateName)();
@@ -3036,7 +3036,7 @@ function mainFunc() {
         // 열람 수정 삭제 (한국) 토론 이동
         var valuePatternWithBlockKorea = /(admin|member|everyone),(admin|member|everyone),(admin|member|everyone),(true|false),(admin|member|everyone),(admin|member|everyone)/;
         var valuePattern = /(admin|member|everyone),(admin|member|everyone),(admin|member|everyone),(admin|member|everyone),(admin|member|everyone)/;
-        var icons = ['ion-eye', 'ion-edit', 'ion-trash-a', 'ion-android-textsms', 'ion-arrow-right-c', 'ion-flag'];
+        var icons = ['ion-eye fa fa-eye', 'ion-edit fa fa-edit', 'ion-trash-a fa fa-trash', 'ion-android-textsms fa fa-comments', 'ion-arrow-right-c fa fa-arrow-right', 'ion-flag fa fa-flag'];
         var koreanAclConds = {
           'member': '회원',
           'admin': '관리자',
