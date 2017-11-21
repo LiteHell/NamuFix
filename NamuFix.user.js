@@ -597,6 +597,8 @@ function INITSET() { // Storage INIT
     SET.alwaysUnfold = false;
   if (nOu(SET.addAdminLinksForLiberty))
     SET.addAdminLinksForLiberty = false;
+  if (nOu(SET.autoTempsaveSpan))
+    SET.autoTempsaveSpan = 1000 * 60 * 5; // 5분
   SET.save();
 }
 
@@ -1949,9 +1951,10 @@ function mainFunc() {
           });
           win.button('닫기', win.close);
         });
-        setInterval(function () {
-          tempsaveManager.save(ENV.docTitle, ENV.section, Date.now(), txtarea.value);
-        }, 600000);
+        if (SET.autoTempsaveSpan > 0)
+          setInterval(function () {
+            tempsaveManager.save(ENV.docTitle, ENV.section, Date.now(), txtarea.value);
+          }, SET.autoTempsaveSpan);
       }
       // Template Insert Feature
       var templatesDropdown = Designer.dropdown('<span class="ion-ios-copy-outline"></span>').hoverMessage('템플릿/틀 삽입과 최근에 사용/삽입한 템플릿/틀 기록');
@@ -3145,8 +3148,11 @@ addItemToMemberMenu("NamuFix 설정", function (evt) {
       '<input type="checkbox" name="alwaysUnfold" data-setname="alwaysUnfold" data-as-boolean>항상 펼치기</input>' +
       '<h1 class="wsmall">liberty 스킨에서 관리자 링크 추가</h1>' +
       '<p>Liberty 스킨에 관리자 기능 링크를 추가합니다. 어처피 권한 없으면 못쓰니까 이상한 생각하지 마세요.</p>' +
-      '<input type="checkbox" name="addAdminLinksForLiberty" data-setname="addAdminLinksForLiberty" data-as-boolean>관리자 링크 추가하기</input>';
-    var optionTags = document.querySelectorAll('[data-setname]');
+      '<input type="checkbox" name="addAdminLinksForLiberty" data-setname="addAdminLinksForLiberty" data-as-boolean>관리자 링크 추가하기</input>' +
+      '<h1 class="wsmall">자동저장 시간 간격</h1>' +
+      '<p>편집중 자동저장 간격을 설정합니다. 0 이하의 값으로 설정할 시 자동으로 이루어지지 않으며 이 경우 단축키나 메뉴를 이용해 수동으로 저장해야 합니다.</p>' +
+      '<input type="number" name="autoTempsaveSpan" data-setname="autoTempsaveSpan"></input>ms (1000ms = 1s)';
+      var optionTags = document.querySelectorAll('[data-setname]');
     SET.load();
     for (var i = 0; i < optionTags.length; i++) {
       var tag = optionTags[i];
