@@ -8,8 +8,10 @@ namuapi.theseedRequest = function (options) {
             _newoptions[i] = options[i];
         else
             _newoptions.onload = function (res) {
+                console.log('[NamuFix] 위키 측으로부터 응답 받음.');
                 var aTagForParsingUrl = document.createElement(res.finalUrl);
                 if (aTagForParsingUrl.pathname.indexOf("/check") === 0) {
+                    console.log('[NamuFix] /check 페이지 감지됨.');
                     namuapi.resolveRecaptcha(function (capKeyRes) {
                         if (capKeyRes == null) {
                             namuapi.theseedRequest(options);
@@ -24,6 +26,7 @@ namuapi.theseedRequest = function (options) {
                                     'Content-Type': 'application/x-www-form-urlencoded'
                                 },
                                 onload: function (checkRes) {
+                                    console.log('[NamuFix] /check페이지에 g-recaptcha-response 전송함. 요청 재진행중...');
                                     namuapi.theseedRequest(options);
                                 }
                             })
