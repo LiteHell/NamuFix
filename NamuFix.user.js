@@ -1877,7 +1877,7 @@ function mainFunc() {
 
         function InsertTemplateClosure(na) {
           return function () {
-            namuapi.res(na, function(templateContent){
+            namuapi.raw(na, function(templateContent){
               SET.load();
               if (SET.recentlyUsedTemplates.indexOf(na) == -1) SET.recentlyUsedTemplates.push(na);
               SET.save();
