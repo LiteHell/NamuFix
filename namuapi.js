@@ -4,9 +4,9 @@ var namuapi = {};
 namuapi.theseedRequest = function (options) {
     var _newoptions = {};
     for (var i in options) {
-        if (i !== "onload")
+        if (i !== "onload") {
             _newoptions[i] = options[i];
-        else
+        } else {
             _newoptions.onload = function (res) {
                 console.log('[NamuFix] 위키 측으로부터 응답 받음.');
                 var aTagForParsingUrl = document.createElement(res.finalUrl);
@@ -36,6 +36,7 @@ namuapi.theseedRequest = function (options) {
                     options.onload(res);
                 }
             };
+        }
     }
     GM_xmlhttpRequest(_newoptions);
 }
