@@ -9,7 +9,8 @@ namuapi.theseedRequest = function (options) {
         } else {
             _newoptions.onload = function (res) {
                 console.log('[NamuFix] 위키 측으로부터 응답 받음.');
-                var aTagForParsingUrl = document.createElement(res.finalUrl);
+                var aTagForParsingUrl = document.createElement("a");
+                aTagForParsingUrl.href = res.finalUrl;
                 if (aTagForParsingUrl.pathname.indexOf("/check") === 0) {
                     console.log('[NamuFix] /check 페이지 감지됨.');
                     namuapi.resolveRecaptcha(function (capKeyRes) {
