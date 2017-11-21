@@ -1828,7 +1828,9 @@ function mainFunc() {
             }
             return a;
           }
-          this.save = function (docTitle, sectno, timestamp, text) {
+          this.save = function (docTitle, sectno, timestamp, text, wikihost) {
+            if (typeof wikihost === 'undefined')
+              var wikihost = location.host;
             SET.load();
             if (nOu(SET.tempsaves[docTitle])) {
               SET.tempsaves[docTitle] = [];
@@ -1837,7 +1839,8 @@ function mainFunc() {
             SET.tempsaves[docTitle].push({
               section: sectno,
               timestamp: timestamp,
-              text: text
+              text: text,
+              host: wikihost
             });
             SET.save();
           }
