@@ -154,3 +154,5 @@ namuapi.uploadImage = function (data, callback) {
         }
     });
 }
+
+window.namuapi = namuapi;
