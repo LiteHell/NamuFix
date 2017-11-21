@@ -1864,28 +1864,7 @@ function mainFunc() {
             SET.tempsaves[docTitle] = newArray;
             SET.save();
           }
-          this.MigrateIfThereIs = function () {
-            SET.load();
-            var autosaves = JSON.parse(GM_getValue("AutoSavedDocuments", "null"));
-            if (autosaves != null) {
-              var pattern = /(.+?)###sec-(.+?)/;
-              for (var i in autosaves) {
-                var matches = pattern.exec(i);
-                var title = matches[1];
-                var sectno = matches[2];
-                if (nOu(SET.tempsaves[title])) {
-                  SET.tempsaves[title] = [];
-                }
-                for (var ii in autosaves[i]) {
-                  ht.save(title, sectno, ii, autosaves[i][ii]);
-                }
-              }
-              SET.save();
-              GM_setValue("AutoSavedDocuments", "null");
-            }
-          };
         }
-        tempsaveManager.MigrateIfThereIs();
         // Tempsave Menu
         var tempsaveDropdown = Designer.dropdown('<span class="ion-ios-pricetags-outline"></span>').hoverMessage('임시저장');
         tempsaveDropdown.button('<span class="ion-ios-pricetag-outline"></span>', '임시저장').click(function () {
