@@ -171,7 +171,7 @@ namuapi.blockIP = function(data, callback) {
         },
         onload: function (res) {
             var parser = new DOMParser();
-            var resDoc = parser.parseFromString(res.responseText);
+            var resDoc = parser.parseFromString(res.responseText, "text/html");
             if(resDoc.querySelector('p.error-desc, .alert.alert-danger')) {
                 callback(resDoc.querySelector('p.error-desc, .alert.alert-danger').textContent);
             } else {
@@ -193,7 +193,7 @@ namuapi.unblockIP = function(ip, callback) {
         },
         onload: function (res) {
             var parser = new DOMParser();
-            var resDoc = parser.parseFromString(res.responseText);
+            var resDoc = parser.parseFromString(res.responseText, "text/html");
             if(resDoc.querySelector('p.error-desc, .alert.alert-danger')) {
                 callback(resDoc.querySelector('p.error-desc, .alert.alert-danger').textContent);
             } else {
@@ -217,7 +217,7 @@ namuapi.blockAccount = function(data, callback) {
         },
         onload: function (res) {
             var parser = new DOMParser();
-            var resDoc = parser.parseFromString(res.responseText);
+            var resDoc = parser.parseFromString(res.responseText, "text/html");
             if(resDoc.querySelector('p.error-desc, .alert.alert-danger')) {
                 callback(resDoc.querySelector('p.error-desc, .alert.alert-danger').textContent);
             } else {
