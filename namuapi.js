@@ -155,4 +155,75 @@ namuapi.uploadImage = function (data, callback) {
     });
 }
 
+namuapi.blockIP = function(data, callback) {
+    var query = new FormData();
+    query.append('ip', data.ip);
+    query.append('note', data.note);
+    query.append('expire', data.expire);
+    if (data.allowLogin)
+        query.append('allow_login', 'Y');
+    namuapi.theseedRequest({
+        method: 'POST',
+        url: 'https://' + location.host + '/admin/ipacl',
+        data: query,
+        headers: {
+            "Content-Type": "application/x-www-form-urlencoded"
+        },
+        onload: function (res) {
+            var parser = new DOMParser();
+            var resDoc = parser.parseFromString(res.responseText);
+            if(resDoc.querySelector('p.error-desc, .alert.alert-danger')) {
+                callback(resDoc.querySelector('p.error-desc, .alert.alert-danger').textContent);
+            } else {
+                callback(null, data);
+            }
+        }
+    })
+};
+
+namuapi.unblockIP = function(ip, callback) {
+    var query = new FormData();
+    query.append('ip', ip);
+    namuapi.theseedRequest({
+        method: 'POST',
+        url: 'https://' + location.host + '/admin/ipacl/remove',
+        data: query,
+        headers: {
+            "Content-Type": "application/x-www-form-urlencoded"
+        },
+        onload: function (res) {
+            var parser = new DOMParser();
+            var resDoc = parser.parseFromString(res.responseText);
+            if(resDoc.querySelector('p.error-desc, .alert.alert-danger')) {
+                callback(resDoc.querySelector('p.error-desc, .alert.alert-danger').textContent);
+            } else {
+                callback(null, data);
+            }
+        }
+    })
+};
+
+namuapi.blockAccount = function(data, callback) {
+    var query = new FormData();
+    query.append('username', data.id);
+    query.append('note', data.note);
+    query.append('expire', data.expire);
+    namuapi.theseedRequest({
+        method: 'POST',
+        url: 'https://' + location.host + '/admin/suspend_account',
+        data: query,
+        headers: {
+            "Content-Type": "application/x-www-form-urlencoded"
+        },
+        onload: function (res) {
+            var parser = new DOMParser();
+            var resDoc = parser.parseFromString(res.responseText);
+            if(resDoc.querySelector('p.error-desc, .alert.alert-danger')) {
+                callback(resDoc.querySelector('p.error-desc, .alert.alert-danger').textContent);
+            } else {
+                callback(null, data);
+            }
+        }
+    })
+};
 window.namuapi = namuapi;
