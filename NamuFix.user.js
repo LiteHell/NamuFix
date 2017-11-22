@@ -21,6 +21,7 @@
 // @require     https://cdn.rawgit.com/LiteHell/TooSimplePopupLib/7f2a8a81f11f980c1dfa6b5b2213cd38b8bbde3c/TooSimplePopupLib.js
 // @require     https://cdn.rawgit.com/wkpark/jsdifflib/dc19d085db5ae71cdff990aac8351607fee4fd01/difflib.js
 // @require     https://cdn.rawgit.com/wkpark/jsdifflib/dc19d085db5ae71cdff990aac8351607fee4fd01/diffview.js
+// @require     https://cdn.rawgit.com/LiteHell/NamuFix/601d2af588a6faa72641ecd7dab8c10404d11c8e/namuapi.js
 // @connect     cdn.rawgit.com
 // @connect     cdnjs.cloudflare.com
 // @connect     api.github.com
@@ -472,39 +473,6 @@ function addArticleButton(text, onclick) {
   buttonGroup.insertBefore(aTag, buttonGroup.firstChild);
 };
 
-function resolveRecaptcha(callback) {
-  GM_xmlhttpRequest({
-    method: 'GET',
-    url: 'https://namu.wiki/check',
-    onload: function (res) {
-      var siteKey = /["']sitekey["']: ["']([^"']+)["']/.exec(res.responseText)[1];
-      var captchaWin = TooSimplePopup();
-      captchaWin.title('reCAPTCHA 해결');
-      captchaWin.content(function(winContainer) {
-        var id = "nf-recaptcha-" + Date.now();
-        var btnId = 'nf-communicate-' + Date.now();
-        var cbName = "nfreCAPTCHACallback" + Date.now(); 
-        winContainer.innerHTML = '<p>reCAPTCHA를 해결해주세요.</p><div id="' + id + '"></div><button style="display: none;" type="button" id="' + btnId + '"></button>';
-        var injectedButton = winContainer.querySelector('#' + btnId);
-        winContainer.querySelector('#' + id).dataset.callback = cbName;
-        winContainer.querySelector('#' + id).dataset.sitekey = siteKey;
-        injectedButton.addEventListener('click', function(evt){
-          evt.preventDefault();
-          callback(injectedButton.dataset.recaptchaResponse);
-          captchaWin.close();
-        })
-        var scriptTag = document.createElement("script");
-        scriptTag.innerHTML = 'function ' + cbName + '(recaptcha_response){var btn = document.getElementById("' + btnId + '"); btn.dataset.recaptchaResponse = recaptcha_response; btn.click();}function renderNFReCAPTCHA(){if(!window.grecaptcha) return setTimeout(renderNFReCAPTCHA, 200); window.grecaptcha.render(document.getElementById("' + id + '"));} setTimeout(renderNFReCAPTCHA, 200);';
-        winContainer.appendChild(scriptTag);
-      });
-      captchaWin.button('닫기', function(){
-        callback(null);
-        captchaWin.close();
-      })
-    }
-  });
-}
-
 function uniqueID() {
   var dt = Date.now();
   var url = location.href;
@@ -597,6 +565,8 @@ function INITSET() { // Storage INIT
     SET.alwaysUnfold = false;
   if (nOu(SET.addAdminLinksForLiberty))
     SET.addAdminLinksForLiberty = false;
+  if (nOu(SET.autoTempsaveSpan))
+    SET.autoTempsaveSpan = 1000 * 60 * 5; // 5분
   SET.save();
 }
 
@@ -646,54 +616,6 @@ function getVPNGateIPList(callback) {
   } else {
     callback(_vpngateList);
   }
-}
-
-function getRAW(title, onfound, onnotfound) {
-  GM_xmlhttpRequest({
-    method: 'GET',
-    url: 'https://' + location.host + '/raw/' + title,
-    onload: function (res) {
-      if (res.status == 404) {
-        onnotfound(title);
-        return;
-      }
-      onfound(res.responseText, title);
-    }
-  })
-}
-
-function searchBlockHistory(query, isAuthor, callback) {
-  GM_xmlhttpRequest({
-    method: 'GET',
-    url: 'https://' + location.host + '/BlockHistory?target=' + (isAuthor ? "author" : "text") +  '&query=' + encodeURIComponent(query),
-    onload: function (res) {
-      var parser = new DOMParser();
-      var doc = parser.parseFromString(res.responseText, "text/html");
-      if(doc.querySelector('article ul.wiki-list > li') == null)
-        return callback([]);
-      var logs = doc.querySelectorAll('article ul.wiki-list > li');
-      var result = [];
-      // get first entry only
-      for(var i = 0; i < logs.length; i++) {
-        var curLog = logs[i];
-        var durationMatch = /\((.+?)\)/.exec(curLog.querySelector('i').nextSibling.textContent.trim());
-        var entry = {
-          blocker: curLog.querySelector('strong > a').textContent.trim(),
-          blocked: /^사용자가\s+(.+)/.exec(curLog.querySelector('strong').nextSibling.textContent.trim())[1],
-          duration: durationMatch == null ? null : durationMatch[1],
-          reason: curLog.querySelector('span[style]') ? curLog.querySelector('span[style]').textContent : "",
-          type: /\((.+?)\)/.exec(curLog.querySelector('i').textContent)[1],
-          at: new Date(curLog.querySelector('time').getAttribute('datetime'))
-        };
-        if(entry.type == "IP 주소 차단") entry.type = "blockIP";
-        else if(entry.type == "IP 주소 차단 해제") entry.type = "unblockIP"
-        else if(entry.type == "사용자 차단") entry.type = "blockUser";
-        else if(entry.type == "사용자 차단 해제") entry.type = "unblockUser";
-        result.push(entry);
-      }
-      callback(result);
-    }
-  })
 }
 function makeTabs() {
   var div = document.createElement("div");
@@ -1060,7 +982,7 @@ function mainFunc() {
           var editUrl = 'https://' + location.host + (ENV.IsWritingRequest ? '/new_edit_request/' : '/edit/').concat(ENV.docTitle, ENV.section != -2 ? '?section='.concat(ENV.section) : '');
           if (ENV.IsEditingRequest)
             editUrl = location.href; // 귀찮음....
-          GM_xmlhttpRequest({
+          namuapi.theseedRequest({
             url: editUrl,
             method: "GET",
             onload: function (res) {
@@ -1311,7 +1233,6 @@ function mainFunc() {
               win.content(function (el) {
                 el.innerHTML = '<p>파일을 업로드하고 있습니다. 잠시만 기다려주세요.</p><p>현재 업로드중 : ' + file.name + '</p>';
               });
-              var query = new FormData();
               var fn = "파일:" + SHA256(String(Date.now()) + file.name).substring(0, 12) + "_" + file.name;
               if (/\.[A-Z]+$/.test(fn)) {
                 var fnSplitted = fn.split('.');
@@ -1322,53 +1243,43 @@ function mainFunc() {
                 win.close();
                 return next();
               }
-              function sendUploadReq(recaptchaKey){
-                query.append('file', file);
-                query.append('document', fn);
-                query.append('text', docuText);
-                query.append('log', "NamuFix " + GM_info.script.version + "버전으로 자동으로 업로드됨");
-                query.append('baserev', 0);
-                query.append('identifier', (ENV.IsLoggedIn ? "m" : "i") + ":" + ENV.UserName);
-                if(recaptchaKey !== null)
-                  query.append('g-recaptcha-response', recaptchaKey);
-                GM_xmlhttpRequest({
-                  method: 'POST',
-                  url: 'https://' + location.host + '/Upload',
-                  headers: {
-                    "Referer": 'https://' + location.host + '/Upload'
-                  },
-                  data: query,
-                  onload: function (res) {
-                    var parser = new DOMParser();
-                    if (parser.parseFromString(res.responseText, "text/html").querySelector("p.wiki-edit-date") != null) {
-                      TextProc.selectionText(TextProc.selectionText() + '[[' + fn + ']]');
-                    } else if(res.responseText.indexOf('CAPTCHA를 체크하지 않은 경우입니다.') != -1){
-                      resolveRecaptcha(function(res){
-                        if(res == null) {
-                          if (isLastItem)
-                            finish();
-                          win.close();
-                          next();
-                          return;
-                        }
-                        sendUploadReq(res);
-                      });
+              var uploadImageParams = {
+                file: file,
+                fn: fn,
+                docuText: docuText,
+                log: "NamuFix " + GM_info.script.version + "버전으로 자동 업로드됨.",
+                identifier: (ENV.IsLoggedIn ? "m" : "i") + ":" + ENV.UserName
+              };
+              namuapi.uploadImage(uploadImageParams, function (err, resultName) {
+                if (err === null) {
+                  TextProc.selectionText(TextProc.selectionText() + '[[' + resultName + ']]');
+                } else if (err === "recaptcha_required") {
+                  namuapi.resolveRecaptcha(function(res){
+                    if(res == null) {
+                      alert('reCAPTCHA를 입력하지 않아 건너뜁니다.');
+                      if (isLastItem)
+                        finish();
+                      win.close();
+                      next();
                       return;
-                    } else {
-                      var errorWin = TooSimplePopup();
-                      errorWin.title("이미지 업로드 오류 로그");
-                      errorWin.content(function(elem){elem.innerHTML = "<p>업로드에 실패했습니다.<br>추후 NamuFix 이슈트래커에 해당 오류를 이슈를 남기실 때 다음 내용을 같이 첨부해주세요.</p><textarea readonly style=\"max-width: 80vw; width: 500px; max-height: 80vh; height: 500px;\"></textarea>"; elem.querySelector('textarea').value = res.responseText;});
-                      errorWin.button("닫기", errorWin.close);
                     }
-                    if (isLastItem) {
-                      finish();
-                    }
-                    win.close();
-                    next();
-                  }
-                });
-              }
-              sendUploadReq(null);
+                    uploadImageParams.recaptchaKey = res;
+                    namuapi.uploadImage(uploadImageParams);
+                  });
+                  return;
+                } else if (err === "html_error") {
+                  var errorWin = TooSimplePopup();
+                  errorWin.title("이미지 업로드 오류 로그");
+                  errorWin.content(function(elem){elem.innerHTML = "<p>업로드에 실패했습니다.<br>추후 NamuFix 이슈트래커에 해당 오류를 이슈를 남기실 때 다음 내용을 같이 첨부해주세요.</p><textarea readonly style=\"max-width: 80vw; width: 500px; max-height: 80vh; height: 500px;\"></textarea>"; elem.querySelector('textarea').value = resultName;});
+                  errorWin.button("닫기", errorWin.close);
+                } else {
+                  alert('이미지 업로드중 알 수 없는 오류가 발생했습니다.');
+                }
+                if (isLastItem)
+                  finish();
+                win.close();
+                next();
+              });
             })
           }
           if (present_files != null) {
@@ -1826,7 +1737,9 @@ function mainFunc() {
             }
             return a;
           }
-          this.save = function (docTitle, sectno, timestamp, text) {
+          this.save = function (docTitle, sectno, timestamp, text, wikihost) {
+            if (typeof wikihost === 'undefined')
+              var wikihost = location.host;
             SET.load();
             if (nOu(SET.tempsaves[docTitle])) {
               SET.tempsaves[docTitle] = [];
@@ -1835,7 +1748,8 @@ function mainFunc() {
             SET.tempsaves[docTitle].push({
               section: sectno,
               timestamp: timestamp,
-              text: text
+              text: text,
+              host: wikihost
             });
             SET.save();
           }
@@ -1864,28 +1778,7 @@ function mainFunc() {
             SET.tempsaves[docTitle] = newArray;
             SET.save();
           }
-          this.MigrateIfThereIs = function () {
-            SET.load();
-            var autosaves = JSON.parse(GM_getValue("AutoSavedDocuments", "null"));
-            if (autosaves != null) {
-              var pattern = /(.+?)###sec-(.+?)/;
-              for (var i in autosaves) {
-                var matches = pattern.exec(i);
-                var title = matches[1];
-                var sectno = matches[2];
-                if (nOu(SET.tempsaves[title])) {
-                  SET.tempsaves[title] = [];
-                }
-                for (var ii in autosaves[i]) {
-                  ht.save(title, sectno, ii, autosaves[i][ii]);
-                }
-              }
-              SET.save();
-              GM_setValue("AutoSavedDocuments", "null");
-            }
-          };
         }
-        tempsaveManager.MigrateIfThereIs();
         // Tempsave Menu
         var tempsaveDropdown = Designer.dropdown('<span class="ion-ios-pricetags-outline fa fa-save"></span>').hoverMessage('임시저장');
         tempsaveDropdown.button('<span class="ion-ios-pricetag-outline fa fa-save"></span>', '임시저장').click(function () {
@@ -1970,9 +1863,10 @@ function mainFunc() {
           });
           win.button('닫기', win.close);
         });
-        setInterval(function () {
-          tempsaveManager.save(ENV.docTitle, ENV.section, Date.now(), txtarea.value);
-        }, 600000);
+        if (SET.autoTempsaveSpan > 0)
+          setInterval(function () {
+            tempsaveManager.save(ENV.docTitle, ENV.section, Date.now(), txtarea.value);
+          }, SET.autoTempsaveSpan);
       }
       // Template Insert Feature
       var templatesDropdown = Designer.dropdown('<span class="ion-ios-copy-outline fa fa-file"></span>').hoverMessage('템플릿/틀 삽입과 최근에 사용/삽입한 템플릿/틀 기록');
@@ -1983,24 +1877,19 @@ function mainFunc() {
 
         function InsertTemplateClosure(na) {
           return function () {
-            GM_xmlhttpRequest({
-              method: 'GET',
-              url: 'https://' + location.host + '/raw/' + na,
-              onload: function (res) {
-                if (res.status == 404) {
-                  alert('존재하지 않는 템플릿/틀입니다.');
-                  return;
-                }
-                SET.load();
-                if (SET.recentlyUsedTemplates.indexOf(na) == -1) SET.recentlyUsedTemplates.push(na);
-                SET.save();
-                if (na.indexOf('틀:') == 0)
-                  TextProc.selectionText(TextProc.selectionText() + '[include(' + na + ')]');
-                else
-                  txtarea.value = res.responseText;
-                setTimeout(refreshTemplatesDropdown, 300);
-              }
-            })
+            namuapi.raw(na, function(templateContent){
+              SET.load();
+              if (SET.recentlyUsedTemplates.indexOf(na) == -1) SET.recentlyUsedTemplates.push(na);
+              SET.save();
+              if (na.indexOf('틀:') == 0)
+                TextProc.selectionText(TextProc.selectionText() + '[include(' + na + ')]');
+              else
+                txtarea.value = templateContent;
+              setTimeout(refreshTemplatesDropdown, 300);
+            }, function() {
+              alert('존재하지 않는 템플릿/틀입니다.');
+              return;
+            });
           };
         }
         for (var i = 0; i < (rutl < 9 ? rutl : 9); i++) {
@@ -2257,7 +2146,7 @@ function mainFunc() {
       var codwe = 0;
       var codwnf = 0;
       for (var i = 0; i < higherDocs.length; i++) {
-        getRAW(higherDocs[i], function (r, t) {
+        namuapi.raw(higherDocs[i], function (r, t) {
           higherDocsWE[t] = true;
           codwe++;
         }, function (t) {
@@ -2333,7 +2222,7 @@ function mainFunc() {
         console.log('[NamuFix] 보이지 않은 레스 불러오기를 시작합니다. 범위 : ' + reqId + ' 에서 ' + lastReqId);
         for (console.log('[NamuFix] loadUnvisibleReses 루프 시작!'); reqId <= lastReqId; reqId += 30) {
           console.log('[NamuFix] 레스 요청중, 시작 번호는 ' + reqId);
-          GM_xmlhttpRequest({
+          namuapi.theseedRequest({
             method: "GET",
             url: "https://" + location.host + "/thread/" + ENV.topicNo + "/" + reqId,
             onload: function (res) {
@@ -2772,7 +2661,7 @@ function mainFunc() {
               evt.preventDefault();
               whoisPopup(ip);
             })
-            searchBlockHistory(ip + '/32', false, function(result) {
+            namuapi.searchBlockHistory(ip + '/32', false, function(result) {
               var filtered = result.filter(function(v){return v.blocked == ip + '/32'});
               if(filtered.length == 0) {
                 return ipInfo.querySelector('.nf_isipblocked').innerHTML = "차단기록 없음.";
@@ -3166,8 +3055,11 @@ addItemToMemberMenu("NamuFix 설정", function (evt) {
       '<input type="checkbox" name="alwaysUnfold" data-setname="alwaysUnfold" data-as-boolean>항상 펼치기</input>' +
       '<h1 class="wsmall">liberty 스킨에서 관리자 링크 추가</h1>' +
       '<p>Liberty 스킨에 관리자 기능 링크를 추가합니다. 어처피 권한 없으면 못쓰니까 이상한 생각하지 마세요.</p>' +
-      '<input type="checkbox" name="addAdminLinksForLiberty" data-setname="addAdminLinksForLiberty" data-as-boolean>관리자 링크 추가하기</input>';
-    var optionTags = document.querySelectorAll('[data-setname]');
+      '<input type="checkbox" name="addAdminLinksForLiberty" data-setname="addAdminLinksForLiberty" data-as-boolean>관리자 링크 추가하기</input>' +
+      '<h1 class="wsmall">자동저장 시간 간격</h1>' +
+      '<p>편집중 자동저장 간격을 설정합니다. 0 이하의 값으로 설정할 시 자동으로 이루어지지 않으며 이 경우 단축키나 메뉴를 이용해 수동으로 저장해야 합니다.</p>' +
+      '<input type="number" name="autoTempsaveSpan" data-setname="autoTempsaveSpan"></input>ms (1000ms = 1s)';
+      var optionTags = document.querySelectorAll('[data-setname]');
     SET.load();
     for (var i = 0; i < optionTags.length; i++) {
       var tag = optionTags[i];
@@ -3208,31 +3100,6 @@ addItemToMemberMenu('NamuFix 이슈트래커', function (evt) {
   evt.preventDefault();
 
   GM_openInTab("https://github.com/LiteHell/NamuFix/issues");
-});
-addItemToMemberMenu('설정 백업/복원', function (evt) {
-  evt.preventDefault();
-
-  if (!confirm('경고 : 이 기능은 불안정합니다.\n그래도 진행하시겠습니까?'))
-    return;
-  if (confirm('백업입니까?')) {
-    var keys = GM_listValues();
-    var obj = {};
-    for (var i = 0; i < keys.length; i++) {
-      var ke = keys[i];
-      obj[ke] = GM_getValue(ke);
-    }
-    prompt('복사해서 어딘가에 보관해두세요.', JSON.stringify(obj));
-  } else if (confirm('그러면 복원입니까?')) {
-    var obj = prompt('**원문 그대로** 복사하세요.');
-    obj = JSON.stringify(obj);
-    var keys = Object.keys(obj);
-    for (var i = 0; i < keys.length; i++) {
-      var ke = keys[i];
-      GM_setValue(ke, obj[ke]);
-    }
-  } else {
-    alert('취소됨.');
-  }
 });
 addItemToMemberMenu('KISA WHOIS', function (evt) {
   evt.preventDefault();
