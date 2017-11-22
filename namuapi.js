@@ -156,16 +156,10 @@ namuapi.uploadImage = function (data, callback) {
 }
 
 namuapi.blockIP = function(data, callback) {
-    var query = new FormData();
-    query.append('ip', data.ip);
-    query.append('note', data.note);
-    query.append('expire', data.expire);
-    if (data.allowLogin)
-        query.append('allow_login', 'Y');
     namuapi.theseedRequest({
         method: 'POST',
         url: 'https://' + location.host + '/admin/ipacl',
-        data: query,
+        data: 'ip=' + encodeURIComponent(data.ip) + '&note=' + encodeURIComponent(data.note) + '&expire=' + encodeURIComponent(data.expire) + (data.allowLogin ? '&allow_login=Y' : ''),
         headers: {
             "Content-Type": "application/x-www-form-urlencoded"
         },
@@ -182,12 +176,10 @@ namuapi.blockIP = function(data, callback) {
 };
 
 namuapi.unblockIP = function(ip, callback) {
-    var query = new FormData();
-    query.append('ip', ip);
     namuapi.theseedRequest({
         method: 'POST',
         url: 'https://' + location.host + '/admin/ipacl/remove',
-        data: query,
+        data: 'ip=' + encodeURIComponent(ip),
         headers: {
             "Content-Type": "application/x-www-form-urlencoded"
         },
@@ -197,21 +189,17 @@ namuapi.unblockIP = function(ip, callback) {
             if(resDoc.querySelector('p.error-desc, .alert.alert-danger')) {
                 callback(resDoc.querySelector('p.error-desc, .alert.alert-danger').textContent);
             } else {
-                callback(null, data);
+                callback(null, ip);
             }
         }
     })
 };
 
 namuapi.blockAccount = function(data, callback) {
-    var query = new FormData();
-    query.append('username', data.id);
-    query.append('note', data.note);
-    query.append('expire', data.expire);
     namuapi.theseedRequest({
         method: 'POST',
         url: 'https://' + location.host + '/admin/suspend_account',
-        data: query,
+        data: 'username=' + encodeURIComponent(data.id) + '&note=' + encodeURIComponent('note') + '&expire=' + encodeURIComponent('expire'),
         headers: {
             "Content-Type": "application/x-www-form-urlencoded"
         },
