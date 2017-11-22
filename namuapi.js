@@ -145,7 +145,7 @@ namuapi.uploadImage = function (data, callback) {
         onload: function (res) {
             var parser = new DOMParser();
             if (parser.parseFromString(res.responseText, "text/html").querySelector("p.wiki-edit-date") != null) {
-                callback(null, fn);
+                callback(null, data.fn);
             } else if (res.responseText.indexOf('CAPTCHA를 체크하지 않은 경우입니다.') != -1) {
                 callback("recaptcha_required");
             } else {

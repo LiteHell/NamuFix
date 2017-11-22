@@ -890,7 +890,7 @@ function mainFunc() {
   ENV.IsUserContribsPage = /^\/contribution\/(?:author|ip)\/.+\/(?:document|discuss)/.test(location.pathname);
   ENV.IsUploadPage = location.pathname.toLowerCase().indexOf('/upload/') == 0;
   ENV.IsDiff = location.pathname.toLowerCase().indexOf('/diff/') == 0;
-  ENV.IsLoggedIn = document.querySelectorAll('body.Liberty img.profile-img, .Liberty img.user-img').length == 1;
+  ENV.IsLoggedIn = document.querySelectorAll('body.Liberty img.profile-img, img.user-img').length == 1;
   ENV.IsSearch = location.pathname.indexOf('/search/') == 0;
   ENV.IsEditingRequest = /^\/edit_request\/([0-9]+)\/edit/.test(location.pathname);
   ENV.IsWritingRequest = /^\/new_edit_request\/.+/.test(location.pathname);
@@ -1250,6 +1250,7 @@ function mainFunc() {
                 log: "NamuFix " + GM_info.script.version + "버전으로 자동 업로드됨.",
                 identifier: (ENV.IsLoggedIn ? "m" : "i") + ":" + ENV.UserName
               };
+              console.log("[NamuFix] uploadNamu identifier : " + uploadImageParams.identifier);
               namuapi.uploadImage(uploadImageParams, function (err, resultName) {
                 if (err === null) {
                   TextProc.selectionText(TextProc.selectionText() + '[[' + resultName + ']]');
