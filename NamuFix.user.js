@@ -21,7 +21,7 @@
 // @require     https://cdn.rawgit.com/LiteHell/TooSimplePopupLib/7f2a8a81f11f980c1dfa6b5b2213cd38b8bbde3c/TooSimplePopupLib.js
 // @require     https://cdn.rawgit.com/wkpark/jsdifflib/dc19d085db5ae71cdff990aac8351607fee4fd01/difflib.js
 // @require     https://cdn.rawgit.com/wkpark/jsdifflib/dc19d085db5ae71cdff990aac8351607fee4fd01/diffview.js
-// @require     https://cdn.rawgit.com/LiteHell/NamuFix/78a926462d22dbc635767509d69620e74328b9cd/namuapi.js
+// @require     https://cdn.rawgit.com/LiteHell/NamuFix/d6411e0bf9100ae6a8d3b33389360f8f1a7254c3/namuapi.js
 // @connect     cdn.rawgit.com
 // @connect     cdnjs.cloudflare.com
 // @connect     api.github.com
@@ -308,6 +308,46 @@ function getIpWhois(ip, cb) {
   });
 }
 
+function enterTimespanPopup(title, callback) {
+  var win = TooSimplePopup();
+  win.title(title);
+  win.content(function(winContainer){
+    var units = {
+      second: 1,
+      minute: 60,
+      hour: 60 * 60,
+      day: 60 * 60 * 24,
+      week: 60 * 60 * 24 * 7,
+      month: 60 * 60 * 24 * 7 * 4, // 4 주
+      year: 60 * 60 * 24 * 7 * 48 // 48주
+    }
+    winContainer.innerHTML = '<div class="timespan-container">' +
+    ' <input type="number" data-unit="year" class="timespan-input" value="0">년' + 
+    ' <input type="number" data-unit="month" class="timespan-input" value="0">개월' + 
+    ' <input type="number" data-unit="week" class="timespan-input" value="0">주' + 
+    ' <input type="number" data-unit="day" class="timespan-input" value="0">일' + 
+    ' <input type="number" data-unit="hour" class="timespan-input" value="0">시간' + 
+    ' <input type="number" data-unit="minute" class="timespan-input" value="0">분' + 
+    ' <input type="number" data-unit="second" class="timespan-input" value="0">초' +
+    '</div>';
+    win.button('닫기', function(){
+      win.close();
+      callback(null);
+    });
+    win.button('입력', function(){
+      var result = 0;
+      var isNumberic = function(v){return !isNaN(parseFloat(v)) && isFinite(v);} // https://stackoverflow.com/a/9716488
+      var timespanInputs = winContainer.querySelectorAll('input.timespan-input')
+      for(var i = 0; i < timespanInputs.length; i++) {
+        var timespanInput = timespanInputs[i];
+        if(isNumberic(timespanInput.value)) result += timespanInput.value * units[timespanInput.dataset.unit];
+      }
+      win.close();
+      callback(result);
+    })
+  });
+}
+
 function whoisPopup(ip) {
   var win = TooSimplePopup();
   win.title('IP WHOIS 조회');
@@ -567,6 +607,8 @@ function INITSET() { // Storage INIT
     SET.addAdminLinksForLiberty = false;
   if (nOu(SET.autoTempsaveSpan))
     SET.autoTempsaveSpan = 1000 * 60 * 5; // 5분
+  if (nOu(SET.addBatchBlockMenu))
+    SET.addBatchBlockMenu = false;
   SET.save();
 }
 
@@ -2841,39 +2883,9 @@ function mainFunc() {
   } else if (ENV.IsIPACL || ENV.IsSuspendAccount) {
     var expireSelect = document.querySelector('select[name=expire]');
     function enterEasily(){
-      var win = TooSimplePopup();
-      win.title('차단기간 쉽게 입력하기');
-      win.content(function(winContainer){
-        var units = {
-          second: 1,
-          minute: 60,
-          hour: 60 * 60,
-          day: 60 * 60 * 24,
-          week: 60 * 60 * 24 * 7,
-          month: 60 * 60 * 24 * 7 * 4, // 4 주
-          year: 60 * 60 * 24 * 7 * 48 // 48주
-        }
-        winContainer.innerHTML = '<div class="timespan-container">' +
-        ' <input type="number" data-unit="year" class="timespan-input" value="0">년' + 
-        ' <input type="number" data-unit="month" class="timespan-input" value="0">개월' + 
-        ' <input type="number" data-unit="week" class="timespan-input" value="0">주' + 
-        ' <input type="number" data-unit="day" class="timespan-input" value="0">일' + 
-        ' <input type="number" data-unit="hour" class="timespan-input" value="0">시간' + 
-        ' <input type="number" data-unit="minute" class="timespan-input" value="0">분' + 
-        ' <input type="number" data-unit="second" class="timespan-input" value="0">초' +
-        '</div>';
-        win.button('닫기', win.close);
-        win.button('입력', function(){
-          var result = 0;
-          var isNumberic = function(v){return !isNaN(parseFloat(v)) && isFinite(v);} // https://stackoverflow.com/a/9716488
-          var timespanInputs = winContainer.querySelectorAll('input.timespan-input')
-          for(var i = 0; i < timespanInputs.length; i++) {
-            var timespanInput = timespanInputs[i];
-            if(isNumberic(timespanInput.value)) result += timespanInput.value * units[timespanInput.dataset.unit];
-          }
+      enterTimespanPopup('차단기간 쉽게 입력하기', function(result) {
+        if(result !== null)
           document.querySelector('input[name="expire"]').value = result;
-          win.close();
-        })
       });
     }
     function replaceExpireSelect() {
@@ -3054,9 +3066,10 @@ addItemToMemberMenu("NamuFix 설정", function (evt) {
       '<h1 class="wsmall">항상 펼치기</h1>' +
       '<p>접기 문법(folding)을 이용해 접혀진 내용을 바로 펼칩니다.</p>' +
       '<input type="checkbox" name="alwaysUnfold" data-setname="alwaysUnfold" data-as-boolean>항상 펼치기</input>' +
-      '<h1 class="wsmall">liberty 스킨에서 관리자 링크 추가</h1>' +
-      '<p>Liberty 스킨에 관리자 기능 링크를 추가합니다. 어처피 권한 없으면 못쓰니까 이상한 생각하지 마세요.</p>' +
-      '<input type="checkbox" name="addAdminLinksForLiberty" data-setname="addAdminLinksForLiberty" data-as-boolean>관리자 링크 추가하기</input>' +
+      '<h1 class="wsmall">관리 편의성</h1>' +
+      '<p>관리자를 위한 몇가지 편의기능들입니다.</p>' +
+      '<input type="checkbox" name="addAdminLinksForLiberty" data-setname="addAdminLinksForLiberty" data-as-boolean>Liberty 스킨에 관리자 링크 추가하기</input><br>' +
+      '<input type="checkbox" name="addBatchBlockMenu" data-setname="addBatchBlockMenu" data-as-boolean><del>일괄 차단 메뉴 추가</del> 개발중입니다.</input>' +
       '<h1 class="wsmall">자동저장 시간 간격</h1>' +
       '<p>편집중 자동저장 간격을 설정합니다. 0 이하의 값으로 설정할 시 자동으로 이루어지지 않으며 이 경우 단축키나 메뉴를 이용해 수동으로 저장해야 합니다.</p>' +
       '<input type="number" name="autoTempsaveSpan" data-setname="autoTempsaveSpan"></input>ms (1000ms = 1s)';
@@ -3107,6 +3120,141 @@ addItemToMemberMenu('KISA WHOIS', function (evt) {
 
   whoisPopup(prompt('조회할 IP주소를 입력하세요.'));
 })
+/*
+if(SET.addBatchBlockMenu) {
+  addItemToMemberMenu('계정/IP 일괄 차단', function (evt) {
+    evt.preventDefault();
+    var win = TooSimplePopup();
+    win.content(function(con){
+      var expire = 0;
+      con.innerHTML = '<p>아래에 차단할 IP주소/계정들을 입력해주세요.' + 
+      '차단 사유 : <input type="text" id="note"></input><br>' + 
+      '차단기간 : <span id="expire_display">영구</span> <a href="#" id="setExpire">(차단기간 설정)</a>(참고 : 0초 = 영구차단)<br>' +
+      '로그인 허용 여부 : <input type="checkbox" id="allowLogin"></input><br>' +
+      '※ IP 차단 해제시에는 차단사유/영구차단 여부/로그인 허용 여부를 설정할 필요 없으며 IP는 IPv4만 인식합니다.</p>' +
+      '차단할 계정/IP (개행으로 구분) : <br>' +
+      '<textarea></textarea>';
+      con.querySelector('a#setExpire').addEventListener('click', function(evt){
+        evt.preventDefault();
+        enterTimespanPopup('차단기간 설정', function(span){
+          if (span === null) {
+            return alert('입력이 없습니다.');
+          } else {
+            expire = span;
+            con.querySelector('#expire_display').textContent = span == 0 ? '영구' : expire + '초 ';
+          }
+        });
+      })
+      win.button('닫기', win.close);
+      win.button('차단', function(){
+        var waitingWin = TooSimplePopup();
+        var errors = [];
+        var commonData = {
+          note: con.querySelector('input#note').value,
+          expire: expire,
+          allowLogin: con.querySelector('input#allowLogin').checked
+        }
+        waitingWin.title('처리중');
+        waitingWin.content(function(wwcon){wwcon.innerHTML = "처리중입니다."});
+        forLoop(con.querySelector('textarea').value
+        .split('\n')
+        .map(function(v){return v.trim();})
+        .filter(function(v){return v != ""}),function(blockee, next, isLast) {
+          waitingWin.content(function(wwcon){wwcon.innerHTML = "처리중입니다. 처리 대상 : " + blockee});
+          var queryData = JSON.parse(JSON.stringify(commonData));
+          var ipWithCIDR = /^([0-9]{1,3}\.){3}[0-9]{1,3}(\/([0-9]|[1-2][0-9]|3[0-2]))?$/;
+          if(ipWithCIDR.test(blockee)) {
+            queryData.ip = blockee;
+            namuapi.blockIP(queryData, function(err, target) {
+              if (err) {
+                errors.push({ip: blockee, error: err});
+              }
+              if (isLast) {
+                if (errors.length == 0)
+                  waitingWin.close();
+                else {
+                  waitingWin.title('오류 목록');
+                  waitingWin.content(function(con){con.innerHTML = "<p>몇몇 오류가 발생했습니다.<br>" + errors.map(function(v){return (v.id | v.ip) + " : " + v.error}).join('<br>') + '</p>'});
+                  waitingWin.button('닫기');
+                }
+              }
+              next();
+            });
+          } else {
+            queryData.id = blockee;
+            namuapi.blockAccount(queryData, function(err, target) {
+              if (err) {
+                errors.push({id: blockee, error: err});
+              }
+              if (isLast) {
+                if (errors.length == 0)
+                  waitingWin.close();
+                else {
+                  waitingWin.title('오류 목록');
+                  waitingWin.content(function(con){con.innerHTML = "<p>몇몇 오류가 발생했습니다.<br>" + errors.map(function(v){return (v.id | v.ip) + " : " + v.error}).join('<br>') + '</p>'});
+                  waitingWin.button('닫기');
+                }
+              }
+              next();
+            });
+          }
+        });
+      });
+      win.button('차단 해제', function(){
+        var waitingWin = TooSimplePopup();
+        var errors = [];
+        waitingWin.title('처리중');
+        waitingWin.content(function(wwcon){wwcon.innerHTML = "처리중입니다."});
+        forLoop(con.querySelector('textarea').value
+        .split('\n')
+        .map(function(v){return v.trim();})
+        .filter(function(v){return v != ""}),function(blockee, next, isLast) {
+          waitingWin.content(function(wwcon){wwcon.innerHTML = "처리중입니다. 처리 대상 : " + blockee});
+          var ipWithCIDR = /^([0-9]{1,3}\.){3}[0-9]{1,3}(\/([0-9]|[1-2][0-9]|3[0-2]))?$/;
+          if(ipWithCIDR.test(blockee)) {
+            namuapi.unblockIP({ip: blockee}, function(err, target) {
+              if (err) {
+                errors.push({ip: blockee, error: err});
+              }
+              if (isLast) {
+                if (errors.length == 0)
+                  waitingWin.close();
+                else {
+                  waitingWin.title('오류 목록');
+                  waitingWin.content(function(con){con.innerHTML = "<p>몇몇 오류가 발생했습니다.<br>" + errors.map(function(v){return (v.id | v.ip) + " : " + v.error}).join('<br>') + '</p>'});
+                  waitingWin.button('닫기');
+                }
+              }
+              next();
+            });
+          } else {
+            namuapi.blockAccount({
+              note: con.querySelector('input#note').value,
+              expire: -1,
+              id: blockee
+            }, function(err, target) {
+              if (err) {
+                errors.push({id: blockee, error: err});
+              }
+              if (isLast) {
+                if (errors.length == 0)
+                  waitingWin.close();
+                else {
+                  waitingWin.title('오류 목록');
+                  waitingWin.content(function(con){con.innerHTML = "<p>몇몇 오류가 발생했습니다.<br>" + errors.map(function(v){return (v.id | v.ip) + " : " + v.error}).join('<br>') + '</p>'});
+                  waitingWin.button('닫기');
+                }
+              }
+              next();
+            });
+          }
+        });
+  
+      });
+    });
+  })
+}
+*/
 mainFunc();
 listenPJAX(mainFunc);
 
