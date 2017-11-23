@@ -2990,7 +2990,7 @@ function mainFunc() {
       '<a class="dropdown-item" href="/admin/grant">권한 부여</a>';
       if(ENV.IsDocument) {
         addArticleButton("ACL", function(){
-          location.href = "/admin/acl/" + ENV.docTitle;
+          location.href = "/acl/" + ENV.docTitle;
         })
       }
     }
