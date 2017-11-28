@@ -7,7 +7,7 @@
 // @include     https://alphawiki.org/*
 // @include     https://www.alphawiki.org/*
 // @include     https://theseed.io/*
-// @version     171122.0
+// @version     171128.0
 // @author      LiteHell
 // @downloadURL https://raw.githubusercontent.com/LiteHell/NamuFix/master/NamuFix.user.js
 // @require     https://cdn.rawgit.com/LiteHell/NamuFix/3bea33e76808ba9765f39135c17bfa46972131ac/mascott_pics.js
