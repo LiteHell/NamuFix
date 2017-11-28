@@ -4,7 +4,8 @@
 // @description 나무위키 등 더시드 사용 위키의 편집 인터페이스 등을 개선합니다.
 // @include     https://namu.wiki/*
 // @include     https://no-ssl.namu.wiki/*
-// @include     https://awiki.theseed.io/*
+// @include     https://alphawiki.org/*
+// @include     https://www.alphawiki.org/*
 // @include     https://theseed.io/*
 // @version     171122.0
 // @author      LiteHell
