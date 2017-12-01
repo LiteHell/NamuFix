@@ -79,26 +79,6 @@ OTHER DEALINGS IN THE SOFTWARE.
 if (location.hostname == 'no-ssl.namu.wiki')
   location.hostname = 'namu.wiki';
 
-function emReset() {
-  if (confirm('정말로 초기화하시겠습니까? 초기화하면 임시저장, 설정, 템플릿 목록.... 등등 모든 것이 초기화됩니다.\n' +
-      '오류/버그가 이유라면 초기화하기 전 최신 버전으로의 업데이트를 먼저 시도해주세요.\n\n그래도 초기화하시겠습니까?')) {
-    var valKeys = GM_listValues();
-    for (var i = 0; i < valKeys.length; i++) {
-      GM_deleteValue(valKeys[i]);
-    }
-    alert('초기화 완료')
-  }
-}
-if (typeof exportFunction !== "undefined") {
-  exportFunction(emReset, unsafeWindow, {
-    defineAs: "EmergencyReset"
-  })
-} else if (typeof unsafeWindow !== "undefined") {
-  unsafeWindow.EmergencyReset = emReset;
-} else {
-  window.EmergencyReset = emReset;
-}
-
 function insertCSS(url) {
   GM_xmlhttpRequest({
     method: "GET",
