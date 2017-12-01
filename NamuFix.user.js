@@ -75,7 +75,8 @@ WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 */
-
+try{
+  console.log('[NamuFix] Hello!');
 if (location.hostname == 'no-ssl.namu.wiki')
   location.hostname = 'namu.wiki';
 
@@ -3262,3 +3263,7 @@ if (document.querySelector('body').getAttribute('class').indexOf('senkawa') == -
   }
 }
 })();
+} catch (err) {
+  console.error("[NamuFix] 오류 발생!");
+  console.error(err);
+}
