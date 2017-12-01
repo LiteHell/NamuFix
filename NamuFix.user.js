@@ -1910,7 +1910,7 @@ async function mainFunc() {
 
         function InsertTemplateClosure(na) {
           return async function () {
-            namuapi.raw(na, function(templateContent){
+            namuapi.raw(na, async function(templateContent){
               await SET.load();
               if (SET.recentlyUsedTemplates.indexOf(na) == -1) SET.recentlyUsedTemplates.push(na);
               await SET.save();
@@ -2477,7 +2477,7 @@ async function mainFunc() {
           identicon.querySelector("img").dataset.hash = n;
           identicon.querySelector("a").dataset.hash = n;
           identicon.querySelector("a").href = "#NothingToLink";
-          identicon.querySelector("a").addEventListener('click', function (evt) {
+          identicon.querySelector("a").addEventListener('click', async function (evt) {
             evt.preventDefault();
 
             await SET.load();
@@ -2506,7 +2506,7 @@ async function mainFunc() {
                 var file = files[0];
                 if (file) {
                   var reader = new FileReader();
-                  reader.onload = function (evt) {
+                  reader.onload = async function (evt) {
                     SET.customIdenticons[h] = reader.result;
                     await SET.save();
                     alert('설정됐습니다. 새로고침시 적용됩니다');
