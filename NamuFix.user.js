@@ -532,30 +532,30 @@ function listenPJAX(callback) {
 
 var SET = new function () {
   var discards = ['save', 'load'];
-  this.save = function () {
+  this.save = async function () {
     for (var i in this) {
       if (discards.indexOf(i) != -1) continue;
-      GM_setValue('SET_' + i, this[i]);
+      await GM_setValue('SET_' + i, this[i]);
     }
   };
-  this.load = function () {
-    var sets = GM_listValues();
+  this.load = async function () {
+    var sets = await GM_listValues();
     for (var i = 0; i < sets.length; i++) {
       var now = sets[i];
       if (now.indexOf('SET_') != 0) continue;
       if (discards.indexOf(now) != -1) continue;
-      this[now.substring(4)] = GM_getValue(now);
+      this[now.substring(4)] = await GM_getValue(now);
     }
   };
-  this.delete = function (key) {
+  this.delete = async function (key) {
     if (discards.indexOf(key) != -1) return;
-    GM_deleteValue(key);
+    await GM_deleteValue(key);
     delete this[key];
   };
 };
-SET.load();
 
-function INITSET() { // Storage INIT
+async function INITSET() { // Storage INIT
+  await SET.load();
   if (nOu(SET.tempsaves))
     SET.tempsaves = {};
   if (nOu(SET.recentlyUsedTemplates))
@@ -598,7 +598,7 @@ function INITSET() { // Storage INIT
     SET.autoTempsaveSpan = 1000 * 60 * 5; // 5분
   if (nOu(SET.addBatchBlockMenu))
     SET.addBatchBlockMenu = false;
-  SET.save();
+  await SET.save();
 }
 
 var nfMenuDivider = document.createElement("div");
@@ -909,7 +909,7 @@ function getFile(callback, allowMultiple) {
   elm.click();
 }
 
-function mainFunc() {
+async function mainFunc() {
   // 환경 감지
   var ENV = {};
   ENV.IsSSL = /^https/.test(location.href);
@@ -972,7 +972,7 @@ function mainFunc() {
   });
 
   // 설정 초기화
-  INITSET();
+  await INITSET();
 
   if (ENV.IsEditing || ENV.Discussing || ENV.IsEditingRequest || ENV.IsWritingRequest) {
     if (document.querySelectorAll("textarea").length == 1 && !document.querySelector("textarea").hasAttribute("readonly")) {
@@ -1751,16 +1751,16 @@ function mainFunc() {
             }
             return r;
           }
-          this.getByTitle = function (docTitle) {
-            SET.load();
+          this.getByTitle = async function (docTitle) {
+            await SET.load();
             if (nOu(SET.tempsaves[docTitle])) {
               SET.tempsaves[docTitle] = [];
-              SET.save();
+              await SET.save();
             }
             return SET.tempsaves[docTitle]; // {section, text, timestamp}
           };
-          this.getByTitleAndSectionNo = function (docTitle, sectno) {
-            SET.load();
+          this.getByTitleAndSectionNo = async function (docTitle, sectno) {
+            await SET.load();
             var b = ht.getByTitle(docTitle);
             var a = [];
             for (var i = 0; i < b.length; i++) {
@@ -1769,13 +1769,13 @@ function mainFunc() {
             }
             return a;
           }
-          this.save = function (docTitle, sectno, timestamp, text, wikihost) {
+          this.save = async function (docTitle, sectno, timestamp, text, wikihost) {
             if (typeof wikihost === 'undefined')
               var wikihost = location.host;
-            SET.load();
+            await SET.load();
             if (nOu(SET.tempsaves[docTitle])) {
               SET.tempsaves[docTitle] = [];
-              SET.save();
+              await SET.save();
             }
             SET.tempsaves[docTitle].push({
               section: sectno,
@@ -1783,10 +1783,10 @@ function mainFunc() {
               text: text,
               host: wikihost
             });
-            SET.save();
+            await SET.save();
           }
-          this.delete = function (docTitle, sectno, timestamp) {
-            SET.load();
+          this.delete = async function (docTitle, sectno, timestamp) {
+            await SET.load();
             if (nOu(SET.tempsaves[docTitle])) return;
             var newArray = [];
             for (var i = 0; i < SET.tempsaves[docTitle].length; i++) {
@@ -1808,19 +1808,19 @@ function mainFunc() {
               }
             }
             SET.tempsaves[docTitle] = newArray;
-            SET.save();
+            await SET.save();
           }
         }
         // Tempsave Menu
         var tempsaveDropdown = Designer.dropdown('<span class="ion-ios-pricetags-outline fa fa-save"></span>').hoverMessage('임시저장');
-        tempsaveDropdown.button('<span class="ion-ios-pricetag-outline fa fa-save"></span>', '임시저장').click(function () {
-          tempsaveManager.save(ENV.docTitle, ENV.section, Date.now(), txtarea.value);
+        tempsaveDropdown.button('<span class="ion-ios-pricetag-outline fa fa-save"></span>', '임시저장').click(async function () {
+          await tempsaveManager.save(ENV.docTitle, ENV.section, Date.now(), txtarea.value);
         });
-        tempsaveDropdown.button('<span class="ion-filing fa fa-folder-open-o"></span>', '임시저장 불러오기').click(function () {
+        tempsaveDropdown.button('<span class="ion-filing fa fa-folder-open-o"></span>', '임시저장 불러오기').click(async function () {
           // title(text), content(callback), foot(callback), button(text,onclick), close
           var win = TooSimplePopup();
           win.title('임시저장 불러오기')
-          var tempsaveList = tempsaveManager.getByTitle(ENV.docTitle);
+          var tempsaveList = await tempsaveManager.getByTitle(ENV.docTitle);
           win.content(function (el) {
             el.innerHTML = '<p>현재 편집중인 문단인 경우 문단 번호가 <strong>굵게</strong> 표시됩니다.<br>문단 번호가 -2인 경우는 문단 번호가 감지되지 않은 경우입니다.</p>';
             var divWithscrollbars = document.createElement("div");
@@ -1852,16 +1852,16 @@ function mainFunc() {
           });
           win.button('닫기', win.close);
         });
-        tempsaveDropdown.button('<span class="ion-trash-a fa fa-trash" style="color:red;"></span>', '이 문서의 모든 임시저장 삭제').click(function () {
-          tempsaveManager.delete(ENV.docTitle);
+        tempsaveDropdown.button('<span class="ion-trash-a fa fa-trash" style="color:red;"></span>', '이 문서의 모든 임시저장 삭제').click(async function () {
+          await tempsaveManager.delete(ENV.docTitle);
         });
-        tempsaveDropdown.button('<span class="ion-trash-a fa fa-trash" style="color:orangered;"></span>', '이 문서의 이 문단의 모든 임시저장 삭제').click(function () {
-          tempsaveManager.delete(ENV.docTitle, ENV.section);
+        tempsaveDropdown.button('<span class="ion-trash-a fa fa-trash" style="color:orangered;"></span>', '이 문서의 이 문단의 모든 임시저장 삭제').click(async function () {
+          await tempsaveManager.delete(ENV.docTitle, ENV.section);
         });
-        tempsaveDropdown.button('<span class="ion-trash-a fa fa-trash" style="color:orange;"></span>', '특정 임시저장만 삭제').click(function () {
+        tempsaveDropdown.button('<span class="ion-trash-a fa fa-trash" style="color:orange;"></span>', '특정 임시저장만 삭제').click(async function () {
           // title(text), content(callback), foot(callback), button(text,onclick), close
           var win = TooSimplePopup();
-          var tempsaveList = tempsaveManager.getByTitle(ENV.docTitle);
+          var tempsaveList = await tempsaveManager.getByTitle(ENV.docTitle);
           win.title('임시저장 삭제');
           win.content(function (el) {
             el.innerHTML = '<p>현재 편집중인 문단인 경우 문단 번호가 <strong>굵게</strong> 표시됩니다.<br>문단 번호가 -2인 경우는 문단 번호가 감지되지 않은 경우입니다.</p>';
@@ -1881,9 +1881,9 @@ function mainFunc() {
               btn.setAttribute("type", "button");
               btn.innerHTML = "삭제하기";
               btn.dataset.json = JSON.stringify(now);
-              btn.addEventListener('click', function (evt) {
+              btn.addEventListener('click', async function (evt) {
                 var now = JSON.parse(evt.target.dataset.json);
-                tempsaveManager.delete(ENV.docTitle, now.section, now.timestamp);
+                await tempsaveManager.delete(ENV.docTitle, now.section, now.timestamp);
                 win.close();
               });
               td.appendChild(btn);
@@ -1896,23 +1896,23 @@ function mainFunc() {
           win.button('닫기', win.close);
         });
         if (SET.autoTempsaveSpan > 0)
-          setInterval(function () {
-            tempsaveManager.save(ENV.docTitle, ENV.section, Date.now(), txtarea.value);
+          setInterval(async function () {
+            await tempsaveManager.save(ENV.docTitle, ENV.section, Date.now(), txtarea.value);
           }, SET.autoTempsaveSpan);
       }
       // Template Insert Feature
       var templatesDropdown = Designer.dropdown('<span class="ion-ios-copy-outline fa fa-file"></span>').hoverMessage('템플릿/틀 삽입과 최근에 사용/삽입한 템플릿/틀 기록');
-      var refreshTemplatesDropdown = function () {
-        SET.load();
+      var refreshTemplatesDropdown = async function () {
+        await SET.load();
         templatesDropdown.clear();
         var rutl = SET.recentlyUsedTemplates.length;
 
         function InsertTemplateClosure(na) {
-          return function () {
+          return async function () {
             namuapi.raw(na, function(templateContent){
-              SET.load();
+              await SET.load();
               if (SET.recentlyUsedTemplates.indexOf(na) == -1) SET.recentlyUsedTemplates.push(na);
-              SET.save();
+              await SET.save();
               if (na.indexOf('틀:') == 0)
                 TextProc.selectionText(TextProc.selectionText() + '[include(' + na + ')]');
               else
@@ -1927,10 +1927,10 @@ function mainFunc() {
         for (var i = 0; i < (rutl < 9 ? rutl : 9); i++) {
           templatesDropdown.button('<span class="ion-ios-paper-outline fa fa-file"></span>', SET.recentlyUsedTemplates[i]).click(InsertTemplateClosure(SET.recentlyUsedTemplates[i]));
         }
-        templatesDropdown.button('<span class="ion-close-round fa fa-times"></span>', '기록 삭제').click(function () {
-          SET.load();
+        templatesDropdown.button('<span class="ion-close-round fa fa-times"></span>', '기록 삭제').click(async function () {
+          await SET.load();
           SET.recentlyUsedTemplates = [];
-          SET.save();
+          await SET.save();
           setTimeout(refreshTemplatesDropdown, 300);
         });
         templatesDropdown.button('<span class="ion-plus-round fa fa-plus"></span>', '템플릿/틀 삽입').click(function () {
@@ -2479,13 +2479,13 @@ function mainFunc() {
           identicon.querySelector("a").addEventListener('click', function (evt) {
             evt.preventDefault();
 
-            SET.load();
+            await SET.load();
             var h = evt.target.dataset.hash;
             if (typeof SET.customIdenticons[h] !== 'undefined') {
               // custom identicon exists
               if (confirm('이미 이미지가 설정되어 있습니다. 제거할까요?')) {
                 delete SET.customIdenticons[h];
-                SET.save();
+                await SET.save();
                 alert('설정됐습니다. 새로고침시 적용됩니다');
               }
             } else {
@@ -2507,7 +2507,7 @@ function mainFunc() {
                   var reader = new FileReader();
                   reader.onload = function (evt) {
                     SET.customIdenticons[h] = reader.result;
-                    SET.save();
+                    await SET.save();
                     alert('설정됐습니다. 새로고침시 적용됩니다');
                     finish();
                   };
@@ -3013,14 +3013,14 @@ setInterval(function () {
 }, 50);
 
 // 설정 메뉴 추가
-addItemToMemberMenu("NamuFix 설정", function (evt) {
+addItemToMemberMenu("NamuFix 설정", async function (evt) {
   evt.preventDefault();
 
   var win = TooSimplePopup();
   var elems = {};
   win.title('NamuFix 설정');
-  SET.load();
-  win.content(function (el) {
+  await SET.load();
+  win.content(async function (el) {
     el.innerHTML = '<style>h1.wsmall{font-size: 14pt;}</style>' +
       '<h1 class="wsmall">토론 아이덴티콘</h1>' +
       '<input type="radio" name="discussIdenti" data-setname="discussIdenti" data-setvalue="icon">디시라이트 갤러콘 방식<br>' +
@@ -3063,7 +3063,7 @@ addItemToMemberMenu("NamuFix 설정", function (evt) {
       '<p>편집중 자동저장 간격을 설정합니다. 0 이하의 값으로 설정할 시 자동으로 이루어지지 않으며 이 경우 단축키나 메뉴를 이용해 수동으로 저장해야 합니다.</p>' +
       '<input type="number" name="autoTempsaveSpan" data-setname="autoTempsaveSpan"></input>ms (1000ms = 1s)';
       var optionTags = document.querySelectorAll('[data-setname]');
-    SET.load();
+    await SET.load();
     for (var i = 0; i < optionTags.length; i++) {
       var tag = optionTags[i];
       var t = tag.getAttribute('type');
@@ -3078,9 +3078,9 @@ addItemToMemberMenu("NamuFix 설정", function (evt) {
     }
   });
   win.button('저장하지 않고 닫기', win.close);
-  win.button('저장하고 닫기', function () {
+  win.button('저장하고 닫기', async function () {
     var optionTags = document.querySelectorAll('[data-setname]');
-    SET.load();
+    await SET.load();
     for (var i = 0; i < optionTags.length; i++) {
       var tag = optionTags[i];
       var t = tag.getAttribute('type');
@@ -3093,7 +3093,7 @@ addItemToMemberMenu("NamuFix 설정", function (evt) {
         SET[sn] = tag.value;
       }
     }
-    SET.save();
+    await SET.save();
     if (confirm("새로고침해야 설정이 적용됩니다. 새로고침할까요?"))
       location.reload();
     win.close();
@@ -3247,8 +3247,9 @@ if(SET.addBatchBlockMenu) {
 mainFunc();
 listenPJAX(mainFunc);
 
+(async function(){
 if (document.querySelector('body').getAttribute('class').indexOf('senkawa') == -1 && document.querySelector('body').getAttribute('class').indexOf('Liberty') == -1) {
-  SET.load();
+  await SET.load();
   if (!SET.ignoreNonSenkawaWarning) {
     var win = TooSimplePopup();
     win.title('스킨 관련 안내');
@@ -3257,6 +3258,7 @@ if (document.querySelector('body').getAttribute('class').indexOf('senkawa') == -
     });
     win.button('닫기', win.close);
     SET.ignoreNonSenkawaWarning = true;
-    SET.save();
+    await SET.save();
   }
 }
+})();
