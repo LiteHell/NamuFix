@@ -3102,7 +3102,7 @@ addItemToMemberMenu("NamuFix 설정", function (evt) {
 addItemToMemberMenu('NamuFix 이슈트래커', function (evt) {
   evt.preventDefault();
 
-  GM_openInTab("https://github.com/LiteHell/NamuFix/issues");
+  GM.openInTab("https://github.com/LiteHell/NamuFix/issues");
 });
 addItemToMemberMenu('KISA WHOIS', function (evt) {
   evt.preventDefault();
