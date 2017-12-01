@@ -103,7 +103,7 @@ GM.xmlHttpRequest({
       console.log('[NamuFix] NamuFix 업데이트 연기! (GitHub API 제한에 따른 오류)');
       return; // GitHub API 오류
     }
-    var currentVersion = GM_info.script.version;
+    var currentVersion = GM.info.script.version;
     var latestVersion = obj.tag_name;
     if (currentVersion != latestVersion) {
       var scriptUrl = 'https://github.com/LiteHell/NamuFix/raw/' + latestVersion + '/NamuFix.user.js';
@@ -1245,7 +1245,7 @@ function mainFunc() {
               var cpinfo = cpinfos[i];
               result += "|| " + cpinfo.dataset.name + " || " + cpinfo.value + " ||\n";
             }
-            result += "\n\n== 기타 ==\n[[NamuFix]] {0} 버전을 이용하여 업로드된 이미지입니다.".format(GM_info.script.version);
+            result += "\n\n== 기타 ==\n[[NamuFix]] {0} 버전을 이용하여 업로드된 이미지입니다.".format(GM.info.script.version);
             callback(result);
           });
           win.button("닫기", win.close);
@@ -1278,7 +1278,7 @@ function mainFunc() {
                 file: file,
                 fn: fn,
                 docuText: docuText,
-                log: "NamuFix " + GM_info.script.version + "버전으로 자동 업로드됨.",
+                log: "NamuFix " + GM.info.script.version + "버전으로 자동 업로드됨.",
                 identifier: (ENV.IsLoggedIn ? "m" : "i") + ":" + ENV.UserName
               };
               console.log("[NamuFix] uploadNamu identifier : " + uploadImageParams.identifier);
