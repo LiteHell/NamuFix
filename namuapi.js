@@ -19,7 +19,7 @@ namuapi.theseedRequest = function (options) {
                         } else {
                             var formData = new FormData();
                             formData.append("g-recaptcha-response", capKeyRes);
-                            GM_xmlhttpRequest({
+                            GM.xmlHttpRequest({
                                 url: aTagForParsingUrl.href,
                                 method: 'POST',
                                 data: formData,
@@ -39,11 +39,11 @@ namuapi.theseedRequest = function (options) {
             };
         }
     }
-    GM_xmlhttpRequest(_newoptions);
+    GM.xmlHttpRequest(_newoptions);
 }
 
 namuapi.resolveRecaptcha = function (callback) {
-    GM_xmlhttpRequest({
+    GM.xmlHttpRequest({
         method: 'GET',
         url: 'https://' + location.host + '/check',
         onload: function (res) {

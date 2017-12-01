@@ -80,7 +80,7 @@ if (location.hostname == 'no-ssl.namu.wiki')
   location.hostname = 'namu.wiki';
 
 function insertCSS(url) {
-  GM_xmlhttpRequest({
+  GM.xmlHttpRequest({
     method: "GET",
     url: url,
     onload: function (res) {
@@ -94,7 +94,7 @@ insertCSS("https://cdn.rawgit.com/LiteHell/TooSimplePopupLib/edad912e28eeacdc3fd
 insertCSS("https://cdn.rawgit.com/wkpark/jsdifflib/dc19d085db5ae71cdff990aac8351607fee4fd01/diffview.css");
 
 // 업데이트 확인
-GM_xmlhttpRequest({
+GM.xmlHttpRequest({
   method: "GET",
   url: "https://api.github.com/repos/LiteHell/NamuFix/releases/latest",
   onload: function (res) {
@@ -237,7 +237,7 @@ function SHA256(text) {
 function getIpInfo(ip, cb) {
   if (ipDictionary[ip])
     return cb(ipDictionary[ip]);
-  GM_xmlhttpRequest({
+  GM.xmlHttpRequest({
     method: "GET",
     url: "http://ipinfo.io/{0}/json".format(ip),
     onload: function (res) {
@@ -286,7 +286,7 @@ var whoisDictionary = {};
 function getIpWhois(ip, cb) {
   if (whoisDictionary[ip])
     return cb(whoisDictionary[ip]);
-  GM_xmlhttpRequest({
+  GM.xmlHttpRequest({
     method: "GET",
     url: "http://namufix.wikimasonry.org/whois/ip/{0}".format(ip),
     onload: function (res) {
@@ -480,7 +480,7 @@ var flagIconDictionary = {};
 function getFlagIcon(countryCode, cb) {
   if (flagIconDictionary[countryCode])
     return cb(flagIconDictionary[countryCode]);
-  GM_xmlhttpRequest({
+  GM.xmlHttpRequest({
     method: 'GET',
     url: 'https://cdnjs.cloudflare.com/ajax/libs/flag-icon-css/2.8.0/flags/4x3/{0}.svg'.format(countryCode),
     onload: function (res) {
@@ -629,7 +629,7 @@ var _vpngateList = [],
 
 function getVPNGateIPList(callback) {
   if (_vpngateCrawlledAt == -1 || Date.now() - _vpngateCrawlledAt > 1000 * 60 * 3) {
-    GM_xmlhttpRequest({
+    GM.xmlHttpRequest({
       method: "GET",
       url: "http://www.vpngate.net/api/iphone/",
       onload: function (res) {
@@ -961,7 +961,7 @@ function mainFunc() {
   }
   if (nOu(ENV.section))
     ENV.section = -2;
-  GM_xmlhttpRequest({
+  GM.xmlHttpRequest({
     method: "GET",
     url: "https://wtfismyip.com/json",
     onload: function (res) {
@@ -1373,7 +1373,7 @@ function mainFunc() {
             var q = el.querySelector('#vidQuery').value;
             var resultDiv = el.querySelector('#results');
             resultDiv.innerHTML = '<span style="color:orange;">검색중입니다.</span>'
-            GM_xmlhttpRequest({
+            GM.xmlHttpRequest({
               method: "GET",
               url: 'https://namufix.wikimasonry.org/youtube/search?q=' + encodeURIComponent(q),
               onload: function (res) {
@@ -1562,7 +1562,7 @@ function mainFunc() {
         win.title('나사 빠진 맞춤법 검사기');
         win.content(function(el){el.innerHTML = "진행중입니다...."});
         var textToCheck = TextProc.selectionText().length == 0 ? TextProc.value() : TextProc.selectionText();
-        GM_xmlhttpRequest({
+        GM.xmlHttpRequest({
           url: 'https://namufix.wikimasonry.org/kospell',
           method: 'POST',
           data: JSON.stringify({text: textToCheck, unstripNamumark: true}),
@@ -1728,13 +1728,13 @@ function mainFunc() {
                     archiveLinks.push(archiveUrl);
                     setTimeout(archiveOne, 50);
                   }
-                  GM_xmlhttpRequest(r2);
+                  GM.xmlHttpRequest(r2);
                 } else {
                   alert('archive.is 아카이브 중 토큰을 얻는 데 실패했습니다.')
                 }
               }
             }
-            GM_xmlhttpRequest(r);
+            GM.xmlHttpRequest(r);
           }
           archiveOne();
         });
