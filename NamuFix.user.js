@@ -10,6 +10,7 @@
 // @version     171128.0
 // @author      LiteHell
 // @downloadURL https://raw.githubusercontent.com/LiteHell/NamuFix/master/NamuFix.user.js
+// @require     https://greasemonkey.github.io/gm4-polyfill/gm4-polyfill.js
 // @require     https://cdn.rawgit.com/LiteHell/NamuFix/3bea33e76808ba9765f39135c17bfa46972131ac/mascott_pics.js
 // @require     https://cdn.rawgit.com/LiteHell/NamuFix/c7f7cf07933889a9d068a558dd90432109be6a95/engCountryNames.js
 // @require     https://cdn.rawgit.com/LiteHell/NamuFix/5326c9aada134f65bba171d12f5ca5d042fd4fca/korCountryNames.js
@@ -41,6 +42,13 @@
 // @grant       GM_deleteValue
 // @grant       GM_listValues
 // @grant       GM_info
+// @grant       GM.openInTab
+// @grant       GM.xmlHttpRequest
+// @grant       GM.getValue
+// @grant       GM.setValue
+// @grant       GM.deleteValue
+// @grant       GM.listValues
+// @grant       GM.info
 // @run-at      document-end
 // ==/UserScript==
 /*
