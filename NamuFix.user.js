@@ -2131,7 +2131,7 @@ async function mainFunc() {
       if (srwPattern.test(location.search)) {
         if ((txtarea.value.trim().search(/^#redirect .+/) == 0 || txtarea.value.trim().length == 0) || confirm('빈 문서가 아닌것 같습니다만 그래도 계속?')) {
           txtarea.value = '#redirect ' + decodeURIComponent(srwPattern.exec(location.search)[1]);
-          if (document.querySelectorAll('iframe[title="CAPTCHA 위젯"]').length == 0) {
+          if (document.querySelectorAll('iframe[title="CAPTCHA 위젯"]').length == 0 && document.querySelector('.alert.alert-danger') !== null) {
             if (document.querySelector("input#logInput")) document.querySelector("input#logInput").value = "NamuFix를 이용하여 자동 리다이렉트 처리됨.";
             document.querySelector('#editBtn').click();
           }
@@ -2800,7 +2800,7 @@ async function mainFunc() {
       for (var i = 0; i < rows.length; i++) {
         var row = rows[i];
         if (row.querySelectorAll('a').length == 0) continue;
-        var docuNow = rows[i].querySelector('a').getAttribute('href');
+        var docuNow = rows[i].querySelector('a').getAttribute('href').replace(/#[0-9]+$/, '');
         docuNow = /^\/thread\/(.+)(?:#[0-9]+|)/.exec(docuNow)[1];
         if (docuAndTalks[docuNow]) {
           docuAndTalks[docuNow]++;
