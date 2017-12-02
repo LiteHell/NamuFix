@@ -34,6 +34,9 @@
 // @connect     archive.is
 // @connect     www.vpngate.net
 // @connect     namufix.wikimasonry.org
+// @resource    NamuFixCSS https://cdn.rawgit.com/LiteHell/NamuFix/284db44ac1d89ff0cbd1155c3372db38be3bc140/NamuFix.css
+// @resource    PopupCSS https://cdn.rawgit.com/LiteHell/TooSimplePopupLib/edad912e28eeacdc3fd8b6e6b7ac5cafc46d95b6/TooSimplePopupLib.css
+// @resource    DiffCSS https://cdn.rawgit.com/wkpark/jsdifflib/dc19d085db5ae71cdff990aac8351607fee4fd01/diffview.css
 // @grant       GM_addStyle
 // @grant       GM_openInTab
 // @grant       GM_xmlhttpRequest
@@ -76,23 +79,31 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 */
 try{
-  console.log('[NamuFix] Hello!');
+  (async function(){
+  console.log(`[NamuFix] 현재 버전 : ${GM.info.script.version}`);
 if (location.hostname == 'no-ssl.namu.wiki')
   location.hostname = 'namu.wiki';
 
-function insertCSS(url) {
-  GM.xmlHttpRequest({
-    method: "GET",
-    url: url,
-    onload: function (res) {
-      GM_addStyle(res.responseText);
-    }
-  });
+if (typeof GM_addStyle !== 'undefined') {
+  var GM_addStyle = function (text) {
+    var style = document.createElement("style");
+    style.innerHTML = text;
+    document.head.appendChild(style);
+  }
 }
 
-insertCSS("https://cdn.rawgit.com/LiteHell/NamuFix/284db44ac1d89ff0cbd1155c3372db38be3bc140/NamuFix.css");
-insertCSS("https://cdn.rawgit.com/LiteHell/TooSimplePopupLib/edad912e28eeacdc3fd8b6e6b7ac5cafc46d95b6/TooSimplePopupLib.css");
-insertCSS("https://cdn.rawgit.com/wkpark/jsdifflib/dc19d085db5ae71cdff990aac8351607fee4fd01/diffview.css");
+async function insertCSS(name) {
+  console.log(await GM.getResourceUrl(name))
+  var style = document.createElement("link");
+  style.setAttribute("rel", "stylesheet");
+  style.setAttribute("href", await GM.getResourceUrl(name));
+  document.head.appendChild(style);
+}
+
+await insertCSS("NamuFixCSS");
+await insertCSS("PopupCSS");
+await insertCSS("DiffCSS");
+console.log('[NamuFix] CSS 삽입됨.');
 
 // 업데이트 확인
 GM.xmlHttpRequest({
@@ -530,13 +541,20 @@ function listenPJAX(callback) {
 }
 
 
-
+function jsonParsable(str) {
+  try{
+    JSON.pares(str);
+    return true;
+  } catch (err) {
+    return false;
+  }
+}
 var SET = new function () {
-  var discards = ['save', 'load'];
+  var discards = ['save', 'load', 'delete'];
   this.save = async function () {
     for (var i in this) {
       if (discards.indexOf(i) != -1) continue;
-      await GM.setValue('SET_' + i, this[i]);
+      await GM.setValue('SET_' + i, JSON.stringify(this[i]));
     }
   };
   this.load = async function () {
@@ -545,7 +563,8 @@ var SET = new function () {
       var now = sets[i];
       if (now.indexOf('SET_') != 0) continue;
       if (discards.indexOf(now) != -1) continue;
-      this[now.substring(4)] = await GM.getValue(now);
+      let sval = await GM.getValue(now);
+      this[now.substring(4)] = jsonParsable(sval) ? JSON.parse(sval) : sval;
     }
   };
   this.delete = async function (key) {
@@ -974,6 +993,7 @@ async function mainFunc() {
 
   // 설정 초기화
   await INITSET();
+  console.log("[NamuFix] 설정 초기화 완료");
 
   if (ENV.IsEditing || ENV.Discussing || ENV.IsEditingRequest || ENV.IsWritingRequest) {
     if (document.querySelectorAll("textarea").length == 1 && !document.querySelector("textarea").hasAttribute("readonly")) {
@@ -3248,7 +3268,6 @@ if(SET.addBatchBlockMenu) {
 mainFunc();
 listenPJAX(mainFunc);
 
-(async function(){
 if (document.querySelector('body').getAttribute('class').indexOf('senkawa') == -1 && document.querySelector('body').getAttribute('class').indexOf('Liberty') == -1) {
   await SET.load();
   if (!SET.ignoreNonSenkawaWarning) {
