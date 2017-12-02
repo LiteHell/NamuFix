@@ -156,19 +156,19 @@ namuapi.uploadImage = function (data, callback) {
     });
 }
 
-namuapi.blockIP = function(data, callback) {
+namuapi.blockIP = function (data, callback) {
     namuapi.theseedRequest({
         method: 'POST',
         url: `https://${location.host}/admin/ipacl`,
         data: 'ip=' + encodeURIComponent(data.ip) + '&note=' + encodeURIComponent(data.note || "") + '&expire=' + encodeURIComponent(data.expire) + (data.allowLogin ? '&allow_login=Y' : ''),
         headers: {
             "Content-Type": "application/x-www-form-urlencoded",
-          	"Referer": `https://${location.host}/admin/ipacl`
+            "Referer": `https://${location.host}/admin/ipacl`
         },
         onload: function (res) {
             var parser = new DOMParser();
             var resDoc = parser.parseFromString(res.responseText, "text/html");
-            if(resDoc.querySelector('p.error-desc, .alert.alert-danger')) {
+            if (resDoc.querySelector('p.error-desc, .alert.alert-danger')) {
                 callback(resDoc.querySelector('p.error-desc, .alert.alert-danger').textContent);
             } else {
                 callback(null, data);
@@ -177,7 +177,7 @@ namuapi.blockIP = function(data, callback) {
     })
 };
 
-namuapi.unblockIP = function(ip, callback) {
+namuapi.unblockIP = function (ip, callback) {
     namuapi.theseedRequest({
         method: 'POST',
         url: `https://${location.host}/admin/ipacl/remove`,
@@ -189,7 +189,7 @@ namuapi.unblockIP = function(ip, callback) {
         onload: function (res) {
             var parser = new DOMParser();
             var resDoc = parser.parseFromString(res.responseText, "text/html");
-            if(resDoc.querySelector('p.error-desc, .alert.alert-danger')) {
+            if (resDoc.querySelector('p.error-desc, .alert.alert-danger')) {
                 callback(resDoc.querySelector('p.error-desc, .alert.alert-danger').textContent);
             } else {
                 callback(null, ip);
@@ -198,7 +198,7 @@ namuapi.unblockIP = function(ip, callback) {
     })
 };
 
-namuapi.blockAccount = function(data, callback) {
+namuapi.blockAccount = function (data, callback) {
     namuapi.theseedRequest({
         method: 'POST',
         url: `https://${location.host}/admin/suspend_account`,
@@ -210,7 +210,7 @@ namuapi.blockAccount = function(data, callback) {
         onload: function (res) {
             var parser = new DOMParser();
             var resDoc = parser.parseFromString(res.responseText, "text/html");
-            if(resDoc.querySelector('p.error-desc, .alert.alert-danger')) {
+            if (resDoc.querySelector('p.error-desc, .alert.alert-danger')) {
                 callback(resDoc.querySelector('p.error-desc, .alert.alert-danger').textContent);
             } else {
                 callback(null, data);
