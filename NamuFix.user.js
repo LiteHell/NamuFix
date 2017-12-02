@@ -536,21 +536,21 @@ var SET = new function () {
   this.save = async function () {
     for (var i in this) {
       if (discards.indexOf(i) != -1) continue;
-      await GM_setValue('SET_' + i, this[i]);
+      await GM.setValue('SET_' + i, this[i]);
     }
   };
   this.load = async function () {
-    var sets = await GM_listValues();
+    var sets = await GM.listValues();
     for (var i = 0; i < sets.length; i++) {
       var now = sets[i];
       if (now.indexOf('SET_') != 0) continue;
       if (discards.indexOf(now) != -1) continue;
-      this[now.substring(4)] = await GM_getValue(now);
+      this[now.substring(4)] = await GM.getValue(now);
     }
   };
   this.delete = async function (key) {
     if (discards.indexOf(key) != -1) return;
-    await GM_deleteValue(key);
+    await GM.deleteValue(key);
     delete this[key];
   };
 };
