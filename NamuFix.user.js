@@ -23,7 +23,7 @@
 // @require     https://cdn.rawgit.com/LiteHell/TooSimplePopupLib/7f2a8a81f11f980c1dfa6b5b2213cd38b8bbde3c/TooSimplePopupLib.js
 // @require     https://cdn.rawgit.com/wkpark/jsdifflib/dc19d085db5ae71cdff990aac8351607fee4fd01/difflib.js
 // @require     https://cdn.rawgit.com/wkpark/jsdifflib/dc19d085db5ae71cdff990aac8351607fee4fd01/diffview.js
-// @require     https://rawgit.com/LiteHell/NamuFix/GM4/namuapi.js
+// @require     https://cdn.rawgit.com/LiteHell/NamuFix/956d98433d85f3621634f8e62c6a74209b617be5/namuapi.js
 // @connect     cdn.rawgit.com
 // @connect     cdnjs.cloudflare.com
 // @connect     api.github.com
