@@ -174,7 +174,7 @@ function validateIP(ip) {
 
 function formatDateTime(t) {
   var d = new Date(t);
-  return `${d.getFullYear()}년 ${d.getMnoth() + 1}월 ${d.getDate()}일 ${(['일', '월', '화', '수', '목', '금', '토'])[d.getDay()]}요일 ${ d.getHours() > 12 ? '오후' : '오전'} ${d.getHours() - (d.getHours() > 12 ? 12 : 0)}시 ${d.getMinutes()}분 ${d.getSeconds()}초`;
+  return `${d.getFullYear()}년 ${d.getMonth() + 1}월 ${d.getDate()}일 ${(['일', '월', '화', '수', '목', '금', '토'])[d.getDay()]}요일 ${ d.getHours() > 12 ? '오후' : '오전'} ${d.getHours() - (d.getHours() > 12 ? 12 : 0)}시 ${d.getMinutes()}분 ${d.getSeconds()}초`;
 }
 
 function formatTimespan(timespan) {
@@ -555,7 +555,7 @@ var SET = new function () {
     for (var i = 0; i < sets.length; i++) {
       var now = sets[i];
       if (now.indexOf('SET_') != 0) continue;
-      if (discards.indexOf(now) != -1) continue;
+      if (discards.indexOf(now.substring(4)) != -1) continue;
       let sval = await GM.getValue(now);
       this[now.substring(4)] = jsonParsable(sval) ? JSON.parse(sval) : sval;
     }
