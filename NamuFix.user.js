@@ -146,17 +146,6 @@ function nOu(a) {
   return typeof a === 'undefined' || a == null;
 }
 
-if (!String.prototype.format) {
-  String.prototype.format = function () {
-    var newstr = this;
-    for (var i = 0; i < arguments.length; i++) {
-      var b = '{' + i + '}';
-      var a = arguments[i];
-      while (newstr.indexOf(b) != -1) newstr = newstr.replace(b, a);
-    }
-    return newstr;
-  }
-}
 // HTML 이스케이프 함수
 function encodeHTMLComponent(text) {
   var result = text;
@@ -185,7 +174,7 @@ function validateIP(ip) {
 
 function formatDateTime(t) {
   var d = new Date(t);
-  return '{0}년 {1}월 {2}일 {7}요일 {6} {3}시 {4}분 {5}초'.format(d.getFullYear(), d.getMonth() + 1, d.getDate(), d.getHours() - (d.getHours() > 12 ? 12 : 0), d.getMinutes(), d.getSeconds(), d.getHours() > 12 ? '오후' : '오전', (['일', '월', '화', '수', '목', '금', '토'])[d.getDay()]);
+  return `${d.getFullYear()}년 ${d.getMnoth() + 1}월 ${d.getDate()}일 ${(['일', '월', '화', '수', '목', '금', '토'])[d.getDay()]}요일 ${ d.getHours() > 12 ? '오후' : '오전'} ${d.getHours() - (d.getHours() > 12 ? 12 : 0)}시 ${d.getMinutes()}분 ${d.getSeconds()}초`;
 }
 
 function formatTimespan(timespan) {
@@ -255,7 +244,7 @@ function getIpInfo(ip, cb) {
     return cb(ipDictionary[ip]);
   GM.xmlHttpRequest({
     method: "GET",
-    url: "http://ipinfo.io/{0}/json".format(ip),
+    url: `http://ipinfo.io/${ip}/json`,
     onload: function (res) {
       var resObj = JSON.parse(res.responseText);
       if (res.status === 200 || res.status === 304) {
@@ -304,7 +293,7 @@ function getIpWhois(ip, cb) {
     return cb(whoisDictionary[ip]);
   GM.xmlHttpRequest({
     method: "GET",
-    url: "http://namufix.wikimasonry.org/whois/ip/{0}".format(ip),
+    url: `http://namufix.wikimasonry.org/whois/ip/${ip}`,
     onload: function (res) {
       var resObj = JSON.parse(res.responseText);
       whoisDictionary[ip] = resObj;
@@ -498,7 +487,7 @@ function getFlagIcon(countryCode, cb) {
     return cb(flagIconDictionary[countryCode]);
   GM.xmlHttpRequest({
     method: 'GET',
-    url: 'https://cdnjs.cloudflare.com/ajax/libs/flag-icon-css/2.8.0/flags/4x3/{0}.svg'.format(countryCode),
+    url: `https://cdnjs.cloudflare.com/ajax/libs/flag-icon-css/2.8.0/flags/4x3/${countryCode}.svg`,
     onload: function (res) {
       flagIconDictionary[countryCode] = "data:image/svg+xml;base64," + btoa(res.responseText);
       return cb(flagIconDictionary[countryCode]);
@@ -547,7 +536,7 @@ function listenPJAX(callback) {
 
 function jsonParsable(str) {
   try{
-    JSON.pares(str);
+    JSON.parse(str);
     return true;
   } catch (err) {
     return false;
@@ -573,7 +562,7 @@ var SET = new function () {
   };
   this.delete = async function (key) {
     if (discards.indexOf(key) != -1) return;
-    await GM.deleteValue(key);
+    await GM.deleteValue('SET_' + key);
     delete this[key];
   };
 };
@@ -1001,7 +990,6 @@ async function mainFunc() {
 
   if (ENV.IsEditing || ENV.Discussing || ENV.IsEditingRequest || ENV.IsWritingRequest) {
     if (document.querySelector("textarea") !== null && !document.querySelector("textarea").hasAttribute("readonly")) {
-      console.log("[NamuFix] 편집기 추가 시작");
       var rootDiv = document.createElement("div");
       if (ENV.IsEditing || ENV.IsEditingRequest || ENV.IsWritingRequest) {
         // 탭 추가
@@ -1207,7 +1195,7 @@ async function mainFunc() {
               g: 255 - rgb.g,
               b: 255 - rgb.b
             };
-            colorPreview.style.color = "rgb({0}, {1}, {2})".format(reversedColor.r, reversedColor.g, reversedColor.b);
+            colorPreview.style.color = `rgb(${reversedColor.r}, ${reversedColor.g}, ${reversedColor.b})`;
             colorPreview.style.background = color;
             colorPreview.innerText = color;
           }).setHex(color);
@@ -1271,7 +1259,7 @@ async function mainFunc() {
               var cpinfo = cpinfos[i];
               result += "|| " + cpinfo.dataset.name + " || " + cpinfo.value + " ||\n";
             }
-            result += "\n\n== 기타 ==\n[[NamuFix]] {0} 버전을 이용하여 업로드된 이미지입니다.".format(GM.info.script.version);
+            result += `\n\n== 기타 ==\n[[NamuFix]] ${GM.info.script.version} 버전을 이용하여 업로드된 이미지입니다.`;
             callback(result);
           });
           win.button("닫기", win.close);
@@ -2358,7 +2346,7 @@ async function mainFunc() {
           var headBackground = obj.notExists ? "red" : obj.isFirstAuthor ? "#a5df9f" : "#b3b3b3";
           var elem = document.createElement("div");
           elem.className = 'nfTopicMessage';
-          elem.innerHTML = '<div style="font-size: 17px; font-family: sans-serif; background: {2}; padding: 7px 10px 7px 15px;">{0}</div><div style="padding: 15px; font-size: 11px;">{1}</div>'.format(obj.talker, obj.message, headBackground);
+          elem.innerHTML = `<div style="font-size: 17px; font-family: sans-serif; background: ${headBackground}; padding: 7px 10px 7px 15px;">${obj.talker}</div><div style="padding: 15px; font-size: 11px;">${obj.message}</div>`;
           elem.style.position = 'absolute';
           elem.style.color = 'black';
           elem.style.borderRadius = '4px';
@@ -2403,7 +2391,7 @@ async function mainFunc() {
           blockquoteElement.className = "wiki-quote nf-anchor-preview";
           blockquoteElement.innerHTML = message;
           blockquoteElement.id = blockquoteId;
-          blockquoteElement.innerHTML += '<div style="text-align: right; font-style: italic;">--#{1}, {0}, {2}</div>'.format(talker, numbericId, talkedAt);
+          blockquoteElement.innerHTML += `<div style="text-align: right; font-style: italic;">--#${numbericId}, ${talker}, ${talkedAt}</div>`;
           rbody.insertBefore(blockquoteElement, rbody.firstChild);
 
           anchor.dataset.quoteId = blockquoteId;
@@ -2581,7 +2569,7 @@ async function mainFunc() {
               var countryName = korCountryNames[country.toUpperCase()] ? korCountryNames[country.toUpperCase()] : engCountryNames[country.toUpperCase()];
               var isp = resObj.org;
               getFlagIcon(country.toLowerCase(), function (data) {
-                span.innerHTML = '[<img src="{0}" style="height: 0.9rem;" title="{3}"></img> {1}{2}]<a href="#" class="get-whois">[WHOIS]</a>'.format(data, isp, vpngateIP.indexOf(ip) != -1 ? " (VPNGATE)" : "", countryName);
+                span.innerHTML = `[<img src="${data}" style="height: 0.9rem;" title="${countryName}"></img> ${isp}${vpngateIP.includes(ip) ? " (VPNGATE)" : ""}]<a href="#" class="get-whois">[WHOIS]</a>`;
                 span.querySelector('a.get-whois').addEventListener('click', function (evt) {
                   evt.preventDefault();
                   whoisPopup(ip);
@@ -2662,17 +2650,17 @@ async function mainFunc() {
         var dayNames = ['일', '월', '화', '수', '목', '금', '토'];
         for (var i = 0; i < 7; i++) {
           var tr = document.createElement("tr");
-          tr.innerHTML += '<th>{0}</th>'.format(dayNames[i]);
+          tr.innerHTML += `<th>${dayNames[i]}</th>`;
           for (var ii = 0; ii < 24; ii++) {
             var td = document.createElement("td");
             td.innerHTML = '&nbsp;'
-            td.style.background = 'rgba(61,0,61,{0})'.format(maps[i][ii] / maxValue);
+            td.style.background = `rgba(61,0,61,${maps[i][ii] / maxValue})`;
             if (i == 0) {
               function twoDigits(a) {
                 var p = String(a);
                 return p.length == 1 ? '0' + p : p;
               }
-              headTr.innerHTML += '<th>{0}:00 ~ {1}:00</th>'.format(twoDigits(ii), twoDigits(ii + 1))
+              headTr.innerHTML += `<th>${twoDigits(ii)}:00 ~ ${twoDigits(ii + 1)}:00</th>`;
             }
             tr.appendChild(td);
           }
@@ -2700,21 +2688,19 @@ async function mainFunc() {
           var countryName = korCountryNames[country.toUpperCase()] ? korCountryNames[country.toUpperCase()] : engCountryNames[country.toUpperCase()];
           var isp = resObj.org;
           getFlagIcon(country.toLowerCase(), function (countryIcon) {
-            ipInfo.innerHTML = (
-              "<table class=\"contInfo\">" +
-              "<tbody>" +
-              "<tr><td>국가</td><td><img src=\"{0}\" style=\"height: 0.9rem;\"></img> {1}</td></tr>" + // {0} : cotunry, {1} : countryName
-              "<tr><td>통신사</td><td>{2}</td></tr>" +
-              "<tr><td>VPNGATE?</td><td>{3}</td></tr>" +
-              '<tr><td>KISA WHOIS</td><td><a href="#" class="get-whois">조회하기</a></td></tr>' +
-              '<tr><td>IP차단기록(/32 마스크)</td><td class="nf_isipblocked">차단기록을 검색하고 있습니다... 잠시만 기다려주세요.</td></tr>' +
-              "</tbody>" +
-              '<tfoot>' +
-              '<tr><td colspan="2" style="border-top: 1px solid black;">기술적인 한계로, VPNGATE 여부는 "현재 VPNGATE VPN인가?"의 여부이지, "작성 당시에 VPNGATE VPN인가?"의 여부가 아닙니다.<br>' + 
-              '또한 차단기록의 경우 /32 마스크만 검색하며, 사측의 비공개 차단은 검색이 불가능합니다. (추후 업데이트 예정)</td></tr>' +
-              '</foot>' +
-              "</table>"
-            ).format(countryIcon, countryName, isp, result.indexOf(ip) != -1 ? "<span style=\"color: red;\">YES! This is currently WORKING VPNGATE IP!</span>" : "Not a vpngate ip");
+            ipInfo.innerHTML =  `<table class="contInfo">
+              <tbody>
+              <tr><td>국가</td><td><img src=\"${countryIcon}\" style=\"height: 0.9rem;\"></img> ${countryName}</td></tr>
+              <tr><td>통신사</td><td>${isp}</td></tr>
+              <tr><td>VPNGATE?</td><td>${result.includes(ip) ? "<span style=\"color: red;\">YES! This is currently WORKING VPNGATE IP!</span>" : "Not a vpngate ip"}</td></tr>
+              <tr><td>KISA WHOIS</td><td><a href="#" class="get-whois">조회하기</a></td></tr>
+              <tr><td>IP차단기록(/32 마스크)</td><td class="nf_isipblocked">차단기록을 검색하고 있습니다... 잠시만 기다려주세요.</td></tr>
+              </tbody>
+              <tfoot>
+              <tr><td colspan="2" style="border-top: 1px solid black;">기술적인 한계로, VPNGATE 여부는 "현재 VPNGATE VPN인가?"의 여부이지, "작성 당시에 VPNGATE VPN인가?"의 여부가 아닙니다.<br>
+              또한 차단기록의 경우 /32 마스크만 검색하며, 사측의 비공개 차단은 검색이 불가능합니다. (추후 업데이트 예정)</td></tr>
+              </foot>
+              </table>`;
             ipInfo.querySelector('a.get-whois').addEventListener('click', function (evt) {
               evt.preventDefault();
               whoisPopup(ip);
@@ -2771,20 +2757,20 @@ async function mainFunc() {
           contributedAt.push(new Date(row.querySelector('time').getAttribute("datetime")));
         }
       }
-      p.innerHTML += ('<table class="contInfo">' +
-        '<tfoot>' +
-        '<tr><td colspan="2" style="border-top: 1px solid black;">최근 30일간의 데이터만 반영되었으므로, 최근 30일 간의 기여 정보입니다.</td></tr>' +
-        '</foot>' +
-        '<tbody>' +
-        '<tr><td>총 기여 횟수</td><td>{0}회</td></tr>' +
-        '<tr><td>기여한 바이트 총합</td><td>{1}자</td></tr>' +
-        '<tr><td>총 기여한 문서 (ACL 변경, 문서 이동 포함) 수</td><td>{2}개</td></tr>' +
-        '<tr><td>삭제한 문서 수</td><td>{3}개</td></tr>' +
-        '<tr><td>새로 만든 문서 수</td><td>{4}개</td></tr>' +
-        '<tr><td>한 문서당 평균 기여 바이트</td><td>{5}자</td></tr>' +
-        '<tr><td>시간대별 기여/활동 횟수 분포(문서 기여)</td><td><a href="#NothingToLink" id="punch">여기를 눌러 확인</a></td></tr>' +
-        '</tbody>' +
-        '</table>').format(contCount, contTotalBytes, documents.length, deletedDocuments.length, createdDocuments.length, (contTotalBytes / documents.length));
+      p.innerHTML += `<table class="contInfo">
+        <tfoot>
+        <tr><td colspan="2" style="border-top: 1px solid black;">최근 30일간의 데이터만 반영되었으므로, 최근 30일 간의 기여 정보입니다.</td></tr>
+        </foot>
+        <tbody>
+        <tr><td>총 기여 횟수</td><td>${contCount}회</td></tr>
+        <tr><td>기여한 바이트 총합</td><td>${contTotalBytes}자</td></tr>
+        <tr><td>총 기여한 문서 (ACL 변경, 문서 이동 포함) 수</td><td>${documents.length}개</td></tr>
+        <tr><td>삭제한 문서 수</td><td>${deletedDocuments.length}개</td></tr>
+        <tr><td>새로 만든 문서 수</td><td>${createdDocuments.length}개</td></tr>
+        <tr><td>한 문서당 평균 기여 바이트</td><td>${(contTotalBytes / documents.length)}자</td></tr>
+        <tr><td>시간대별 기여/활동 횟수 분포(문서 기여)</td><td><a href="#NothingToLink" id="punch">여기를 눌러 확인</a></td></tr>
+        </tbody>
+        </table>`;
       p.querySelector('a#punch').addEventListener('click', function (evt) {
         evt.preventDefault();
 
@@ -2836,18 +2822,18 @@ async function mainFunc() {
       }
       discussCount = Object.keys(docuAndTalks).length;
       avgTalks = totalTalks / discussCount;
-      p.innerHTML += ('<table class="contInfo">' +
-        '<tfoot>' +
-        '<tr><td colspan="2" style="border-top: 1px solid black;">최근 30일 간의 토론 정보만 반영되었으므로, 최근 30일 간의 토론 정보입니다.</td></tr>' +
-        '</tfoot>' +
-        '<tbody>' +
-        '<tr><td>총 발언 수</td><td>{0}</td></tr>' +
-        '<tr><td>참여한 토론 수</td><td>{1}</td></tr>' +
-        '<tr><td>한 토론당 평균 발언 수</td><td>{2}</td></tr>' +
-        '<tr><td>한 토론당 발언 수 표준편차</td><td>{3}</td></tr>' +
-        '<tr><td>시간대별 기여/활동 횟수 분포(토론)</td><td><a href="#NothingToLink" id="punch">여기를 눌러 확인</a></td></tr>' +
-        '</tbody>' +
-        '</table>').format(totalTalks, discussCount, avgTalks, standardDeviation(Talks));
+      p.innerHTML += `<table class="contInfo">
+        <tfoot>
+        <tr><td colspan="2" style="border-top: 1px solid black;">최근 30일 간의 토론 정보만 반영되었으므로, 최근 30일 간의 토론 정보입니다.</td></tr>
+        </tfoot>
+        <tbody>
+        <tr><td>총 발언 수</td><td>${totalTalks}</td></tr>
+        <tr><td>참여한 토론 수</td><td>${discussCount}</td></tr>
+        <tr><td>한 토론당 평균 발언 수</td><td>${avgTalks}</td></tr>
+        <tr><td>한 토론당 발언 수 표준편차</td><td>${standardDeviation(Talks)}</td></tr>
+        <tr><td>시간대별 기여/활동 횟수 분포(토론)</td><td><a href="#NothingToLink" id="punch">여기를 눌러 확인</a></td></tr>
+        </tbody>
+        </table>`;
       p.querySelector('a#punch').addEventListener('click', function (evt) {
         evt.preventDefault();
 
@@ -2864,15 +2850,13 @@ async function mainFunc() {
     if (typeof p !== 'undefined') insertBeforeTable(p);
   } else if (ENV.IsDiff) {
     setTimeout(function () {
-      var diffLinksHtml = ('<nav>' +
-        '<ul class="pagination">' +
-        '<li class="page-item"><a href="/diff/{0}?oldrev={1}&rev={2}">&lt;-- r{1} vs r{2}</a></li>' +
-        '<li class="page-item"><a href="#" style="color: black; text-deocration: none;">r{2} vs r{3}</a></li>' +
-        '<li class="page-item"><a href="/diff/{0}?oldrev={3}&rev={4}">r{3} vs r{4} --&gt;</a></li>' +
-        '</ul>' +
-        '</nav>').format(
-        ENV.docTitle, ENV.beforeRev - 1, ENV.beforeRev, ENV.afterRev, ENV.afterRev + 1
-      );
+      var diffLinksHtml = `<nav>
+        <ul class="pagination">
+        <li class="page-item"><a href="/diff/${ENV.docTitle}?oldrev=${ENV.beforeRev - 1}&rev=${ENV.beforeRev}">&lt;-- r${ENV.beforeRev - 1} vs r${ENV.beforeRev}</a></li>
+        <li class="page-item"><a href="#" style="color: black; text-deocration: none;">r${ENV.beforeRev} vs r${ENV.afterRev}</a></li>
+        <li class="page-item"><a href="/diff/${ENV.docTitle}?oldrev=${ENV.afterRev}&rev=${ENV.afterRev + 1}">r${ENV.afterRev} vs r${ENV.afterRev + 1} --&gt;</a></li>
+        </ul>
+        </nav>`;
       if(ENV.skinName == "liberty") {
         var divTag = document.createElement("div");
         var articleTag = document.querySelector('.wiki-article');
