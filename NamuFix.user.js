@@ -34,9 +34,6 @@
 // @connect     archive.is
 // @connect     www.vpngate.net
 // @connect     namufix.wikimasonry.org
-// @resource    NamuFixCSS https://cdn.rawgit.com/LiteHell/NamuFix/284db44ac1d89ff0cbd1155c3372db38be3bc140/NamuFix.css
-// @resource    PopupCSS https://cdn.rawgit.com/LiteHell/TooSimplePopupLib/edad912e28eeacdc3fd8b6e6b7ac5cafc46d95b6/TooSimplePopupLib.css
-// @resource    DiffCSS https://cdn.rawgit.com/wkpark/jsdifflib/dc19d085db5ae71cdff990aac8351607fee4fd01/diffview.css
 // @grant       GM_addStyle
 // @grant       GM_openInTab
 // @grant       GM_xmlhttpRequest
@@ -45,6 +42,7 @@
 // @grant       GM_deleteValue
 // @grant       GM_listValues
 // @grant       GM_info
+// @grant       GM_getResourceURL
 // @grant       GM.openInTab
 // @grant       GM.xmlHttpRequest
 // @grant       GM.getValue
@@ -52,6 +50,7 @@
 // @grant       GM.deleteValue
 // @grant       GM.listValues
 // @grant       GM.info
+// @grant       GM.getResourceUrl
 // @run-at      document-end
 // ==/UserScript==
 /*
@@ -92,17 +91,22 @@ if (typeof GM_addStyle !== 'undefined') {
   }
 }
 
-async function insertCSS(name) {
-  console.log(await GM.getResourceUrl(name))
-  var style = document.createElement("link");
-  style.setAttribute("rel", "stylesheet");
-  style.setAttribute("href", await GM.getResourceUrl(name));
-  document.head.appendChild(style);
+function insertCSS(url) {
+  // 나무위키 CSP 빡세서 getResourceUrl 쓰면 보안 오류남.
+  GM.xmlHttpRequest({
+    method: 'GET',
+    url: url,
+    onload: (res) => {
+      let styleTag = document.createElement("style");
+      styleTag.innerHTML = res.responseText;
+      document.head.appendChild(styleTag);
+    }
+  });
 }
 
-await insertCSS("NamuFixCSS");
-await insertCSS("PopupCSS");
-await insertCSS("DiffCSS");
+insertCSS("https://cdn.rawgit.com/LiteHell/NamuFix/284db44ac1d89ff0cbd1155c3372db38be3bc140/NamuFix.css");
+insertCSS("https://cdn.rawgit.com/LiteHell/TooSimplePopupLib/edad912e28eeacdc3fd8b6e6b7ac5cafc46d95b6/TooSimplePopupLib.css");
+insertCSS("https://cdn.rawgit.com/wkpark/jsdifflib/dc19d085db5ae71cdff990aac8351607fee4fd01/diffview.css");
 console.log('[NamuFix] CSS 삽입됨.');
 
 // 업데이트 확인
@@ -996,7 +1000,8 @@ async function mainFunc() {
   console.log("[NamuFix] 설정 초기화 완료");
 
   if (ENV.IsEditing || ENV.Discussing || ENV.IsEditingRequest || ENV.IsWritingRequest) {
-    if (document.querySelectorAll("textarea").length == 1 && !document.querySelector("textarea").hasAttribute("readonly")) {
+    if (document.querySelector("textarea") !== null && !document.querySelector("textarea").hasAttribute("readonly")) {
+      console.log("[NamuFix] 편집기 추가 시작");
       var rootDiv = document.createElement("div");
       if (ENV.IsEditing || ENV.IsEditingRequest || ENV.IsWritingRequest) {
         // 탭 추가
@@ -3118,6 +3123,20 @@ addItemToMemberMenu("NamuFix 설정", async function (evt) {
     if (confirm("새로고침해야 설정이 적용됩니다. 새로고침할까요?"))
       location.reload();
     win.close();
+  });
+  win.button('설정 초기화', async function () {
+    if(confirm('되돌릴 수 없습니다. 계속 진행하시겠습니까?')) {
+      await SET.load();
+      for(let i in SET) {
+        if(i == "save" || i == "load" || i == "delete")
+          continue;
+        await SET.delete(i);
+      }
+      if(confirm('초기화에 성공했습니다. 확인 버튼을 누르면 새로고침합니다.')) {
+        location.reload();
+      }
+      win.close();
+    }
   });
 });
 addItemToMemberMenu('NamuFix 이슈트래커', function (evt) {
