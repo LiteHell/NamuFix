@@ -922,6 +922,9 @@ function getFile(callback, allowMultiple) {
   elm.click();
 }
 
+await INITSET();
+console.log("[NamuFix] 설정 초기화 완료");
+
 async function mainFunc() {
   // 환경 감지
   var ENV = {};
@@ -983,10 +986,6 @@ async function mainFunc() {
       ENV.IPAddress = ip;
     }
   });
-
-  // 설정 초기화
-  await INITSET();
-  console.log("[NamuFix] 설정 초기화 완료");
 
   if (ENV.IsEditing || ENV.Discussing || ENV.IsEditingRequest || ENV.IsWritingRequest) {
     if (document.querySelector("textarea") !== null && !document.querySelector("textarea").hasAttribute("readonly")) {
@@ -3133,11 +3132,12 @@ addItemToMemberMenu('KISA WHOIS', function (evt) {
 
   whoisPopup(prompt('조회할 IP주소를 입력하세요.'));
 })
-/*
-if(SET.addBatchBlockMenu) {
+
+if(SET.addBatchBlockMenu && false) {
   addItemToMemberMenu('계정/IP 일괄 차단', function (evt) {
     evt.preventDefault();
     var win = TooSimplePopup();
+    win.title('계정/IP 일괄 차단');
     win.content(function(con){
       var expire = 0;
       con.innerHTML = '<p>아래에 차단할 IP주소/계정들을 입력해주세요.' + 
@@ -3178,6 +3178,7 @@ if(SET.addBatchBlockMenu) {
           var ipWithCIDR = /^([0-9]{1,3}\.){3}[0-9]{1,3}(\/([0-9]|[1-2][0-9]|3[0-2]))?$/;
           if(ipWithCIDR.test(blockee)) {
             queryData.ip = blockee;
+            if(!queryData.ip.includes("/")) queryData.ip += "/32";
             namuapi.blockIP(queryData, function(err, target) {
               if (err) {
                 errors.push({ip: blockee, error: err});
@@ -3267,7 +3268,7 @@ if(SET.addBatchBlockMenu) {
     });
   })
 }
-*/
+
 mainFunc();
 listenPJAX(mainFunc);
 
@@ -3283,6 +3284,14 @@ if (document.querySelector('body').getAttribute('class').indexOf('senkawa') == -
     SET.ignoreNonSenkawaWarning = true;
     await SET.save();
   }
+}
+if (GM.info.scriptHandler === "Greasemonkey" && GM.info.version.startsWith("4.") && !SET.ignoreGM4Warning) {
+  var win = TooSimplePopup();
+  win.title('Greasemonkey 4와의 호환성 안내');
+  win.content((container) => container.innerHTML = "<p>Greasemonkey 4+ 버전에서는 NamuFix가 비정상적으로 작동할 가능성이 <strong>매우</strong> 높습니다. 버그를 작동하면 즉시 이슈트래커에 신고해주세요.</p>");
+  win.button('닫기', win.close);
+  SET.ignoreGM4Warning = true;
+  await SET.save();
 }
 })();
 } catch (err) {
