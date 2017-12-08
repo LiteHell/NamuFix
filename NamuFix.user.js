@@ -7,7 +7,7 @@
 // @include     https://alphawiki.org/*
 // @include     https://www.alphawiki.org/*
 // @include     https://theseed.io/*
-// @version     171203.0
+// @version     171209.0
 // @author      LiteHell
 // @downloadURL https://raw.githubusercontent.com/LiteHell/NamuFix/master/NamuFix.user.js
 // @require     https://greasemonkey.github.io/gm4-polyfill/gm4-polyfill.js
@@ -23,7 +23,7 @@
 // @require     https://cdn.rawgit.com/LiteHell/TooSimplePopupLib/7f2a8a81f11f980c1dfa6b5b2213cd38b8bbde3c/TooSimplePopupLib.js
 // @require     https://cdn.rawgit.com/wkpark/jsdifflib/dc19d085db5ae71cdff990aac8351607fee4fd01/difflib.js
 // @require     https://cdn.rawgit.com/wkpark/jsdifflib/dc19d085db5ae71cdff990aac8351607fee4fd01/diffview.js
-// @require     https://cdn.rawgit.com/LiteHell/NamuFix/9e3eb3510ecf10e1c2bc6f67367655a93335596c/namuapi.js
+// @require     https://cdn.rawgit.com/LiteHell/NamuFix/f807d9408fcdbf153f3d83c064721a1600f981a4/namuapi.js
 // @connect     cdn.rawgit.com
 // @connect     cdnjs.cloudflare.com
 // @connect     api.github.com
