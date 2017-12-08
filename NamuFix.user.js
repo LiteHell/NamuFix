@@ -2752,30 +2752,32 @@ try {
             contDocuments = 0,
             deletedDocuments = [],
             createdDocuments = [],
+            documentNameBefore = "",
             contributedAt = [];
           var documents = [];
           for (var i = 0; i < rows.length; i++) {
             var row = rows[i];
-            if (row.querySelectorAll('a').length == 0) continue;
-            var documentName = row.querySelector('a').getAttribute('href');
-            var contributedBytes = row.querySelector('span.f_r > span').innerHTML;
-            var negativeContribution = /^\-[0-9]+/.test(contributedBytes);
-            if (/^\+[0-9]+/.test(contributedBytes)) contributedBytes = contributedBytes.substring(contributedBytes.indexOf('+'));
-            contributedBytes = Number(contributedBytes);
-            if (documents.indexOf(documentName) == -1) documents.push(documentName);
-            contCount++;
-            if (negativeContribution)
-              contTotalBytes -= contributedBytes;
-            else
-              contTotalBytes += contributedBytes;
-            if (row.querySelector('i')) {
+            if (row.querySelector('a')) {
+              var documentName = row.querySelector('a').getAttribute('href');
+              documentNameBefore = documentName;
+              var contributedBytes = row.querySelector('span.f_r > span').innerHTML;
+              var negativeContribution = /^\-[0-9]+/.test(contributedBytes);
+              if (/^\+[0-9]+/.test(contributedBytes)) contributedBytes = contributedBytes.substring(contributedBytes.indexOf('+'));
+              contributedBytes = Number(contributedBytes);
+              if (documents.indexOf(documentName) == -1) documents.push(documentName);
+              contCount++;
+              if (negativeContribution)
+                contTotalBytes -= contributedBytes;
+              else
+                contTotalBytes += contributedBytes;
+  
+              if (row.querySelector('time')) {
+                contributedAt.push(new Date(row.querySelector('time').getAttribute("datetime")));
+              }
+            } else if (row.querySelector('i')) {
               var italicText = row.querySelector('i').innerHTML;
-              if (italicText == '(새 문서)' && createdDocuments.indexOf(documentName) == -1) createdDocuments.push(documentName);
-              else if (italicText == '(삭제)' && deletedDocuments.indexOf(documentName) == -1) deletedDocuments.push(documentName);
-            }
-
-            if (row.querySelector('time')) {
-              contributedAt.push(new Date(row.querySelector('time').getAttribute("datetime")));
+              if (italicText == '(새 문서)' && createdDocuments.indexOf(documentNameBefore) == -1) createdDocuments.push(documentNameBefore);
+              else if (italicText == '(삭제)' && deletedDocuments.indexOf(documentNameBefore) == -1) deletedDocuments.push(documentNameBefore);
             }
           }
           p.innerHTML += `<table class="contInfo">
