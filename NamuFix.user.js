@@ -78,18 +78,17 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 */
 try {
+  if (typeof GM_addStyle !== 'undefined') {
+    var GM_addStyle = function (text) {
+      var style = document.createElement("style");
+      style.innerHTML = text;
+      document.head.appendChild(style);
+    }
+  }
   (async function () {
     console.log(`[NamuFix] 현재 버전 : ${GM.info.script.version}`);
     if (location.hostname == 'no-ssl.namu.wiki')
       location.hostname = 'namu.wiki';
-
-    if (typeof GM_addStyle !== 'undefined') {
-      var GM_addStyle = function (text) {
-        var style = document.createElement("style");
-        style.innerHTML = text;
-        document.head.appendChild(style);
-      }
-    }
 
     function insertCSS(url) {
       // 나무위키 CSP 빡세서 getResourceUrl 쓰면 보안 오류남.
@@ -2266,6 +2265,18 @@ try {
             evt.target.className = evt.target.className.replace('namufix-folded-heading', '');
           }
         })
+
+        // 이중 리다이렉트 링크 추가
+        let wikiInnerContent = document.querySelector('.wiki-content .wiki-inner-content');
+        if (wikiInnerContent &&
+          /^#redirect [^\n]+$/.test(wikiInnerContent.textContent.trim()) &&
+          !wikiInnerContent.textContent.trim().includes('\n') &&
+          wikiInnerContent.children.length === 1 &&
+          wikiInnerContent.children[0].tagName === "P" &&
+          wikiInnerContent.children[0].children.length === 0) {
+            let target = /^#redirect ([^\n]+)$/.exec(wikiInnerContent.textContent.trim())[1];
+            wikiInnerContent.innerHTML = `<p>넘겨주기 : <a href="/w/${encodeURIComponent(target)}">${encodeHTMLComponent(target)}</a></p><p><em>By. NamuFix</em></p>`
+        }
       }
 
       if (ENV.Discussing) {
