@@ -17,12 +17,10 @@ namuapi.theseedRequest = function (options) {
                         if (capKeyRes == null) {
                             namuapi.theseedRequest(options);
                         } else {
-                            var formData = new FormData();
-                            formData.append("g-recaptcha-response", capKeyRes);
                             GM.xmlHttpRequest({
                                 url: aTagForParsingUrl.href,
                                 method: 'POST',
-                                data: formData,
+                                data: "g-recaptcha-response=" + encodeURIComponent(capKeyRes),
                                 headers: {
                                     'Content-Type': 'application/x-www-form-urlencoded'
                                 },
@@ -133,13 +131,13 @@ namuapi.uploadImage = function (data, callback) {
     query.append('log', data.log);
     query.append('baserev', 0);
     query.append('identifier', data.identifier); // (ENV.IsLoggedIn ? "m" : "i") + ":" + ENV.UserName
-    if (data.recaptchaKey !== null)
+    if (data.recaptchaKey !== null && typeof data.recaptchaKey !== 'undefined')
         query.append('g-recaptcha-response', data.recaptchaKey);
     namuapi.theseedRequest({
         method: 'POST',
         url: `https://${location.host}/Upload`,
         headers: {
-            "Content-Type": "application/x-www-form-urlencoded",
+            "Content-Type": "multipart/form-data",
             "Referer": `https://${location.host}/Upload`
         },
         data: query,
