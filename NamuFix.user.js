@@ -7,6 +7,7 @@
 // @include     https://alphawiki.org/*
 // @include     https://www.alphawiki.org/*
 // @include     https://theseed.io/*
+// @include     https://board.namu.wiki/*
 // @version     171209.1
 // @author      LiteHell
 // @downloadURL https://raw.githubusercontent.com/LiteHell/NamuFix/master/NamuFix.user.js
@@ -24,6 +25,8 @@
 // @require     https://cdn.rawgit.com/wkpark/jsdifflib/dc19d085db5ae71cdff990aac8351607fee4fd01/difflib.js
 // @require     https://cdn.rawgit.com/wkpark/jsdifflib/dc19d085db5ae71cdff990aac8351607fee4fd01/diffview.js
 // @require     https://cdn.rawgit.com/LiteHell/NamuFix/4edbbdd0c6c24d264263e7593175fdc3f0b9600b/namuapi.js
+// @require     https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.19.3/moment-with-locales.min.js
+// @require     https://cdnjs.cloudflare.com/ajax/libs/moment-timezone/0.5.14/moment-timezone-with-data.min.js
 // @connect     cdn.rawgit.com
 // @connect     cdnjs.cloudflare.com
 // @connect     api.github.com
@@ -77,6 +80,7 @@ WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 */
+
 try {
   if (typeof GM_addStyle !== 'undefined') {
     var GM_addStyle = function (text) {
@@ -85,6 +89,51 @@ try {
       document.head.appendChild(style);
     }
   }
+  function NFStorage () {
+    function jsonParsable(str) {
+      try {
+        JSON.parse(str);
+        return true;
+      } catch (err) {
+        return false;
+      }
+    }
+    var discards = ['save', 'load', 'delete'];
+    this.save = async function () {
+      for (var i in this) {
+        if (discards.indexOf(i) != -1) continue;
+        await GM.setValue('SET_' + i, JSON.stringify(this[i]));
+      }
+    };
+    this.load = async function () {
+      var sets = await GM.listValues();
+      for (var i = 0; i < sets.length; i++) {
+        var now = sets[i];
+        if (now.indexOf('SET_') != 0) continue;
+        if (discards.indexOf(now.substring(4)) != -1) continue;
+        let sval = await GM.getValue(now);
+        this[now.substring(4)] = jsonParsable(sval) ? JSON.parse(sval) : sval;
+      }
+    };
+    this.delete = async function (key) {
+      if (discards.indexOf(key) != -1) return;
+      await GM.deleteValue('SET_' + key);
+      delete this[key];
+    };
+  }
+  if (location.host === 'board.namu.wiki') {
+    let SET = new NFStorage();
+    SET.load();
+    if (SET.noKSTonNamuBoard !== false) {
+      let times = document.querySelectorAll('.read_header > .meta > .time, .fbMeta .time');
+      for(let i = 0; i < times.length; i++) {
+        let t = moment.tz(times[i].textContent.trim(), "YYYY.MM.DD HH:mm", "America/Asuncion");
+        times[i].textContent = t.tz(moment.tz.guess()).format("YYYY.MM.DD HH:mm z")
+      }
+      if(times.length !== 0)
+        console.log("[NamuFix] 게시판 시간대 변경 완료. Amercia/Asuncion > " + moment.tz.guess());
+    }
+  } else
   (async function () {
     console.log(`[NamuFix] 현재 버전 : ${GM.info.script.version}`);
     if (location.hostname == 'no-ssl.namu.wiki')
@@ -535,39 +584,7 @@ try {
       document.head.appendChild(scriptElement);
     }
 
-
-    function jsonParsable(str) {
-      try {
-        JSON.parse(str);
-        return true;
-      } catch (err) {
-        return false;
-      }
-    }
-    var SET = new function () {
-      var discards = ['save', 'load', 'delete'];
-      this.save = async function () {
-        for (var i in this) {
-          if (discards.indexOf(i) != -1) continue;
-          await GM.setValue('SET_' + i, JSON.stringify(this[i]));
-        }
-      };
-      this.load = async function () {
-        var sets = await GM.listValues();
-        for (var i = 0; i < sets.length; i++) {
-          var now = sets[i];
-          if (now.indexOf('SET_') != 0) continue;
-          if (discards.indexOf(now.substring(4)) != -1) continue;
-          let sval = await GM.getValue(now);
-          this[now.substring(4)] = jsonParsable(sval) ? JSON.parse(sval) : sval;
-        }
-      };
-      this.delete = async function (key) {
-        if (discards.indexOf(key) != -1) return;
-        await GM.deleteValue('SET_' + key);
-        delete this[key];
-      };
-    };
+    var SET = new NFStorage();
 
     async function INITSET() { // Storage INIT
       await SET.load();
@@ -613,6 +630,8 @@ try {
         SET.autoTempsaveSpan = 1000 * 60 * 5; // 5분
       if (nOu(SET.addBatchBlockMenu))
         SET.addBatchBlockMenu = false;
+      if (nOu(SET.noKSTonNamuBoard))
+        SET.noKSTonNamuBoard = true;
       await SET.save();
     }
 
@@ -3106,6 +3125,8 @@ try {
           '<p>관리자를 위한 몇가지 편의기능들입니다.</p>' +
           '<input type="checkbox" name="addAdminLinksForLiberty" data-setname="addAdminLinksForLiberty" data-as-boolean>Liberty 스킨에 관리자 링크 추가하기</input><br>' +
           '<input type="checkbox" name="addBatchBlockMenu" data-setname="addBatchBlockMenu" data-as-boolean><del>일괄 차단 메뉴 추가</del> 개발중입니다.</input>' +
+          '<h1 class="wsmall">게시판 시간대 변경</h1>' +
+          '<input type="checkbox" name="noKSTonNamuBoard" data-setname="noKSTonNamuBoard" data-as-boolean>게시판 시간대를 사용자의 시간대로 자동 변경합니다.</input>' +
           '<h1 class="wsmall">자동저장 시간 간격</h1>' +
           '<p>편집중 자동저장 간격을 설정합니다. 0 이하의 값으로 설정할 시 자동으로 이루어지지 않으며 이 경우 단축키나 메뉴를 이용해 수동으로 저장해야 합니다.</p>' +
           '<input type="number" name="autoTempsaveSpan" data-setname="autoTempsaveSpan"></input>ms (1000ms = 1s)';
