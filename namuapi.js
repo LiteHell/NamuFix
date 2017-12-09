@@ -137,7 +137,6 @@ namuapi.uploadImage = function (data, callback) {
         method: 'POST',
         url: `https://${location.host}/Upload`,
         headers: {
-            "Content-Type": "multipart/form-data",
             "Referer": `https://${location.host}/Upload`
         },
         data: query,
