@@ -7,7 +7,7 @@
 // @include     https://alphawiki.org/*
 // @include     https://www.alphawiki.org/*
 // @include     https://theseed.io/*
-// @version     171209.0
+// @version     171209.1
 // @author      LiteHell
 // @downloadURL https://raw.githubusercontent.com/LiteHell/NamuFix/master/NamuFix.user.js
 // @require     https://greasemonkey.github.io/gm4-polyfill/gm4-polyfill.js
