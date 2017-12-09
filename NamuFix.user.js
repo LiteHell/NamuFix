@@ -127,12 +127,13 @@ try {
     SET.load();
     if (SET.noKSTonNamuBoard !== false) {
       let times = document.querySelectorAll('.read_header > .meta > .time, .fbMeta .time');
+      let origTimezone = "UTC" // America/Asuncion 아님.
       for (let i = 0; i < times.length; i++) {
-        let t = moment.tz(times[i].textContent.trim(), "YYYY.MM.DD HH:mm", "America/Asuncion");
+        let t = moment.tz(times[i].textContent.trim(), "YYYY.MM.DD HH:mm", origTimezone);
         times[i].textContent = t.tz(moment.tz.guess()).format("YYYY.MM.DD HH:mm z")
       }
       if (times.length !== 0)
-        console.log("[NamuFix] 게시판 시간대 변경 완료. Amercia/Asuncion > " + moment.tz.guess());
+        console.log(`[NamuFix] 게시판 시간대 변경 완료. ${origTimezone} > ${moment.tz.guess()}`);
     }
   } else
     (async function () {
