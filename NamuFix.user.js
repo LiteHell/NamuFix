@@ -3126,7 +3126,7 @@ try {
             '<h1 class="wsmall">관리 편의성</h1>' +
             '<p>관리자를 위한 몇가지 편의기능들입니다.</p>' +
             '<input type="checkbox" name="addAdminLinksForLiberty" data-setname="addAdminLinksForLiberty" data-as-boolean>Liberty 스킨에 관리자 링크 추가하기</input><br>' +
-            '<input type="checkbox" name="addBatchBlockMenu" data-setname="addBatchBlockMenu" data-as-boolean><del>일괄 차단 메뉴 추가</del> 개발중입니다.</input>' +
+            '<input type="checkbox" name="addBatchBlockMenu" data-setname="addBatchBlockMenu" data-as-boolean>일괄 차단 메뉴 추가</input>' +
             '<h1 class="wsmall">게시판 시간대 변경</h1>' +
             '<input type="checkbox" name="noKSTonNamuBoard" data-setname="noKSTonNamuBoard" data-as-boolean>게시판 시간대를 사용자의 시간대로 자동 변경합니다.</input>' +
             '<h1 class="wsmall">자동저장 시간 간격</h1>' +
@@ -3194,7 +3194,7 @@ try {
         whoisPopup(prompt('조회할 IP주소를 입력하세요.'));
       })
 
-      if (SET.addBatchBlockMenu && false) {
+      if (SET.addBatchBlockMenu) {
         addItemToMemberMenu('계정/IP 일괄 차단', function (evt) {
           evt.preventDefault();
           var win = TooSimplePopup();
@@ -3220,159 +3220,98 @@ try {
               });
             })
             win.button('닫기', win.close);
-            win.button('차단', function () {
-              var waitingWin = TooSimplePopup();
-              var errors = [];
-              var commonData = {
+            win.button('VPNGATE IP 불러오기', function () {
+              getVPNGateIPList((vpngateIPs) => {
+                let textarea = con.querySelector('textarea');
+                textarea.value += '\n' + vpngateIPs.map(v => v + "/32").join("\n");
+              });
+            })
+            function parseTextarea() {
+              let commonData = {
                 note: con.querySelector('input#note').value,
                 expire: expire,
                 allowLogin: con.querySelector('input#allowLogin').checked
               }
-              waitingWin.title('처리중');
-              waitingWin.content(function (wwcon) {
-                wwcon.innerHTML = "처리중입니다."
-              });
-              forLoop(con.querySelector('textarea').value
-                .split('\n')
-                .map(function (v) {
-                  return v.trim();
-                })
-                .filter(function (v) {
-                  return v != ""
-                }),
-                function (blockee, next, isLast) {
-                  waitingWin.content(function (wwcon) {
-                    wwcon.innerHTML = "처리중입니다. 처리 대상 : " + blockee
+              return con.querySelector('textarea').value
+                      .split('\n')
+                      .map(v => v.trim())
+                      .filter(v => v != "")
+                      .map((v) => {
+                        let ipWithCIDR = /^([0-9]{1,3}\.){3}[0-9]{1,3}(\/([0-9]|[1-2][0-9]|3[0-2]))?$/;
+                        let data = JSON.parse(JSON.stringify(commonData));
+                        if (ipWithCIDR.test(v))
+                          data.ip = v;
+                        else
+                          data.id = v;
+                        if(data.ip && !data.ip.includes("/")) data.ip += "/32";
+                        return data;
+                      });
+            }
+            function commonLoop(_datas, progressCallback) { // returns error object
+              return new Promise((resolve, reject) => {
+                let result = {errors: [], success: []};
+                let datas = JSON.parse(JSON.stringify(_datas));
+                function innerLoop() {
+                  if (datas.length == 0)
+                    return resolve(result);
+                  let data = datas.pop();
+                  if (progressCallback)
+                    progressCallback(data);
+                  namuapi[data.handlerName](data.parameter, (err, target) => {
+                    if (err) {
+                      result.errors.push({target: data.parameter, error: err});
+                    } else {
+                      result.success.push(data.parameter);
+                    }
+                    innerLoop();
                   });
-                  var queryData = JSON.parse(JSON.stringify(commonData));
-                  var ipWithCIDR = /^([0-9]{1,3}\.){3}[0-9]{1,3}(\/([0-9]|[1-2][0-9]|3[0-2]))?$/;
-                  if (ipWithCIDR.test(blockee)) {
-                    queryData.ip = blockee;
-                    if (!queryData.ip.includes("/")) queryData.ip += "/32";
-                    namuapi.blockIP(queryData, function (err, target) {
-                      if (err) {
-                        errors.push({
-                          ip: blockee,
-                          error: err
-                        });
-                      }
-                      if (isLast) {
-                        if (errors.length == 0)
-                          waitingWin.close();
-                        else {
-                          waitingWin.title('오류 목록');
-                          waitingWin.content(function (con) {
-                            con.innerHTML = "<p>몇몇 오류가 발생했습니다.<br>" + errors.map(function (v) {
-                              return (v.id | v.ip) + " : " + v.error
-                            }).join('<br>') + '</p>'
-                          });
-                          waitingWin.button('닫기');
-                        }
-                      }
-                      next();
-                    });
-                  } else {
-                    queryData.id = blockee;
-                    namuapi.blockAccount(queryData, function (err, target) {
-                      if (err) {
-                        errors.push({
-                          id: blockee,
-                          error: err
-                        });
-                      }
-                      if (isLast) {
-                        if (errors.length == 0)
-                          waitingWin.close();
-                        else {
-                          waitingWin.title('오류 목록');
-                          waitingWin.content(function (con) {
-                            con.innerHTML = "<p>몇몇 오류가 발생했습니다.<br>" + errors.map(function (v) {
-                              return (v.id | v.ip) + " : " + v.error
-                            }).join('<br>') + '</p>'
-                          });
-                          waitingWin.button('닫기');
-                        }
-                      }
-                      next();
-                    });
-                  }
-                });
-            });
-            win.button('차단 해제', function () {
+                }
+                innerLoop();
+              });
+            }
+            win.button('차단', async function () {
               var waitingWin = TooSimplePopup();
               var errors = [];
               waitingWin.title('처리중');
               waitingWin.content(function (wwcon) {
                 wwcon.innerHTML = "처리중입니다."
               });
-              forLoop(con.querySelector('textarea').value
-                .split('\n')
-                .map(function (v) {
-                  return v.trim();
-                })
-                .filter(function (v) {
-                  return v != ""
-                }),
-                function (blockee, next, isLast) {
-                  waitingWin.content(function (wwcon) {
-                    wwcon.innerHTML = "처리중입니다. 처리 대상 : " + blockee
-                  });
-                  var ipWithCIDR = /^([0-9]{1,3}\.){3}[0-9]{1,3}(\/([0-9]|[1-2][0-9]|3[0-2]))?$/;
-                  if (ipWithCIDR.test(blockee)) {
-                    namuapi.unblockIP({
-                      ip: blockee
-                    }, function (err, target) {
-                      if (err) {
-                        errors.push({
-                          ip: blockee,
-                          error: err
-                        });
-                      }
-                      if (isLast) {
-                        if (errors.length == 0)
-                          waitingWin.close();
-                        else {
-                          waitingWin.title('오류 목록');
-                          waitingWin.content(function (con) {
-                            con.innerHTML = "<p>몇몇 오류가 발생했습니다.<br>" + errors.map(function (v) {
-                              return (v.id | v.ip) + " : " + v.error
-                            }).join('<br>') + '</p>'
-                          });
-                          waitingWin.button('닫기');
-                        }
-                      }
-                      next();
-                    });
-                  } else {
-                    namuapi.blockAccount({
-                      note: con.querySelector('input#note').value,
-                      expire: -1,
-                      id: blockee
-                    }, function (err, target) {
-                      if (err) {
-                        errors.push({
-                          id: blockee,
-                          error: err
-                        });
-                      }
-                      if (isLast) {
-                        if (errors.length == 0)
-                          waitingWin.close();
-                        else {
-                          waitingWin.title('오류 목록');
-                          waitingWin.content(function (con) {
-                            con.innerHTML = "<p>몇몇 오류가 발생했습니다.<br>" + errors.map(function (v) {
-                              return (v.id | v.ip) + " : " + v.error
-                            }).join('<br>') + '</p>'
-                          });
-                          waitingWin.button('닫기');
-                        }
-                      }
-                      next();
-                    });
-                  }
+              let datas = parseTextarea().map(v => ({parameter: v, handlerName: v.ip ? "blockIP" : "blockAccount"}));
+              let result = await commonLoop(datas, d => waitingWin.content(wwcon => wwcon.innerHTML = `처리중입니다: ${d.parameter.ip || d.parameter.id}`));
+              if (result.errors.length > 0) {
+                waitingWin.content(wwcon => {
+                  wwcon.innerHTML = "오류가 있습니다.<br><br>" + result.errors.map(v => `${encodeHTMLComponent(v.target.ip || v.target.id)} : ${v.error}`).join("<br>");
                 });
-
+                waitingWin.button('닫기', waitingWin.close);
+              } else {
+                waitingWin.close();
+              }
+            });
+            win.button('차단 해제', async function () {
+              var waitingWin = TooSimplePopup();
+              var errors = [];
+              waitingWin.title('처리중');
+              waitingWin.content(function (wwcon) {
+                wwcon.innerHTML = "처리중입니다."
+              });
+              let datas = parseTextarea().map(v => {
+                if (v.ip) {
+                  return {parameter: v.ip, handlerName: 'unblockIP'};
+                } else {
+                  let tmp = {parameter: v, handlerName: 'blockAccount'};
+                  tmp.parameter.expire = -1;
+                  return tmp;
+                }
+              });
+              let result = await commonLoop(datas, d => waitingWin.content(wwcon => wwcon.innerHTML = `처리중입니다: ${d.parameter.id ? d.parameter.id : d.parameter}`));
+              if (result.errors.length > 0) {
+                waitingWin.content(wwcon => {
+                  wwcon.innerHTML = "오류가 있습니다.<br><br>" + result.errors.map(v => `${encodeHTMLComponent(v.target.id || v.target)} : ${v.error}`).join("<br>");
+                });
+                waitingWin.button('닫기', waitingWin.close);
+              } else {
+                waitingWin.close();
+              }
             });
           });
         })
