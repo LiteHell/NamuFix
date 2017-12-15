@@ -27,6 +27,7 @@
 // @require     https://cdn.rawgit.com/LiteHell/NamuFix/24330716f5fe1df0add8b727bc84819fdde72118/namuapi.js
 // @require     https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.19.3/moment-with-locales.min.js
 // @require     https://cdnjs.cloudflare.com/ajax/libs/moment-timezone/0.5.14/moment-timezone-with-data.min.js
+// @require     https://cdnjs.cloudflare.com/ajax/libs/async/2.6.0/async.min.js
 // @connect     cdn.rawgit.com
 // @connect     cdnjs.cloudflare.com
 // @connect     api.github.com
@@ -206,16 +207,6 @@ try {
         result = result.replace(/'/gmi, "&#039;");
         result = result.replace(/"/gmi, "&quot;");
         return result;
-      }
-
-      function forLoop(array, callback) {
-        var index = 0;
-        var doNext = function () {
-          if (array.length > index) {
-            callback(array[index++], doNext, index == array.length - 1);
-          }
-        }
-        doNext();
       }
 
       function validateIP(ip) {
@@ -634,6 +625,10 @@ try {
           SET.addBatchBlockMenu = false;
         if (nOu(SET.noKSTonNamuBoard))
           SET.noKSTonNamuBoard = true;
+        if (nOu(SET.fileUploadReqLimit))
+          SET.fileUploadReqLimit = 3;
+        if (nOu(SET.adminReqLimit))
+          SET.adminReqLimit = 3;
         await SET.save();
       }
 
@@ -670,7 +665,7 @@ try {
             method: "GET",
             url: "http://www.vpngate.net/api/iphone/",
             onload: function (res) {
-              var lines = res.responseText.split('\n');
+              var lines = res.responseText.split('\n').filter(v => v.trim().length != 0);
               var result = [];
               for (var i = 0; i < lines.length; i++) {
                 if (!/^[\*#]/.test(lines[i]))
@@ -1301,23 +1296,20 @@ try {
                     alert('선택된 파일이 없습니다');
                     return finish();
                   }
-
-                  forLoop(files, function (file, next, isLastItem) {
-                    if (!file) next();
-                    var win = TooSimplePopup();
-                    win.title("업로드 중...");
-                    win.content(function (el) {
-                      el.innerHTML = '<p>파일을 업로드하고 있습니다. 잠시만 기다려주세요.</p><p>현재 업로드중 : ' + file.name + '</p>';
-                    });
+                  
+                  let uploadLimit = SET.fileUploadReqLimit || 3;
+                  let win = TooSimplePopup();
+                  win.title('업로드 중...');
+                  win.content(el => el.innerHTML = `현재 ${uploadLimit}개의 이미지들을 동시에 업로드하고 있습니다. 설정에서 변경가능합니다.<br><ul><li>현재 진행중</li><li><ul id="inprog"></ul></li></ul>`);
+                  async.mapLimit(files, uploadLimit, (file, callback) => {
+                    if (!file) callback(null, null);
                     var fn = "파일:" + SHA256(String(Date.now()) + file.name).substring(0, 12) + "_" + file.name;
                     if (/\.[A-Z]+$/.test(fn)) {
                       var fnSplitted = fn.split('.');
                       fnSplitted[fnSplitted.length - 1] = fnSplitted[fnSplitted.length - 1].toLowerCase();
                       fn = fnSplitted.join('.');
                     } else if (/\.jpeg$/i.test(fn)) {
-                      alert('확장자가 jpeg인 경우 오류가 발생합니다. jpg로 변경해주세요.');
-                      win.close();
-                      return next();
+                      return callback(null, {success: false, reason: '확장자가 jpeg인 경우 오류가 발생합니다. jpg로 변경해주세요.', name: file.name});
                     }
                     var uploadImageParams = {
                       file: file,
@@ -1326,40 +1318,75 @@ try {
                       log: "NamuFix " + GM.info.script.version + "버전으로 자동 업로드됨.",
                       identifier: (ENV.IsLoggedIn ? "m" : "i") + ":" + ENV.UserName
                     };
-                    console.log("[NamuFix] uploadNamu identifier : " + uploadImageParams.identifier);
+                    let currentListItem = document.createElement("li");
+                    currentListItem.textContent = `${file.name} -> ${fn}`;
+                    win.content(el => el.querySelector('ul#inprog').appendChild(currentListItem));
                     namuapi.uploadImage(uploadImageParams, function (err, resultName) {
                       if (err === null) {
-                        TextProc.selectionText(TextProc.selectionText() + '[[' + resultName + ']]');
+                        callback(null, {success: true, name: file.name, docName: resultName});
                       } else if (err === "recaptcha_required") {
                         namuapi.resolveRecaptcha(function (res) {
                           if (res == null) {
                             alert('reCAPTCHA를 입력하지 않아 건너뜁니다.');
-                            if (isLastItem)
-                              finish();
-                            win.close();
-                            next();
+                            callback(null, {success: false, reason: 'reCAPTCHA를 입력하지 않았습니다.', name: file.name});
                             return;
                           }
                           uploadImageParams.recaptchaKey = res;
-                          namuapi.uploadImage(uploadImageParams);
+                          namuapi.uploadImage(uploadImageParams, (err, resultName) => {
+                            if (err === null) {
+                              callback(null, {success: true, name: file.name, docName: resultName});
+                            } else if (err === "recaptcha_required") {
+                              callback(null, {success: false, reason: 'reCAPTCHA를 해결하였으나 다시 한번 더 요구받았습니다.', name: file.name});
+                            } else if (err === "html_error") {
+                              callback(null, {success: false, reason: '예상하지 못한 오류입니다. 자세한 정보를 다운로드하여 NamuFix 이슈트래커에 제보해주세요.', name: file.name, data: resultName});
+                            } else {
+                              callback(null, {success: false, reason: '알 수 없는 오류입니다.', name: file.name});
+                            }
+                          });
                         });
-                        return;
                       } else if (err === "html_error") {
-                        var errorWin = TooSimplePopup();
-                        errorWin.title("이미지 업로드 오류 로그");
-                        errorWin.content(function (elem) {
-                          elem.innerHTML = "<p>업로드에 실패했습니다.<br>추후 NamuFix 이슈트래커에 해당 오류를 이슈를 남기실 때 다음 내용을 같이 첨부해주세요.</p><textarea readonly style=\"max-width: 80vw; width: 500px; max-height: 80vh; height: 500px;\"></textarea>";
-                          elem.querySelector('textarea').value = resultName;
-                        });
-                        errorWin.button("닫기", errorWin.close);
+                        callback(null, {success: false, reason: '예상하지 못한 오류입니다. 자세한 정보를 다운로드하여 NamuFix 이슈트래커에 제보해주세요.', name: file.name, data: resultName});
                       } else {
-                        alert('이미지 업로드중 알 수 없는 오류가 발생했습니다.');
+                        callback(null, {success: false, reason: '알 수 없는 오류입니다.', name: file.name});
                       }
-                      if (isLastItem)
-                        finish();
-                      win.close();
-                      next();
+                      win.content(el => el.querySelector('ul#inprog').removeChild(currentListItem));
                     });
+                  }, (err, results) => {
+                    if (err) {
+                      alert('오류가 발생했습니다.');
+                      console.error("[NamuFix] 이미지 업로드 중 오류가 발생했습니다.");
+                      console.error(err);
+                      return;
+                    }
+                    finish();
+                    win.close();
+                    results = results.filter(v => v !== null);
+                    let hasError = false;
+                    let imgLinks = '';
+                    for(i of results) {
+                      if(i.success) {
+                        imgLinks += '[[' + i.docName + ']]';
+                      } else {
+                        hasError = true;
+                      }
+                    }
+                    if(imgLinks.length != 0)
+                      TextProc.selectionText(TextProc.selectionText() + imgLinks);
+                    if (hasError) {
+                      let win = TooSimplePopup();
+                      win.title('나무위키 이미지 업로드 오류');
+                      win.content(el => {
+                        el.innerHTML = '<p>오류들이 발생했습니다.</p><ul></ul>';
+                        for(let i of results.filter(v => !v.success)) {
+                          let li = document.createElement("li");
+                          li.textContent = `${i.name} : ${i.reason}`;
+                          if (i.data)
+                            li.innerHTML += ` <a href="${URL.createObjectURL(new Blob(i.data, 'text/html'))}" download="log.html">(자세한 정보 다운로드)</a>`
+                          el.querySelector('ul').appendChild(li);
+                        }
+                      })
+                      win.button('닫기', win.close);
+                    }
                   })
                 }
                 if (present_files != null) {
@@ -3131,7 +3158,13 @@ try {
             '<input type="checkbox" name="noKSTonNamuBoard" data-setname="noKSTonNamuBoard" data-as-boolean>게시판 시간대를 사용자의 시간대로 자동 변경합니다.</input>' +
             '<h1 class="wsmall">자동저장 시간 간격</h1>' +
             '<p>편집중 자동저장 간격을 설정합니다. 0 이하의 값으로 설정할 시 자동으로 이루어지지 않으며 이 경우 단축키나 메뉴를 이용해 수동으로 저장해야 합니다.</p>' +
-            '<input type="number" name="autoTempsaveSpan" data-setname="autoTempsaveSpan"></input>ms (1000ms = 1s)';
+            '<input type="number" name="autoTempsaveSpan" data-setname="autoTempsaveSpan"></input>ms (1000ms = 1s)' + 
+            '<h1 class="wsmall">동시요청제한</h1>' +
+            '관리작업시의 동시요청제한 : ' +
+            '<input type="number" data-setname="adminReqLimit"></input><br>' +
+            '이미지 업로드시의 동시 요청 제한 : ' + 
+            '<input type="number" data-setname="fileUploadReqLimit"></input>' +
+            '<br><strong>경고 : 너무 높게 설정하면 reCAPTCHA가 뜹니다.</strong>';
           var optionTags = document.querySelectorAll('[data-setname]');
           await SET.load();
           for (var i = 0; i < optionTags.length; i++) {
@@ -3251,22 +3284,20 @@ try {
               return new Promise((resolve, reject) => {
                 let result = {errors: [], success: []};
                 let datas = JSON.parse(JSON.stringify(_datas));
-                function innerLoop() {
-                  if (datas.length == 0)
-                    return resolve(result);
-                  let data = datas.pop();
-                  if (progressCallback)
-                    progressCallback(data);
-                  namuapi[data.handlerName](data.parameter, (err, target) => {
-                    if (err) {
-                      result.errors.push({target: data.parameter, error: err});
-                    } else {
-                      result.success.push(data.parameter);
-                    }
-                    innerLoop();
-                  });
-                }
-                innerLoop();
+                async.eachLimit(datas, SET.adminReqLimit || 3, (data, callback) => {
+                    namuapi[data.handlerName](data.parameter, (err, target) => {
+                      if (err) {
+                        result.errors.push({target: data.parameter, error: err});
+                      } else {
+                        result.success.push(data.parameter);
+                      }
+                      if (progressCallback)
+                        progressCallback(data);
+                      callback();
+                    });
+                }, (err) => {
+                  return resolve(result);
+                });
               });
             }
             win.button('차단', async function () {
@@ -3277,7 +3308,7 @@ try {
                 wwcon.innerHTML = "처리중입니다."
               });
               let datas = parseTextarea().map(v => ({parameter: v, handlerName: v.ip ? "blockIP" : "blockAccount"}));
-              let result = await commonLoop(datas, d => waitingWin.content(wwcon => wwcon.innerHTML = `처리중입니다: ${d.parameter.ip || d.parameter.id}`));
+              let result = await commonLoop(datas, d => waitingWin.content(wwcon => wwcon.innerHTML = `처리 완료: ${d.parameter.ip || d.parameter.id}`));
               if (result.errors.length > 0) {
                 waitingWin.content(wwcon => {
                   wwcon.innerHTML = "오류가 있습니다.<br><br>" + result.errors.map(v => `${encodeHTMLComponent(v.target.ip || v.target.id)} : ${v.error}`).join("<br>");
@@ -3303,7 +3334,7 @@ try {
                   return tmp;
                 }
               });
-              let result = await commonLoop(datas, d => waitingWin.content(wwcon => wwcon.innerHTML = `처리중입니다: ${d.parameter.id ? d.parameter.id : d.parameter}`));
+              let result = await commonLoop(datas, d => waitingWin.content(wwcon => wwcon.innerHTML = `처리 완료: ${d.parameter.id ? d.parameter.id : d.parameter}`));
               if (result.errors.length > 0) {
                 waitingWin.content(wwcon => {
                   wwcon.innerHTML = "오류가 있습니다.<br><br>" + result.errors.map(v => `${encodeHTMLComponent(v.target.id || v.target)} : ${v.error}`).join("<br>");
