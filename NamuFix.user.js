@@ -2210,7 +2210,7 @@ try {
 
             // Support image upload by pasting
             txtarea.addEventListener('paste', function (evt) {
-              var items = (event.clipboardData || event.originalEvent.clipboardData).items;
+              var items = (evt.clipboardData || evt.originalEvent.clipboardData).items;
               var files = [];
               for (index in items) {
                 var item = items[index];
