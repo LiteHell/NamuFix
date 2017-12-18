@@ -629,6 +629,10 @@ try {
           SET.fileUploadReqLimit = 3;
         if (nOu(SET.adminReqLimit))
           SET.adminReqLimit = 3;
+        if (nOu(SET.quickBlockReasonTemplate))
+          SET.quickBlockReasonTemplate = '긴급조치 https://${host}/thread/${threadNo} #${messageNo}' // ${host}, ${threadNo}, ${messageNo}
+        if (nOu(SET.quickBlockDefaultDuration))
+          SET.quickBlockDefaultDuration = 0;
         await SET.save();
       }
 
@@ -2422,6 +2426,7 @@ try {
             identiconDictionary = {},
             mascottPics = getMascottPics();
 
+          // TO-DO : Rewrite Loop codes
           // #[0-9]+ 엥커 미리보기
           function mouseoverPreview() {
             var anchors = document.querySelectorAll('.res .r-body .wiki-self-link:not([data-nf-title-processed])');
@@ -2673,11 +2678,14 @@ try {
               if (ipPattern.test(ipLink.href)) {
                 var ip = ipPattern.exec(ipLink.href)[1];
                 // span eleement
+                var headspan = ipLink.parentNode.querySelector(".namufix-headinfo") ? ipLink.parentNode.querySelector(".namufix-headinfo") : document.createElement("span");
+                headspan.className = "namufix-headinfo";
+                headspan.style.marginLeft = "1em";
+                if(!ipLink.parentNode.querySelector(".namufix-headinfo")) ipLink.parentNode.insertBefore(headspan, ipLink.nextSibling);
                 var span = document.createElement("span");
-                span.style.marginLeft = "1em";
                 span.style.color = "red";
                 span.innerHTML = "[IP 조회중]";
-                ipLink.parentNode.insertBefore(span, ipLink.nextSibling);
+                headspan.appendChild(span);
                 // get ip info
                 getIpInfo(ip, function (resObj) {
                   if (resObj !== null) {
@@ -2707,6 +2715,77 @@ try {
             }
           }
 
+          function quickBlockLoop() {
+            var messages = document.querySelectorAll('.res-wrapper:not(.res-loading) > .res:not([data-nfquickblock])');
+            for (var i of [].slice.call(messages)) {
+              i.dataset.nfquickblock = true;
+              let userLink = i.querySelector('.r-head > a');
+              let messageNo = parseInt(i.querySelector('.r-head > .num a').id);
+              let username = userLink.textContent.trim();
+              let isIPUser = userLink.href.indexOf('/contribution/ip/') !== -1;
+              let blockAnchor = document.createElement("a");
+              let headspan = userLink.parentNode.querySelector(".namufix-headinfo") ? userLink.parentNode.querySelector(".namufix-headinfo") : document.createElement("span");
+              headspan.className = "namufix-headinfo";
+              if(!userLink.parentNode.querySelector(".namufix-headinfo")) userLink.parentNode.insertBefore(headspan, userLink.nextSibling);
+              headspan.style.marginLeft = "1em";
+              blockAnchor.href = "#";
+              blockAnchor.textContent = "[차단]";
+              blockAnchor.addEventListener('click', (evt) => {
+                evt.preventDefault();
+                let win = TooSimplePopup();
+                win.title("빠른 차단");
+                win.content(el => {
+                  el.innerHTML = `<p>차단 대상 : ${encodeHTMLComponent(username)} ${isIPUser ? "<i>(IP)</i>" : "<i>(계정)</i>"}</p>차단 사유 : <input type="text" id="reason"></input><br>차단 기간 : <input type="number" id="duration"></input><a href="#" id="enterDuration">(간편하게 입력)</a><br><div id="allowLoginDiv">로그인 허용 : <input type="checkbox" id="allowLogin"></input></div><br><i>(참고 : NamuFix 설정에서 차단기간 기본값을 변경할 수 있습니다.)`
+                  if (!isIPUser) {
+                    el.querySelector('#allowLoginDiv').style.display = 'none';
+                  }
+                  el.querySelector('a#enterDuration').addEventListener('click', (evt) => {
+                    evt.preventDefault();
+                    enterTimespanPopup("차단기간 간편하게 입력", (span) => {
+                      if(span)
+                        el.querySelector('#duration').value = span;
+                    })
+                  })
+                  el.querySelector('#duration').value = SET.quickBlockDefaultDuration;
+                  el.querySelector('#reason').value = SET.quickBlockReasonTemplate.replace(/\$\{host\}/g, location.host)
+                                                                                  .replace(/\$\{threadNo\}/g, ENV.topicNo)
+                                                                                  .replace(/\$\{messageNo\}/g, messageNo);
+                  el.querySelector('#reason').style.width = '500px';
+                  el.querySelector('#reason').style.maxWidth = '30vw';
+                  win.button('닫기', win.close);
+                  win.button('차단', () => {
+                    if (isIPUser) {
+                      namuapi.blockIP({
+                        ip: username,
+                        note: el.querySelector('#reason').value,
+                        expire: el.querySelector('#duration').value,
+                        allowLogin: el.querySelector('#allowLogin').checked
+                      }, (err, data) => {
+                        if (err)
+                          alert('오류 발생 : ' + err);
+                        else
+                          win.close();
+                      })
+                    } else {
+                      namuapi.blockAccount({
+                        id: username,
+                        note: el.querySelector('#reason').value,
+                        expire: el.querySelector('#duration').value,
+                        allowLogin: el.querySelector('#allowLogin').checked
+                      }, (err, data) => {
+                        if (err)
+                          alert('오류 발생 : ' + err);
+                        else
+                          win.close();
+                      })
+                    }
+                  });
+                });
+              });
+              headspan.appendChild(blockAnchor);
+            }
+          }
+
           function discussLoop() {
             // check vpngate
             if (SET.lookupIPonDiscuss)
@@ -2719,6 +2798,9 @@ try {
 
             // make previewAsQuote
             previewFunction();
+
+            // add block link
+            quickBlockLoop();
           }
           discussLoop();
           var observer = new MutationObserver(discussLoop);
@@ -3192,6 +3274,8 @@ try {
             '<p>관리자를 위한 몇가지 편의기능들입니다.</p>' +
             '<input type="checkbox" name="addAdminLinksForLiberty" data-setname="addAdminLinksForLiberty" data-as-boolean>Liberty 스킨에 관리자 링크 추가하기</input><br>' +
             '<input type="checkbox" name="addBatchBlockMenu" data-setname="addBatchBlockMenu" data-as-boolean>일괄 차단 메뉴 추가</input>' +
+            '토론중 빠른차단 기능에서의 차단사유 템플릿 : <input type="text" data-setname="quickBlockReasonTemplate"></input><br>' +
+            '토론중 빠른차단 기능에서의 차단기간 기본값(초) : <input type="text" data-setname="quickBlockDefaultDuration"></input>' +
             '<h1 class="wsmall">게시판 시간대 변경</h1>' +
             '<input type="checkbox" name="noKSTonNamuBoard" data-setname="noKSTonNamuBoard" data-as-boolean>게시판 시간대를 사용자의 시간대로 자동 변경합니다.</input>' +
             '<h1 class="wsmall">자동저장 시간 간격</h1>' +
