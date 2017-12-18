@@ -2808,15 +2808,15 @@ try {
             childList: true
           });
 
-          // 취소선 숨기기
-          switch (SET.hideDeletedWhenDiscussing) {
-            case 1:
-              GM_addStyle('.res .r-body del {display: none;}');
-              break;
-            case 0.5:
-              GM_addStyle('.res .r-body del, .res .r-body del a {color: transparent; background: transparent;} .res .r-body del {border: dotted 1px red;}');
-              break;
-          }
+          // // 취소선 숨기기
+          // switch (SET.hideDeletedWhenDiscussing) {
+          //   case 1:
+          //     GM_addStyle('.res .r-body del {display: none;}');
+          //     break;
+          //   case 0.5:
+          //     GM_addStyle('.res .r-body del, .res .r-body del a {color: transparent; background: transparent;} .res .r-body del {border: dotted 1px red;}');
+          //     break;
+          // }
         } else if (ENV.IsUserContribsPage) {
           function insertBeforeTable(element) {
             var bread = document.querySelector("article > ol.breadcrumb.link-nav, body.Liberty .wiki-article ol.breadcrumb.link-nav");
@@ -3236,57 +3236,59 @@ try {
         win.title('NamuFix 설정');
         await SET.load();
         win.content(async function (el) {
-          el.innerHTML = '<style>h1.wsmall{font-size: 14pt;}</style>' +
-            '<h1 class="wsmall">토론 아이덴티콘</h1>' +
-            '<input type="radio" name="discussIdenti" data-setname="discussIdenti" data-setvalue="icon">디시라이트 갤러콘 방식<br>' +
-            '<input type="radio" name="discussIdenti" data-setname="discussIdenti" data-setvalue="headBg">스레딕 헬퍼 방식<br>' +
-            '<input type="radio" name="discussIdenti" data-setname="discussIdenti" data-setvalue="identicon">아이덴티콘<br>' +
-            '<input type="radio" name="discussIdenti" data-setname="discussIdenti" data-setvalue="none">사용 안함' +
-            '<h1 class="wsmall">토론에서 익명 기여자 IP주소 조회</h1>' +
-            '<p>VPNGate 여부, 통신사, 국가이미지를 IP 주소 옆에 표시합니다. 요청 수가 많을 시 실패할 수 도 있습니다.</p>' +
-            '<input type="checkbox" name="lookupIPonDiscuss" data-setname="lookupIPonDiscuss" data-as-boolean>토론시 익명 기여자 IP 주소 조회</input>' +
-            '<h1 class="wsmall">IP정보 조회시 기관명</h1>' +
-            '<p>IP정보 조회시에 무슨 기관명을 이용할지 결정합니다. 아래 설정에서 KISA WHOIS 결과에서의 기관명이 선택됐는데 KISA WHOIS 결과가 조회되지 않을 시 자동으로 ipinfo.io에서 조회됩니다. 이 설정은 KISA WHOIS 조회를 제외한 모든 IP정보 조회를 동반한 기능(예: 토론시 익명 기여자 IP주소 조회, 익명 기여자 기여목록에서의 IP 정보 등)에 영향을 끼칩니다.</p>' +
-            '<input type="radio" name="ipInfoDefaultOrg" data-setname="ipInfoDefaultOrg" data-setvalue="ipinfo.io">ipinfo.io에서 조회 (기본값)<br>' +
-            '<input type="radio" name="ipInfoDefaultOrg" data-setname="ipInfoDefaultOrg" data-setvalue="KISAuser">KISA WHOIS 결과에서 IP 이용 기관명<br>' +
-            '<input type="radio" name="ipInfoDefaultOrg" data-setname="ipInfoDefaultOrg" data-setvalue="KISAISP">KISA WHOIS 결과에서 IP 보유 기관명<br>' +
-            '<input type="radio" name="ipInfoDefaultOrg" data-setname="ipInfoDefaultOrg" data-setvalue="KISAuserOrISP">KISA WHOIS 결과에서 IP 보유 기관명 혹은 IP 이용 기관명<br>' +
-            '<h1 class="wsmall">토론에서 보여지지 않은 쓰레도 불러오기<sub><small style="color: red;">[실험중!]</small></sub></h1>' +
-            '<p>보여지지 않은 쓰레드도 불러오도록 나무위키 토론 스크립트를 수정합니다.</p>' +
-            '<input type="checkbox" name="loadUnvisibleReses" data-setname="loadUnvisibleReses" data-as-boolean>보여지지 않은 토론 쓰레도 불러오기</input>' +
-            '<h1 class="wsmall">토론 아이덴티콘 명도</h1>' +
-            '<p>스레딕 헬퍼 방식을 사용하는 경우에만 적용됩니다.</p>' +
-            '<label for="discussIdentiLightness">명도</label><input name="discussIdentiLightness" data-setname="discussIdentiLightness" type="range" max="1" min="0" step="0.01"><br>' +
-            '<label for="discussIdentiSaturation">순도</label><input name="discussIdentiSaturation" data-setname="discussIdentiSaturation" type="range" max="1" min="0" step="0.01">' +
-            '<h1 class="wsmall">토론시 취소선</h1>' +
-            '<input type="radio" name="hideDeletedWhenDiscussing" data-setname="hideDeletedWhenDiscussing" data-setvalue="0">표시<br>' +
-            '<input type="radio" name="hideDeletedWhenDiscussing" data-setname="hideDeletedWhenDiscussing" data-setvalue="0.5">반숨김<br>' +
-            '<input type="radio" name="hideDeletedWhenDiscussing" data-setname="hideDeletedWhenDiscussing" data-setvalue="1">숨기기<br>' +
-            '<h1 class="wsmall">토론시 앵커 미리보기</h1>' +
-            '<input type="radio" name="discussAnchorPreviewType" data-setname="discussAnchorPreviewType" data-setvalue="0">사용하지 않음<br>' +
-            '<input type="radio" name="discussAnchorPreviewType" data-setname="discussAnchorPreviewType" data-setvalue="1">마우스를 올리면 미리보기 표시<br>' +
-            '<input type="radio" name="discussAnchorPreviewType" data-setname="discussAnchorPreviewType" data-setvalue="2">토론 메세지 위에 인용형식으로 표시<br>' +
-            '<input type="checkbox" name="removeNFQuotesInAnchorPreview" data-setname="removeNFQuotesInAnchorPreview" data-as-boolean>토론 메세지 위에 인용형식으로 표시할때, 인용문 안에 인용 형식으로 표시된 미리보기 제거' +
-            '<h1 class="wsmall">항상 펼치기</h1>' +
-            '<p>접기 문법(folding)을 이용해 접혀진 내용을 바로 펼칩니다.</p>' +
-            '<input type="checkbox" name="alwaysUnfold" data-setname="alwaysUnfold" data-as-boolean>항상 펼치기</input>' +
-            '<h1 class="wsmall">관리 편의성</h1>' +
-            '<p>관리자를 위한 몇가지 편의기능들입니다.</p>' +
-            '<input type="checkbox" name="addAdminLinksForLiberty" data-setname="addAdminLinksForLiberty" data-as-boolean>Liberty 스킨에 관리자 링크 추가하기</input><br>' +
-            '<input type="checkbox" name="addBatchBlockMenu" data-setname="addBatchBlockMenu" data-as-boolean>일괄 차단 메뉴 추가</input>' +
-            '토론중 빠른차단 기능에서의 차단사유 템플릿 : <input type="text" data-setname="quickBlockReasonTemplate"></input><br>' +
-            '토론중 빠른차단 기능에서의 차단기간 기본값(초) : <input type="text" data-setname="quickBlockDefaultDuration"></input>' +
-            '<h1 class="wsmall">게시판 시간대 변경</h1>' +
-            '<input type="checkbox" name="noKSTonNamuBoard" data-setname="noKSTonNamuBoard" data-as-boolean>게시판 시간대를 사용자의 시간대로 자동 변경합니다.</input>' +
-            '<h1 class="wsmall">자동저장 시간 간격</h1>' +
-            '<p>편집중 자동저장 간격을 설정합니다. 0 이하의 값으로 설정할 시 자동으로 이루어지지 않으며 이 경우 단축키나 메뉴를 이용해 수동으로 저장해야 합니다.</p>' +
-            '<input type="number" name="autoTempsaveSpan" data-setname="autoTempsaveSpan"></input>ms (1000ms = 1s)' +
-            '<h1 class="wsmall">동시요청제한</h1>' +
-            '관리작업시의 동시요청제한 : ' +
-            '<input type="number" data-setname="adminReqLimit"></input><br>' +
-            '이미지 업로드시의 동시 요청 제한 : ' +
-            '<input type="number" data-setname="fileUploadReqLimit"></input>' +
-            '<br><strong>경고 : 너무 높게 설정하면 reCAPTCHA가 뜹니다.</strong>';
+          el.className += " NFSettingsContainer";
+          el.innerHTML = `<style>.NFSettingsContainer h1 {font-size: 17pt;} .NFSettingsContainer h2 {font-size: 13pt;}</style>
+            <h1>NamuFix 전역</h1>
+            <h2>IP정보 조회시 기관명</h2>
+            <p>IP정보 조회시에 무슨 기관명을 이용할지 결정합니다. 아래 설정에서 KISA WHOIS 결과에서의 기관명이 선택됐는데 KISA WHOIS 결과가 조회되지 않을 시 자동으로 ipinfo.io에서 조회됩니다. 이 설정은 KISA WHOIS 조회를 제외한 모든 IP정보 조회를 동반한 기능(예: 토론시 익명 기여자 IP주소 조회, 익명 기여자 기여목록에서의 IP 정보 등)에 영향을 끼칩니다.</p>
+            <input type="radio" name="ipInfoDefaultOrg" data-setname="ipInfoDefaultOrg" data-setvalue="ipinfo.io">ipinfo.io에서 조회 (기본값)<br>
+            <input type="radio" name="ipInfoDefaultOrg" data-setname="ipInfoDefaultOrg" data-setvalue="KISAuser">KISA WHOIS 결과에서 IP 이용 기관명<br>
+            <input type="radio" name="ipInfoDefaultOrg" data-setname="ipInfoDefaultOrg" data-setvalue="KISAISP">KISA WHOIS 결과에서 IP 보유 기관명<br>
+            <input type="radio" name="ipInfoDefaultOrg" data-setname="ipInfoDefaultOrg" data-setvalue="KISAuserOrISP">KISA WHOIS 결과에서 IP 보유 기관명 혹은 IP 이용 기관명<br>
+            <h2>동시요청제한</h2>
+            관리작업시의 동시요청제한 : 
+            <input type="number" data-setname="adminReqLimit"></input><br>
+            이미지 업로드시의 동시 요청 제한 : 
+            <input type="number" data-setname="fileUploadReqLimit"></input>
+            <br><strong>경고 : 너무 높게 설정하면 reCAPTCHA가 뜹니다.</strong>
+            <h1>토론 편의성</h1>
+            <h2>토론 아이덴티콘</h2>
+            <input type="radio" name="discussIdenti" data-setname="discussIdenti" data-setvalue="icon">디시라이트 갤러콘 방식<br>
+            <input type="radio" name="discussIdenti" data-setname="discussIdenti" data-setvalue="headBg">스레딕 헬퍼 방식<br>
+            <input type="radio" name="discussIdenti" data-setname="discussIdenti" data-setvalue="identicon">아이덴티콘<br>
+            <input type="radio" name="discussIdenti" data-setname="discussIdenti" data-setvalue="none">사용 안함
+            <h2>토론에서 익명 기여자 IP주소 조회</h2>
+            <p>VPNGate 여부, 통신사, 국가이미지를 IP 주소 옆에 표시합니다. 요청 수가 많을 시 실패할 수 도 있습니다.</p>
+            <input type="checkbox" name="lookupIPonDiscuss" data-setname="lookupIPonDiscuss" data-as-boolean>토론시 익명 기여자 IP 주소 조회</input>
+            <h2>토론에서 보여지지 않은 쓰레도 불러오기</h2>
+            <p>보여지지 않은 쓰레드도 불러오도록 나무위키 토론 스크립트를 수정합니다.</p>
+            <input type="checkbox" name="loadUnvisibleReses" data-setname="loadUnvisibleReses" data-as-boolean>보여지지 않은 토론 쓰레도 불러오기</input>
+            <h2>토론 아이덴티콘 명도</h2>
+            <p>스레딕 헬퍼 방식을 사용하는 경우에만 적용됩니다.</p>
+            <label for="discussIdentiLightness">명도</label><input name="discussIdentiLightness" data-setname="discussIdentiLightness" type="range" max="1" min="0" step="0.01"><br>
+            <label for="discussIdentiSaturation">순도</label><input name="discussIdentiSaturation" data-setname="discussIdentiSaturation" type="range" max="1" min="0" step="0.01">
+            <h2>토론시 앵커 미리보기</h2>
+            <input type="radio" name="discussAnchorPreviewType" data-setname="discussAnchorPreviewType" data-setvalue="0">사용하지 않음<br>
+            <input type="radio" name="discussAnchorPreviewType" data-setname="discussAnchorPreviewType" data-setvalue="1">마우스를 올리면 미리보기 표시<br>
+            <input type="radio" name="discussAnchorPreviewType" data-setname="discussAnchorPreviewType" data-setvalue="2">토론 메세지 위에 인용형식으로 표시<br>
+            <input type="checkbox" name="removeNFQuotesInAnchorPreview" data-setname="removeNFQuotesInAnchorPreview" data-as-boolean>토론 메세지 위에 인용형식으로 표시할때, 인용문 안에 인용 형식으로 표시된 미리보기 제거
+            <h1>가독성</h1>
+            <h2>항상 펼치기</h2>
+            <p>접기 문법(folding)을 이용해 접혀진 내용을 바로 펼칩니다.</p>
+            <input type="checkbox" name="alwaysUnfold" data-setname="alwaysUnfold" data-as-boolean>항상 펼치기</input>
+            <h1>관리 편의성</h1>
+            <h2>편의기능</h2>
+            <input type="checkbox" name="addAdminLinksForLiberty" data-setname="addAdminLinksForLiberty" data-as-boolean>Liberty 스킨에 관리자 링크 추가하기</input><br>
+            <input type="checkbox" name="addBatchBlockMenu" data-setname="addBatchBlockMenu" data-as-boolean>일괄 차단 메뉴 추가</input><br>
+            토론중 빠른차단 기능에서의 차단사유 템플릿 : <input type="text" data-setname="quickBlockReasonTemplate"></input><br>
+            토론중 빠른차단 기능에서의 차단기간 기본값(초) : <input type="text" data-setname="quickBlockDefaultDuration"></input>
+            <h1>편집 편의성</h1>
+            <h2>자동저장 시간 간격</h2>
+            <p>편집중 자동저장 간격을 설정합니다. 0 이하의 값으로 설정할 시 자동으로 이루어지지 않으며 이 경우 단축키나 메뉴를 이용해 수동으로 저장해야 합니다.</p>
+            <input type="number" name="autoTempsaveSpan" data-setname="autoTempsaveSpan"></input>ms (1000ms = 1s)
+            <h1>게시판</h1>
+            <h2>게시판 시간대 변경</h2>
+            <input type="checkbox" name="noKSTonNamuBoard" data-setname="noKSTonNamuBoard" data-as-boolean>게시판 시간대를 사용자의 시간대로 자동 변경합니다.</input>`
           var optionTags = document.querySelectorAll('[data-setname]');
           await SET.load();
           for (var i = 0; i < optionTags.length; i++) {
