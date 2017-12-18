@@ -633,6 +633,8 @@ try {
           SET.quickBlockReasonTemplate = '긴급조치 https://${host}/thread/${threadNo} #${messageNo}' // ${host}, ${threadNo}, ${messageNo}
         if (nOu(SET.quickBlockDefaultDuration))
           SET.quickBlockDefaultDuration = 0;
+        if (nOu(SET.addQuickBlockLink))
+          SET.addQuickBlockLink = false;
         await SET.save();
       }
 
@@ -2800,7 +2802,8 @@ try {
             previewFunction();
 
             // add block link
-            quickBlockLoop();
+            if(SET.addQuickBlockLink)
+              quickBlockLoop();
           }
           discussLoop();
           var observer = new MutationObserver(discussLoop);
@@ -3280,7 +3283,8 @@ try {
             <h2>편의기능</h2>
             <input type="checkbox" name="addAdminLinksForLiberty" data-setname="addAdminLinksForLiberty" data-as-boolean>Liberty 스킨에 관리자 링크 추가하기</input><br>
             <input type="checkbox" name="addBatchBlockMenu" data-setname="addBatchBlockMenu" data-as-boolean>일괄 차단 메뉴 추가</input><br>
-            토론중 빠른차단 기능에서의 차단사유 템플릿 : <input type="text" data-setname="quickBlockReasonTemplate"></input><br>
+            <input type="checkbox" name="addQuickBlockLink" data-setname="addQuickBlockLink" data-as-boolean>토론중 차단 링크 추가</input><br>
+            토론중 빠른차단 기능에서의 차단사유 템플릿 : <input type="text" data-setname="quickBlockReasonTemplate" style="width: 500px; max-width: 75vw;"></input><br>
             토론중 빠른차단 기능에서의 차단기간 기본값(초) : <input type="text" data-setname="quickBlockDefaultDuration"></input>
             <h1>편집 편의성</h1>
             <h2>자동저장 시간 간격</h2>
