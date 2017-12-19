@@ -100,7 +100,7 @@ try {
         return false;
       }
     }
-    var discards = ['save', 'load', 'delete'];
+    var discards = ['save', 'load', 'delete', 'all'];
     this.save = async function () {
       for (var i in this) {
         if (discards.indexOf(i) != -1) continue;
@@ -545,8 +545,11 @@ try {
         aTag.className = "btn btn-secondary";
         aTag.setAttribute("role", "button");
         aTag.innerHTML = text;
-        aTag.href = "#NothingToLink";
-        aTag.addEventListener('click', onclick);
+        aTag.href = "#";
+        aTag.addEventListener('click', (evt) => {
+          evt.preventDefault();
+          onclick(evt);
+        });
         var buttonGroup = document.querySelector('body.Liberty .liberty-content .content-tools .btn-group , .wiki-article-menu > div.btn-group');
         buttonGroup.insertBefore(aTag, buttonGroup.firstChild);
       };
@@ -2488,48 +2491,41 @@ try {
 
               anchor.dataset.nfTitleProcessed = true;
             }
-            setTimeout(mouseoverPreview, 300);
           }
 
-          function previewAsQuote() {
-            var message = document.querySelector('.res-wrapper:not(.res-loading) > .res:not([data-message-anchor-processed])');
-            if (message) {
-              message.dataset.messageAnchorProcessed = true;
-              var rbody = message.querySelector('.r-body');
-              var anchors = rbody.querySelectorAll('.wiki-self-link:not([data-nf-title-processed])');
-              for (var i = 0; i < anchors.length; i++) {
-                var anchor = anchors[i];
-                if (!/#[0-9]+$/.test(anchor.href)) {
-                  continue;
-                }
-                var numbericId = /#([0-9]+)$/.exec(anchor.href)[1];
-                var anchorDirection = document.querySelector('.r-head .num a[id=\'' + numbericId + '\']');
-                if (anchorDirection == null) continue;
-                var anchorTarget = anchorDirection.parentNode.parentNode.parentNode;
-                var talker = anchorTarget.querySelector('.r-head > a').textContent,
-                  message = anchorTarget.querySelector('.r-body').innerHTML,
-                  talkedAt = anchorTarget.querySelector('.r-head > span.pull-right').textContent;
-                var blockquoteId = uniqueID();
-                var blockquoteElement = document.createElement("blockquote");
-                blockquoteElement.className = "wiki-quote nf-anchor-preview";
-                blockquoteElement.innerHTML = message;
-                blockquoteElement.id = blockquoteId;
-                blockquoteElement.innerHTML += `<div style="text-align: right; font-style: italic;">--#${numbericId}, ${talker}, ${talkedAt}</div>`;
-                rbody.insertBefore(blockquoteElement, rbody.firstChild);
-
-                anchor.dataset.quoteId = blockquoteId;
-                anchor.addEventListener('mouseenter', function (evt) {
-                  var quote = document.getElementById(evt.target.dataset.quoteId);
-                  quote.style.borderColor = '#CCC #CCC #CCC red !important';
-                  quote.style.boxShadow = '2px 2px 3px orange';
-                });
-                anchor.addEventListener('mouseleave', function (evt) {
-                  var quote = document.getElementById(evt.target.dataset.quoteId);
-                  quote.style.borderColor = '';
-                  quote.style.boxShadow = '';
-                })
+          function previewAsQuote(message) {
+            var anchors = message.bodyElement.querySelectorAll('.wiki-self-link:not([data-nf-title-processed])');
+            for (var i = 0; i < anchors.length; i++) {
+              var anchor = anchors[i];
+              if (!/#[0-9]+$/.test(anchor.href)) {
+                continue;
               }
-              setTimeout(previewAsQuote, 300);
+              var numbericId = /#([0-9]+)$/.exec(anchor.href)[1];
+              var anchorDirection = document.querySelector('.r-head .num a[id=\'' + numbericId + '\']');
+              if (anchorDirection == null) continue;
+              var anchorTarget = deserializeResDom(anchorDirection.parentNode.parentNode.parentNode);
+              var talker = anchorTarget.author.name,
+                message = anchorTarget.bodyElement.innerHTML,
+                talkedAt = anchorTarget.element.querySelector('.r-head > span.pull-right').textContent;
+              var blockquoteId = uniqueID();
+              var blockquoteElement = document.createElement("blockquote");
+              blockquoteElement.className = "wiki-quote nf-anchor-preview";
+              blockquoteElement.innerHTML = message;
+              blockquoteElement.id = blockquoteId;
+              blockquoteElement.innerHTML += `<div style="text-align: right; font-style: italic;">--#${numbericId}, ${talker}, ${talkedAt}</div>`;
+              rbody.insertBefore(blockquoteElement, message.bodyElement.firstChild);
+
+              anchor.dataset.quoteId = blockquoteId;
+              anchor.addEventListener('mouseenter', function (evt) {
+                var quote = document.getElementById(evt.target.dataset.quoteId);
+                quote.style.borderColor = '#CCC #CCC #CCC red !important';
+                quote.style.boxShadow = '2px 2px 3px orange';
+              });
+              anchor.addEventListener('mouseleave', function (evt) {
+                var quote = document.getElementById(evt.target.dataset.quoteId);
+                quote.style.borderColor = '';
+                quote.style.boxShadow = '';
+              })
             }
           }
           var previewFunction;
@@ -2557,253 +2553,250 @@ try {
           }
 
           // 아이덴티콘
-          function identiconLoop() {
+          function identiconLoop(message) {
             if (/^\/discuss\/(.+?)/.test(location.pathname)) return;
-            var messages = document.querySelectorAll('.res-wrapper:not(.res-loading) > .res:not([data-nfbeauty])');
             var colorHash = isThreadicLike ? new ColorHash({
               lightness: Number(SET.discussIdentiLightness),
               saturation: Number(SET.discussIdentiSaturation)
             }) : new ColorHash();
             if (isIdenticon && document.querySelector('#nf-identicon-css') == null) {
-              var cssContent = 'div.nf-identicon { border: 1px solid #808080; margin: 10px; width: 64px; border: 1px black solid; background: white;} .res[data-nfbeauty] {margin-left: 88px; position: relative; top: -76px;}';
+              var cssContent = 'div.nf-identicon { border: 1px solid #808080; margin: 10px; width: 64px; border: 1px black solid; background: white;} .res.hasNFIdenticon {margin-left: 88px; position: relative; top: -76px;}';
               var styleTag = document.createElement("style");
               styleTag.innerHTML = cssContent;
               styleTag.id = "nf-identicon-css";
               document.head.appendChild(styleTag);
             }
-            for (var i = 0; i < messages.length; i++) {
-              var message = messages[i];
-              if (isIcon && message.querySelector('.first-author')) continue;
-              if (message.querySelector('[data-nfbeauty]')) continue;
-              var n = message.querySelector('.r-head > a').innerHTML;
-              if (n.indexOf("/contribution/author") == 0) {
-                // 로그인
-                n = '!ID!' + n;
-              } else {
-                // IP
-                n = '!IP!' + n;
-              }
-              n = SHA512(n);
-
-              var nColor;
-              if (typeof colorDictionary[n] === 'undefined') {
-                nColor = colorHash.hex(n);
-                colorDictionary[n] = nColor;
-              } else {
-                nColor = colorDictionary[n];
-              }
-
-              if (isThreadicLike) {
-                message.querySelector('.r-head').style.background = nColor;
-                message.querySelector('.r-head').style.color = 'white';
-                message.querySelector('.r-head > a').style.color = 'white';
-                message.querySelector('.r-head .num a').style.color = 'white';
-              } else if (isIcon) {
-                var a = message.querySelector('.r-head > a');
-                var span = document.createElement("span");
-                span.style.background = nColor;
-                span.style.color = nColor;
-                span.style.marginLeft = '1em';
-                span.innerHTML = '__';
-                a.parentNode.insertBefore(span, a.nextSibling);
-              } else if (isIdenticon) {
-                var identicon = document.createElement("div");
-                identicon.className = "nf-identicon";
-                identicon.innerHTML = '<a><img style="width: 64px; height: 64px;"></img></a>';
-                identicon.querySelector("img").dataset.hash = n;
-                identicon.querySelector("a").dataset.hash = n;
-                identicon.querySelector("a").href = "#NothingToLink";
-                identicon.querySelector("a").addEventListener('click', async function (evt) {
-                  evt.preventDefault();
-
-                  await SET.load();
-                  var h = evt.target.dataset.hash;
-                  if (typeof SET.customIdenticons[h] !== 'undefined') {
-                    // custom identicon exists
-                    if (confirm('이미 이미지가 설정되어 있습니다. 제거할까요?')) {
-                      delete SET.customIdenticons[h];
-                      await SET.save();
-                      alert('설정됐습니다. 새로고침시 적용됩니다');
-                    }
-                  } else {
-                    if (!confirm('이 아이디 또는 닉네임에 기존 아이덴티콘 대신 다른 이미지를 설정할 수 있습니다.\n설정할까요?')) return;
-                    // doesn't exists
-                    getFile(function (files, finish) {
-                      if (files.length < 0) {
-                        alert('선택된 파일이 없습니다.')
-                        if (isLastItem) finish();
-                        return;
-                      }
-                      if (files.length > 1) {
-                        alert('한 개의 파일만 선택해주세요.');
-                        finish();
-                        return;
-                      }
-                      var file = files[0];
-                      if (file) {
-                        var reader = new FileReader();
-                        reader.onload = async function (evt) {
-                          SET.customIdenticons[h] = reader.result;
-                          await SET.save();
-                          alert('설정됐습니다. 새로고침시 적용됩니다');
-                          finish();
-                        };
-                        reader.readAsDataURL(file);
-                      }
-                    });
-                  }
-                });
-                if (typeof identiconDictionary[n] === 'undefined' && typeof SET.customIdenticons[n] !== 'undefined')
-                  identiconDictionary[n] = SET.customIdenticons[n];
-                if (typeof identiconDictionary[n] === 'undefined')
-                  identiconDictionary[n] = mascottPics.length > 0 ? mascottPics.pop() : "data:image/png;base64," + new Identicon(n, 64).toString();
-                var identiconImage = identiconDictionary[n];
-                identicon.querySelector('img').src = identiconImage;
-                message.parentNode.insertBefore(identicon, message);
-
-                if (message.parentNode.dataset.id != 1) {
-                  message.parentNode.style.marginTop = '-76px';
-                  identicon.style.marginTop = '-66px';
-                }
-              }
-              message.querySelector('.r-head > a').dataset.nfbeauty = true;
-              message.dataset.nfbeauty = true;
+            if (isIcon && message.author.isFirst) return;
+            let n = message.author.name;
+            if (!message.author.isIP) {
+              // 로그인
+              n = '!ID!' + n;
+            } else {
+              // IP
+              n = '!IP!' + n;
             }
-          }
+            n = SHA512(n);
 
-          function checkIP(vpngateIP) {
-            var message = document.querySelector(".res-wrapper:not(.res-loading) > .res:not([data-ip-checked])");
-            if (message) {
-              message.dataset.ipChecked = true;
-              var ipLink = message.querySelector(".r-head > a");
-              var ipPattern = /\/contribution\/ip\/([a-zA-Z0-9\.:]+)\/(?:document|discuss)$/;
-              if (ipPattern.test(ipLink.href)) {
-                var ip = ipPattern.exec(ipLink.href)[1];
-                // span eleement
-                var headspan = ipLink.parentNode.querySelector(".namufix-headinfo") ? ipLink.parentNode.querySelector(".namufix-headinfo") : document.createElement("span");
-                headspan.className = "namufix-headinfo";
-                headspan.style.marginLeft = "1em";
-                if(!ipLink.parentNode.querySelector(".namufix-headinfo")) ipLink.parentNode.insertBefore(headspan, ipLink.nextSibling);
-                var span = document.createElement("span");
-                span.style.color = "red";
-                span.innerHTML = "[IP 조회중]";
-                headspan.appendChild(span);
-                // get ip info
-                getIpInfo(ip, function (resObj) {
-                  if (resObj !== null) {
-                    var country = resObj.country;
-                    var countryName = korCountryNames[country.toUpperCase()] ? korCountryNames[country.toUpperCase()] : engCountryNames[country.toUpperCase()];
-                    var isp = resObj.org;
-                    getFlagIcon(country.toLowerCase(), function (data) {
-                      span.innerHTML = `[<img src="${data}" style="height: 0.9rem;" title="${countryName}"></img> ${isp}${vpngateIP.includes(ip) ? " (VPNGATE)" : ""}]<a href="#" class="get-whois">[WHOIS]</a>`;
-                      span.querySelector('a.get-whois').addEventListener('click', function (evt) {
-                        evt.preventDefault();
-                        whoisPopup(ip);
-                      });
-                      checkIP(vpngateIP);
-                    });
-                  } else {
-                    span.innerHTML = "[IP조회실패]<a href=\"#\" class=\"get-whois\">[WHOIS]</a>"
-                    span.querySelector('a.get-whois').addEventListener('click', function (evt) {
-                      evt.preventDefault();
-                      whoisPopup(ip);
-                    })
-                    checkIP(vpngateIP);
-                  }
-                });
-              } else {
-                checkIP(vpngateIP);
-              }
+            var nColor;
+            if (typeof colorDictionary[n] === 'undefined') {
+              nColor = colorHash.hex(n);
+              colorDictionary[n] = nColor;
+            } else {
+              nColor = colorDictionary[n];
             }
-          }
 
-          function quickBlockLoop() {
-            var messages = document.querySelectorAll('.res-wrapper:not(.res-loading) > .res:not([data-nfquickblock])');
-            for (var i of [].slice.call(messages)) {
-              i.dataset.nfquickblock = true;
-              let userLink = i.querySelector('.r-head > a');
-              let messageNo = parseInt(i.querySelector('.r-head > .num a').id);
-              let username = userLink.textContent.trim();
-              let isIPUser = userLink.href.indexOf('/contribution/ip/') !== -1;
-              let blockAnchor = document.createElement("a");
-              let headspan = userLink.parentNode.querySelector(".namufix-headinfo") ? userLink.parentNode.querySelector(".namufix-headinfo") : document.createElement("span");
-              headspan.className = "namufix-headinfo";
-              if(!userLink.parentNode.querySelector(".namufix-headinfo")) userLink.parentNode.insertBefore(headspan, userLink.nextSibling);
-              headspan.style.marginLeft = "1em";
-              blockAnchor.href = "#";
-              blockAnchor.textContent = "[차단]";
-              blockAnchor.addEventListener('click', (evt) => {
+            if (isThreadicLike) {
+              message.element.querySelector('.r-head').style.background = nColor;
+              message.element.querySelector('.r-head').style.color = 'white';
+              message.element.querySelector('.r-head > a').style.color = 'white';
+              message.element.querySelector('.r-head .num a').style.color = 'white';
+            } else if (isIcon) {
+              var a = message.element.querySelector('.r-head > a');
+              var span = document.createElement("span");
+              span.style.background = nColor;
+              span.style.color = nColor;
+              span.style.marginLeft = '1em';
+              span.innerHTML = '__';
+              a.parentNode.insertBefore(span, a.nextSibling);
+            } else if (isIdenticon) {
+              message.element.className += " hasNFIdenticon";
+              var identicon = document.createElement("div");
+              identicon.className = "nf-identicon";
+              identicon.innerHTML = '<a><img style="width: 64px; height: 64px;"></img></a>';
+              identicon.querySelector("img").dataset.hash = n;
+              identicon.querySelector("a").dataset.hash = n;
+              identicon.querySelector("a").href = "#NothingToLink";
+              identicon.querySelector("a").addEventListener('click', async function (evt) {
                 evt.preventDefault();
-                let win = TooSimplePopup();
-                win.title("빠른 차단");
-                win.content(el => {
-                  el.innerHTML = `<p>차단 대상 : ${encodeHTMLComponent(username)} ${isIPUser ? "<i>(IP)</i>" : "<i>(계정)</i>"}</p>차단 사유 : <input type="text" id="reason"></input><br>차단 기간 : <input type="number" id="duration"></input><a href="#" id="enterDuration">(간편하게 입력)</a><br><div id="allowLoginDiv">로그인 허용 : <input type="checkbox" id="allowLogin"></input></div><br><i>(참고 : NamuFix 설정에서 차단기간 기본값을 변경할 수 있습니다.)`
-                  if (!isIPUser) {
-                    el.querySelector('#allowLoginDiv').style.display = 'none';
+
+                await SET.load();
+                var h = evt.target.dataset.hash;
+                if (typeof SET.customIdenticons[h] !== 'undefined') {
+                  // custom identicon exists
+                  if (confirm('이미 이미지가 설정되어 있습니다. 제거할까요?')) {
+                    delete SET.customIdenticons[h];
+                    await SET.save();
+                    alert('설정됐습니다. 새로고침시 적용됩니다');
                   }
-                  el.querySelector('a#enterDuration').addEventListener('click', (evt) => {
-                    evt.preventDefault();
-                    enterTimespanPopup("차단기간 간편하게 입력", (span) => {
-                      if(span)
-                        el.querySelector('#duration').value = span;
-                    })
-                  })
-                  el.querySelector('#duration').value = SET.quickBlockDefaultDuration;
-                  el.querySelector('#reason').value = SET.quickBlockReasonTemplate.replace(/\$\{host\}/g, location.host)
-                                                                                  .replace(/\$\{threadNo\}/g, ENV.topicNo)
-                                                                                  .replace(/\$\{messageNo\}/g, messageNo);
-                  el.querySelector('#reason').style.width = '500px';
-                  el.querySelector('#reason').style.maxWidth = '30vw';
-                  win.button('닫기', win.close);
-                  win.button('차단', () => {
-                    if (isIPUser) {
-                      namuapi.blockIP({
-                        ip: username,
-                        note: el.querySelector('#reason').value,
-                        expire: el.querySelector('#duration').value,
-                        allowLogin: el.querySelector('#allowLogin').checked
-                      }, (err, data) => {
-                        if (err)
-                          alert('오류 발생 : ' + err);
-                        else
-                          win.close();
-                      })
-                    } else {
-                      namuapi.blockAccount({
-                        id: username,
-                        note: el.querySelector('#reason').value,
-                        expire: el.querySelector('#duration').value,
-                        allowLogin: el.querySelector('#allowLogin').checked
-                      }, (err, data) => {
-                        if (err)
-                          alert('오류 발생 : ' + err);
-                        else
-                          win.close();
-                      })
+                } else {
+                  if (!confirm('이 아이디 또는 닉네임에 기존 아이덴티콘 대신 다른 이미지를 설정할 수 있습니다.\n설정할까요?')) return;
+                  // doesn't exists
+                  getFile(function (files, finish) {
+                    if (files.length < 0) {
+                      alert('선택된 파일이 없습니다.')
+                      if (isLastItem) finish();
+                      return;
+                    }
+                    if (files.length > 1) {
+                      alert('한 개의 파일만 선택해주세요.');
+                      finish();
+                      return;
+                    }
+                    var file = files[0];
+                    if (file) {
+                      var reader = new FileReader();
+                      reader.onload = async function (evt) {
+                        SET.customIdenticons[h] = reader.result;
+                        await SET.save();
+                        alert('설정됐습니다. 새로고침시 적용됩니다');
+                        finish();
+                      };
+                      reader.readAsDataURL(file);
                     }
                   });
-                });
+                }
               });
-              headspan.appendChild(blockAnchor);
+              if (typeof identiconDictionary[n] === 'undefined' && typeof SET.customIdenticons[n] !== 'undefined')
+                identiconDictionary[n] = SET.customIdenticons[n];
+              if (typeof identiconDictionary[n] === 'undefined')
+                identiconDictionary[n] = mascottPics.length > 0 ? mascottPics.pop() : "data:image/png;base64," + new Identicon(n, 64).toString();
+              var identiconImage = identiconDictionary[n];
+              identicon.querySelector('img').src = identiconImage;
+              message.element.parentNode.insertBefore(identicon, message.element);
+
+              if (message.element.parentNode.dataset.id != 1) {
+                message.element.parentNode.style.marginTop = '-76px';
+                identicon.style.marginTop = '-66px';
+              }
             }
           }
 
+          function checkIP(message) {
+            if (!message.author.isIP)
+              return;
+            var span = document.createElement("span");
+            span.style.color = "red";
+            span.innerHTML = "[(IP 확인중: VPNGATE 여부 확인중)]";
+            message.nfHeadspan.appendChild(span);
+            getVPNGateIPList((vpngateIP) => {
+              span.innerHTML = "[(IP 확인중: IP정보 조회중)]";
+                // get ip info
+              getIpInfo(message.author.name, function (resObj) {
+                if (resObj !== null) {
+                  var country = resObj.country;
+                  var countryName = korCountryNames[country.toUpperCase()] ? korCountryNames[country.toUpperCase()] : engCountryNames[country.toUpperCase()];
+                  var isp = resObj.org;
+                  getFlagIcon(country.toLowerCase(), function (data) {
+                    span.innerHTML = `[<img src="${data}" style="height: 0.9rem;" title="${countryName}"></img> ${isp}${vpngateIP.includes(ip) ? " (VPNGATE)" : ""}]<a href="#" class="get-whois">[WHOIS]</a>`;
+                    span.querySelector('a.get-whois').addEventListener('click', function (evt) {
+                      evt.preventDefault();
+                      whoisPopup(message.author.name);
+                    });
+                  });
+                } else {
+                  span.innerHTML = "[IP조회실패]<a href=\"#\" class=\"get-whois\">[WHOIS]</a>"
+                  span.querySelector('a.get-whois').addEventListener('click', function (evt) {
+                    evt.preventDefault();
+                    whoisPopup(message.author.name);
+                  })
+                }
+              });
+            });
+          }
+
+          function quickBlockLoop(i) {
+            let blockAnchor = document.createElement("a");
+            blockAnchor.href = "#";
+            blockAnchor.textContent = "[차단]";
+            blockAnchor.addEventListener('click', (evt) => {
+              evt.preventDefault();
+              let win = TooSimplePopup();
+              win.title("빠른 차단");
+              win.content(el => {
+                el.innerHTML = `<p>차단 대상 : ${encodeHTMLComponent(i.author.name)} ${i.author.isIP ? "<i>(IP)</i>" : "<i>(계정)</i>"}</p>차단 사유 : <input type="text" id="reason"></input><br>차단 기간 : <input type="number" id="duration"></input><a href="#" id="enterDuration">(간편하게 입력)</a><br><div id="allowLoginDiv">로그인 허용 : <input type="checkbox" id="allowLogin"></input></div><br><i>(참고 : NamuFix 설정에서 차단기간 기본값을 변경할 수 있습니다.)`
+                if (!i.author.isIP) {
+                  el.querySelector('#allowLoginDiv').style.display = 'none';
+                }
+                el.querySelector('a#enterDuration').addEventListener('click', (evt) => {
+                  evt.preventDefault();
+                  enterTimespanPopup("차단기간 간편하게 입력", (span) => {
+                    if (span)
+                      el.querySelector('#duration').value = span;
+                  })
+                })
+                el.querySelector('#duration').value = SET.quickBlockDefaultDuration;
+                el.querySelector('#reason').value = SET.quickBlockReasonTemplate.replace(/\$\{host\}/g, location.host)
+                  .replace(/\$\{threadNo\}/g, ENV.topicNo)
+                  .replace(/\$\{messageNo\}/g, i.no);
+                el.querySelector('#reason').style.width = '500px';
+                el.querySelector('#reason').style.maxWidth = '30vw';
+                win.button('닫기', win.close);
+                win.button('차단', () => {
+                  if (isIPUser) {
+                    namuapi.blockIP({
+                      ip: i.author.name,
+                      note: el.querySelector('#reason').value,
+                      expire: el.querySelector('#duration').value,
+                      allowLogin: el.querySelector('#allowLogin').checked
+                    }, (err, data) => {
+                      if (err)
+                        alert('오류 발생 : ' + err);
+                      else
+                        win.close();
+                    })
+                  } else {
+                    namuapi.blockAccount({
+                      id: i.author.name,
+                      note: el.querySelector('#reason').value,
+                      expire: el.querySelector('#duration').value,
+                      allowLogin: el.querySelector('#allowLogin').checked
+                    }, (err, data) => {
+                      if (err)
+                        alert('오류 발생 : ' + err);
+                      else
+                        win.close();
+                    })
+                  }
+                });
+              });
+            });
+            i.nfHeadspan.appendChild(blockAnchor);
+          }
+
+          function deserializeResDom(resElement) {
+            let userLink = resElement.querySelector('.r-head > a'),
+                anchor= resElement.querySelector('.r-head .num > a');
+            return {
+              element: resElement,
+              no: anchor.id,
+              author: {
+                name: resElement.querySelector('.r-head > a').textContent.trim(),
+                isFirst: resElement.querySelector('.r-head').className.includes('first-author'),
+                isIP: resElement.querySelector('.r-head > a').href.includes('/contribution/ip')
+              },
+              bodyElement: resElement.querySelector('.r-body'),
+              get nfHeadspan() {
+                let headspan = resElement.querySelector('.nf-headinfo')
+                if (!headspan) {
+                  headspan = document.createElement("span");
+                  headspan.className = "namufix-headinfo";
+                  userLink.parentNode.insertBefore(headspan, userLink.nextSibling);
+                  headspan.style.marginLeft = "1em";
+                }
+                delete this.nfHeadspan;
+                return this.nfHeadspan = headspan;
+              }
+            }
+          }
           function discussLoop() {
-            // check vpngate
-            if (SET.lookupIPonDiscuss)
-              getVPNGateIPList(function (result) {
-                checkIP(result);
-              })
-
-            // attach identicon
-            identiconLoop();
-
-            // make previewAsQuote
-            previewFunction();
-
-            // add block link
-            if(SET.addQuickBlockLink)
-              quickBlockLoop();
+            let handles = {
+              "preview": previewFunction,
+              "identicon": identiconLoop
+            };
+            if (SET.addQuickBlockLink) handles.quickBlock = quickBlockLoop
+            if (SET.lookupIPonDiscuss) handles.checkIp = checkIP;
+            let messages = document.querySelectorAll('.res-wrapper:not(.res-loading) > .res:not([nf-looped])');
+            let tmpcnt = 0; //fordebug
+            for (let i of messages)
+              for (let j in handles) {
+                let resObj = deserializeResDom(i);
+                if (i.dataset["nfLoop_" +j] !== "yes") {
+                  setTimeout(() => {
+                    handles[j](resObj);
+                    i.dataset["nfLoop_" + j] = "yes";
+                  }, 0);
+                }
+              }
           }
           discussLoop();
           var observer = new MutationObserver(discussLoop);
