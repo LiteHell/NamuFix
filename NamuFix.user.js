@@ -100,7 +100,7 @@ try {
         return false;
       }
     }
-    var discards = ['save', 'load', 'delete', 'all'];
+    var discards = ['save', 'load', 'delete', 'export', 'import'];
     this.save = async function () {
       for (var i in this) {
         if (discards.indexOf(i) != -1) continue;
@@ -122,6 +122,22 @@ try {
       await GM.deleteValue('SET_' + key);
       delete this[key];
     };
+    this.export = async function (excludes) {
+      let sets = await GM.listValues();
+      let result = {};
+      for (let i of sets) {
+        if (i.indexOf('SET_') != 0) continue;
+        let setname = i.substring(4)
+        if (discards.includes(setname) || excludes.includes(setname)) continue;
+        result[setname] = await GM.getValue(i);
+      }
+      return result;
+    };
+    this.import = async function (data) {
+      for (let i in data) {
+        await GM.setValue('SET_' + i, data[i]);
+      }
+    }
   }
   if (location.host === 'board.namu.wiki') {
     let SET = new NFStorage();
@@ -3323,6 +3339,43 @@ try {
           if (confirm("새로고침해야 설정이 적용됩니다. 새로고침할까요?"))
             location.reload();
           win.close();
+        });
+        win.button('설정 백업', async function () {
+          let excludeTempsaves = confirm('임시조치를 제외할까요?');
+          let excludes = [];
+          if(excludeTempsaves) excludes.push('tempsaves');
+          let backupText = [JSON.stringify(await SET.export(excludes))];
+          let win = TooSimplePopup();
+          win.title('백업중...');
+          win.content(el => el.innerHTML = "백업중...");
+          let blob = new Blob(backupText, {type: "application/json"});
+          let url = URL.createObjectURL(blob);
+          win.content(el => el.innerHTML = `<a href="${url}" download="namufix_backup.json">이 링크</a>을 다른 이름으로 저장해주세요.`)
+          win.button('닫기', win.close);
+        });
+        win.button('설정 복원', async function () {
+          getFile(async (files) => {
+            if (files.length === 0)
+              return alert('아무것도 선택하지 않았습니다!');
+            try {
+              let fileReader = new FileReader();
+              fileReader.onload = async (evt) => {
+                try {
+                  let data = JSON.parse(evt.target.result);
+                  await SET.import(data);
+                  alert('완료했습니다. 확인 버튼을 누르면 새로고침됩니다.');
+                  location.reload();
+                } catch(err) {
+                  return alert('파일을 읽는 중 오류가 발생했습니다: ' + err.message);
+                  console.error(err);
+                }
+              }
+              fileReader.readAsText(files[0]);
+            } catch(err) {
+              return alert('파일을 읽는 중 오류가 발생했습니다: ' + err.message);
+              console.error(err);
+            }
+          },false)
         });
         win.button('설정 초기화', async function () {
           if (confirm('되돌릴 수 없습니다. 계속 진행하시겠습니까?')) {
