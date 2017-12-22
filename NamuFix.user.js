@@ -188,7 +188,7 @@ try {
           if (currentVersion != latestVersion) {
             var scriptUrl = 'https://github.com/LiteHell/NamuFix/raw/' + latestVersion + '/NamuFix.user.js';
             var win = TooSimplePopup();
-            win.title('새버전 설치');
+            win.title('새 버전 설치');
             win.content(function (element) {
               // 변경 사항 : obj.body
               element.innerHTML = '업데이트가 있습니다.<br><br>현재 사용중인 버전 : ' + currentVersion + '<br>' +
@@ -544,7 +544,7 @@ try {
           return cb(flagIconDictionary[countryCode]);
         GM.xmlHttpRequest({
           method: 'GET',
-          url: `https://cdnjs.cloudflare.com/ajax/libs/flag-icon-css/2.8.0/flags/4x3/${countryCode}.svg`,
+          url: `https://cdnjs.cloudflare.com/ajax/libs/flag-icon-css/2.9.0/flags/4x3/${countryCode}.svg`,
           onload: function (res) {
             flagIconDictionary[countryCode] = "data:image/svg+xml;base64," + btoa(res.responseText);
             return cb(flagIconDictionary[countryCode]);
@@ -755,7 +755,7 @@ try {
           }
           el.querySelector('a#enterDuration').addEventListener('click', (evt) => {
             evt.preventDefault();
-            enterTimespanPopup("차단기간 간편하게 입력", (span) => {
+            enterTimespanPopup("차단기간 간편입력", (span) => {
               if (span)
                 el.querySelector('#duration').value = span;
             })
@@ -1492,7 +1492,7 @@ try {
                       TextProc.selectionText(TextProc.selectionText() + imgLinks);
                     if (hasError) {
                       let win = TooSimplePopup();
-                      win.title('나무위키 이미지 업로드 오류');
+                      win.title('이미지 업로드 오류');
                       win.content(el => {
                         el.innerHTML = '<p>오류들이 발생했습니다.</p><ul></ul>';
                         for (let i of results.filter(v => !v.success)) {
@@ -1677,7 +1677,7 @@ try {
             insertablesDropDown.button('<span class="ion-social-youtube fa fa-youtube-play" style="color:red;"></span>', 'YouTube 동영상').click(InsertYouTube);
             insertablesDropDown.button('<span class="ion-map fa fa-map"></span>', '지도').click(MapMacro);
             insertablesDropDown.button('<span class="ion-ios-play-outline fa fa-play" style="color: Aqua;"></span>', '다음 TV팟 동영상').click(DaumTVPotMarkUp);
-            insertablesDropDown.button('<span class="ion-images fa fa-picture-o" style="color: #008275;"></span>', '나무위키 이미지 업로드').click(namuUpload);
+            insertablesDropDown.button('<span class="ion-images fa fa-picture-o" style="color: #008275;"></span>', '이미지 업로드').click(namuUpload);
 
             Designer.button('<span class="ion-ios-grid-view fa fa-table"></span>').hoverMessage('간단한 표 만들기').click(function () {
               var numbers = prompt('행과 열을 행숫x열숫 형태로 입력해주세요. 예시: 2x3, 2*3')
@@ -1799,7 +1799,7 @@ try {
 
             Designer.button('<span class="ion-ios-timer-outline fa fa-clock-o"></span>').hoverMessage('아카이브하고 외부링크 삽입').click(function () {
               var win = TooSimplePopup();
-              win.title("아카이브 한후 외부링크 삽입");
+              win.title("아카이브한 후 외부링크 삽입");
               var linkTo = "",
                 linkText = "",
                 WayBack = false,
@@ -1816,8 +1816,9 @@ try {
                   '<h1 style="margin: 5px 0px 5px 0px; font-size: 20px;">아카이브</h1>' +
                   '<strong>참고</strong> : 동일한 주소의 아카이브를 자주 하다 보면 아까 했던 아카이브가 또 나올 수도 있습니다, 이런 경우엔 잠시 몇분정도 기다렸다가 하시면 됩니다.<br>' +
                   '<strong>참고</strong> : 기존의 아카이브들은 무시됩니다.<br>' +
+				  '<strong>참고</strong> : 아카이빙하려는 사이트의 서버 설정 결과에 따라 아카이빙이 거부될 수 있습니다.' +
                   '<strong style="color:red;">주의</strong> : 불안정한 기능입니다. 버그에 주의하세요.<br>' +
-                  '<input type="checkbox" id="WayBack" /> <label><a href="https://archive.org/web/" target="_blank">WayBack Machine</a>으로 아카이브</label>(<input type="checkbox" id="WayBackMobi" /> 모바일 버전으로)<br>' +
+                  '<input type="checkbox" id="WayBack" /> <label><a href="https://archive.org/web/" target="_blank">WayBack Machine</a>으로 아카이브</label> (<input type="checkbox" id="WayBackMobi" /> 모바일 버전으로)<br>' +
                   '<input type="checkbox" id="archiveIs" /> <label><a href="https://archive.is/" target="_blank" checked>archive.is</a>에서 아카이브</label>';
                 refresh = function () {
                   linkTo = container.querySelector('#linkTo').value;
@@ -3142,7 +3143,7 @@ try {
             var revNo = prompt('보고 싶은 리버전 번호를 입력하세요.').trim();
             if (revNo.indexOf('r') == 0) revNo = revNo.substring(1);
             if (/[^0-9]/.test(revNo)) {
-              alert('올바른 일력이 아닙니다! r1 혹은 1과 같이 입력해주세요.');
+              alert('올바른 입력이 아닙니다! r1 혹은 1과 같이 입력해주세요.');
               return;
             }
             location.href = "/w/" + encodeURIComponent(ENV.docTitle) + "?rev=" + revNo;
