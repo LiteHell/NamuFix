@@ -2812,9 +2812,9 @@ try {
               for (let j in handles) {
                 let resObj = deserializeResDom(i);
                 if (i.dataset["nfLoop_" +j] !== "yes") {
+                  i.dataset["nfLoop_" + j] = "yes";
                   setTimeout(() => {
                     handles[j](resObj);
-                    i.dataset["nfLoop_" + j] = "yes";
                   }, 0);
                 }
               }
@@ -3556,8 +3556,8 @@ try {
         })
       }
 
-      mainFunc();
       listenPJAX(mainFunc);
+      await mainFunc();
 
       if (document.querySelector('body').getAttribute('class').indexOf('senkawa') == -1 && document.querySelector('body').getAttribute('class').indexOf('Liberty') == -1) {
         await SET.load();
