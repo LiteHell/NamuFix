@@ -665,29 +665,36 @@ try {
         nfMenuDivider.parentNode.insertBefore(menuItem, nfMenuDivider.nextSibling);
       }
 
-      var _vpngateList = [],
-        _vpngateCrawlledAt = -1;
+      function getVPNGateIPList() {
+        return new Promise((resolve, reject) => {
+        GM.xmlHttpRequest({
+          method: "GET",
+          url: "https://namufix.wikimasonry.org/vpngate/list",
+          onload: function (res) {
+            let resObj = JSON.parse(res.responseText);
+            if (resObj.success)
+              resolve(resObj.result);
+            else
+              reject(resObj.message);   
+          }
+        });
+      });
+      }
 
-      function getVPNGateIPList(callback) {
-        if (_vpngateCrawlledAt == -1 || Date.now() - _vpngateCrawlledAt > 1000 * 60 * 3) {
-          GM.xmlHttpRequest({
-            method: "GET",
-            url: "http://www.vpngate.net/api/iphone/",
-            onload: function (res) {
-              var lines = res.responseText.split('\n').filter(v => v.trim().length != 0);
-              var result = [];
-              for (var i = 0; i < lines.length; i++) {
-                if (!/^[\*#]/.test(lines[i]))
-                  result.push(lines[i].split(',')[1]);
-              }
-              _vpngateList = result;
-              _vpngateCrawlledAt = Date.now();
-              callback(result);
-            }
-          })
-        } else {
-          callback(_vpngateList);
-        }
+      function checkVPNGateIP(ip) {
+        return new Promise((resolve, reject) => {
+        GM.xmlHttpRequest({
+          method: "GET",
+          url: "https://namufix.wikimasonry.org/vpngate/check/" + encodeURIComponent(ip),
+          onload: function (res) {
+            let resObj = JSON.parse(res.responseText);
+            if (resObj.success)
+              resolve(resObj.result);
+            else
+              reject(resObj.message);      
+          }
+        });
+      });
       }
 
       function makeTabs() {
@@ -2666,31 +2673,28 @@ try {
               return;
             var span = document.createElement("span");
             span.style.color = "red";
-            span.innerHTML = "[(IP 확인중: VPNGATE 여부 확인중)]";
             message.nfHeadspan.appendChild(span);
-            getVPNGateIPList((vpngateIP) => {
-              span.innerHTML = "[(IP 확인중: IP정보 조회중)]";
-                // get ip info
-              getIpInfo(message.author.name, function (resObj) {
-                if (resObj !== null) {
-                  var country = resObj.country;
-                  var countryName = korCountryNames[country.toUpperCase()] ? korCountryNames[country.toUpperCase()] : engCountryNames[country.toUpperCase()];
-                  var isp = resObj.org;
-                  getFlagIcon(country.toLowerCase(), function (data) {
-                    span.innerHTML = `[<img src="${data}" style="height: 0.9rem;" title="${countryName}"></img> ${isp}${vpngateIP.includes(ip) ? " (VPNGATE)" : ""}]<a href="#" class="get-whois">[WHOIS]</a>`;
-                    span.querySelector('a.get-whois').addEventListener('click', function (evt) {
-                      evt.preventDefault();
-                      whoisPopup(message.author.name);
-                    });
-                  });
-                } else {
-                  span.innerHTML = "[IP조회실패]<a href=\"#\" class=\"get-whois\">[WHOIS]</a>"
+            span.innerHTML = "[(IP 확인중: IP정보 조회중)]";
+              // get ip info
+            getIpInfo(message.author.name, function (resObj) {
+              if (resObj !== null) {
+                var country = resObj.country;
+                var countryName = korCountryNames[country.toUpperCase()] ? korCountryNames[country.toUpperCase()] : engCountryNames[country.toUpperCase()];
+                var isp = resObj.org;
+                getFlagIcon(country.toLowerCase(), async function (data) {
+                  span.innerHTML = `[<img src="${data}" style="height: 0.9rem;" title="${countryName}"></img> ${isp}${await checkVPNGateIP(ip) ? " (VPNGATE)" : ""}]<a href="#" class="get-whois">[WHOIS]</a>`;
                   span.querySelector('a.get-whois').addEventListener('click', function (evt) {
                     evt.preventDefault();
                     whoisPopup(message.author.name);
-                  })
-                }
-              });
+                  });
+                });
+              } else {
+                span.innerHTML = "[IP조회실패]<a href=\"#\" class=\"get-whois\">[WHOIS]</a>"
+                span.querySelector('a.get-whois').addEventListener('click', function (evt) {
+                  evt.preventDefault();
+                  whoisPopup(message.author.name);
+                })
+              }
             });
           }
 
@@ -2876,17 +2880,16 @@ try {
             var ipInfo = document.createElement("p");
             ipInfo.innerHTML = '<div style="border: 1px black solid; padding: 2px;">IP 관련 정보를 조회중입니다. 잠시만 기다려주세요.</div>'
             insertBeforeTable(ipInfo);
-            getVPNGateIPList(function (result) {
               getIpInfo(ip, function (resObj) {
                 var country = resObj.country;
                 var countryName = korCountryNames[country.toUpperCase()] ? korCountryNames[country.toUpperCase()] : engCountryNames[country.toUpperCase()];
                 var isp = resObj.org;
-                getFlagIcon(country.toLowerCase(), function (countryIcon) {
+                getFlagIcon(country.toLowerCase(), async function (countryIcon) {
                   ipInfo.innerHTML = `<table class="contInfo">
               <tbody>
               <tr><td>국가</td><td><img src=\"${countryIcon}\" style=\"height: 0.9rem;\"></img> ${countryName}</td></tr>
               <tr><td>통신사</td><td>${isp}</td></tr>
-              <tr><td>VPNGATE?</td><td>${result.includes(ip) ? "<span style=\"color: red;\">YES! This is currently WORKING VPNGATE IP!</span>" : "Not a vpngate ip"}</td></tr>
+              <tr><td>VPNGATE?</td><td>${await checkVPNGateIP(ip) ? "<span style=\"color: red;\">YES! This is currently WORKING VPNGATE IP!</span>" : "Not a vpngate ip"}</td></tr>
               <tr><td>KISA WHOIS</td><td><a href="#" class="get-whois">조회하기</a></td></tr>
               <tr><td>IP차단기록(/32 마스크)</td><td class="nf_isipblocked">차단기록을 검색하고 있습니다... 잠시만 기다려주세요.</td></tr>
               </tbody>
@@ -2917,7 +2920,6 @@ try {
                   });
                 });
               });
-            });
           }
 
           if (/\/document(?:#.+|)$/.test(location.href)) {
@@ -3374,11 +3376,14 @@ try {
               });
             })
             win.button('닫기', win.close);
-            win.button('VPNGATE IP 불러오기', function () {
-              getVPNGateIPList((vpngateIPs) => {
+            win.button('VPNGATE IP 불러오기', async function () {
+              let win = TooSimplePopup();
+              win.title('불러오는 중');
+              win.content(e => e.innerHTML = "불러오는 중입니다. 잠시만 기다려주십시오.");
+              let vpngateIPs = await getVPNGateIPList();
                 let textarea = con.querySelector('textarea');
                 textarea.value += '\n' + vpngateIPs.map(v => v + "/32").join("\n");
-              });
+                win.close();
             })
 
             function parseTextarea() {
