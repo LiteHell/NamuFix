@@ -769,7 +769,7 @@ try {
           el.querySelector('#reason').style.maxWidth = '30vw';
           win.button('닫기', win.close);
           win.button('차단', () => {
-            if (isIPUser) {
+            if (i.author.IsIP) {
               namuapi.blockIP({
                 ip: i.author.name,
                 note: el.querySelector('#reason').value,
