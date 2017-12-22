@@ -1816,7 +1816,7 @@ try {
                   '<h1 style="margin: 5px 0px 5px 0px; font-size: 20px;">아카이브</h1>' +
                   '<strong>참고</strong> : 동일한 주소의 아카이브를 자주 하다 보면 아까 했던 아카이브가 또 나올 수도 있습니다, 이런 경우엔 잠시 몇분정도 기다렸다가 하시면 됩니다.<br>' +
                   '<strong>참고</strong> : 기존의 아카이브들은 무시됩니다.<br>' +
-				  '<strong>참고</strong> : 아카이빙하려는 사이트의 서버 설정 결과에 따라 아카이빙이 거부될 수 있습니다.' +
+                  '<strong>참고</strong> : 아카이빙하려는 사이트의 서버 설정 결과에 따라 아카이빙이 거부될 수 있습니다.' +
                   '<strong style="color:red;">주의</strong> : 불안정한 기능입니다. 버그에 주의하세요.<br>' +
                   '<input type="checkbox" id="WayBack" /> <label><a href="https://archive.org/web/" target="_blank">WayBack Machine</a>으로 아카이브</label> (<input type="checkbox" id="WayBackMobi" /> 모바일 버전으로)<br>' +
                   '<input type="checkbox" id="archiveIs" /> <label><a href="https://archive.is/" target="_blank" checked>archive.is</a>에서 아카이브</label>';
