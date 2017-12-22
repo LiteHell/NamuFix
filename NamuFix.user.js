@@ -746,6 +746,57 @@ try {
           }
         };
       }
+      
+      // i : {author : {name, isIP}, defaultReason, defaultDuration}
+      function quickBanPopup(i) {
+        let win = TooSimplePopup();
+        win.title("빠른 차단");
+        win.content(el => {
+          el.innerHTML = `<p>차단 대상 : ${encodeHTMLComponent(i.author.name)} ${i.author.isIP ? "<i>(IP)</i>" : "<i>(계정)</i>"}</p>차단 사유 : <input type="text" id="reason"></input><br>차단 기간 : <input type="number" id="duration"></input><a href="#" id="enterDuration">(간편하게 입력)</a><br><div id="allowLoginDiv">로그인 허용 : <input type="checkbox" id="allowLogin"></input></div><br><i>(참고 : NamuFix 설정에서 차단기간 기본값을 변경할 수 있습니다.)`
+          if (!i.author.isIP) {
+            el.querySelector('#allowLoginDiv').style.display = 'none';
+          }
+          el.querySelector('a#enterDuration').addEventListener('click', (evt) => {
+            evt.preventDefault();
+            enterTimespanPopup("차단기간 간편하게 입력", (span) => {
+              if (span)
+                el.querySelector('#duration').value = span;
+            })
+          })
+          el.querySelector('#duration').value = i.defaultDuration;
+          el.querySelector('#reason').value = i.defaultReason;
+          el.querySelector('#reason').style.width = '500px';
+          el.querySelector('#reason').style.maxWidth = '30vw';
+          win.button('닫기', win.close);
+          win.button('차단', () => {
+            if (isIPUser) {
+              namuapi.blockIP({
+                ip: i.author.name,
+                note: el.querySelector('#reason').value,
+                expire: el.querySelector('#duration').value,
+                allowLogin: el.querySelector('#allowLogin').checked
+              }, (err, data) => {
+                if (err)
+                  alert('오류 발생 : ' + err);
+                else
+                  win.close();
+              })
+            } else {
+              namuapi.blockAccount({
+                id: i.author.name,
+                note: el.querySelector('#reason').value,
+                expire: el.querySelector('#duration').value,
+                allowLogin: el.querySelector('#allowLogin').checked
+              }, (err, data) => {
+                if (err)
+                  alert('오류 발생 : ' + err);
+                else
+                  win.close();
+              })
+            }
+          });
+        });
+      }
 
       function createDesigner(buttonBar) {
         var Designer = {};
@@ -2720,55 +2771,9 @@ try {
             blockAnchor.textContent = "[차단]";
             blockAnchor.addEventListener('click', (evt) => {
               evt.preventDefault();
-              let win = TooSimplePopup();
-              win.title("빠른 차단");
-              win.content(el => {
-                el.innerHTML = `<p>차단 대상 : ${encodeHTMLComponent(i.author.name)} ${i.author.isIP ? "<i>(IP)</i>" : "<i>(계정)</i>"}</p>차단 사유 : <input type="text" id="reason"></input><br>차단 기간 : <input type="number" id="duration"></input><a href="#" id="enterDuration">(간편하게 입력)</a><br><div id="allowLoginDiv">로그인 허용 : <input type="checkbox" id="allowLogin"></input></div><br><i>(참고 : NamuFix 설정에서 차단기간 기본값을 변경할 수 있습니다.)`
-                if (!i.author.isIP) {
-                  el.querySelector('#allowLoginDiv').style.display = 'none';
-                }
-                el.querySelector('a#enterDuration').addEventListener('click', (evt) => {
-                  evt.preventDefault();
-                  enterTimespanPopup("차단기간 간편하게 입력", (span) => {
-                    if (span)
-                      el.querySelector('#duration').value = span;
-                  })
-                })
-                el.querySelector('#duration').value = SET.quickBlockDefaultDuration;
-                el.querySelector('#reason').value = SET.quickBlockReasonTemplate.replace(/\$\{host\}/g, location.host)
-                  .replace(/\$\{threadNo\}/g, ENV.topicNo)
-                  .replace(/\$\{messageNo\}/g, i.no);
-                el.querySelector('#reason').style.width = '500px';
-                el.querySelector('#reason').style.maxWidth = '30vw';
-                win.button('닫기', win.close);
-                win.button('차단', () => {
-                  if (isIPUser) {
-                    namuapi.blockIP({
-                      ip: i.author.name,
-                      note: el.querySelector('#reason').value,
-                      expire: el.querySelector('#duration').value,
-                      allowLogin: el.querySelector('#allowLogin').checked
-                    }, (err, data) => {
-                      if (err)
-                        alert('오류 발생 : ' + err);
-                      else
-                        win.close();
-                    })
-                  } else {
-                    namuapi.blockAccount({
-                      id: i.author.name,
-                      note: el.querySelector('#reason').value,
-                      expire: el.querySelector('#duration').value,
-                      allowLogin: el.querySelector('#allowLogin').checked
-                    }, (err, data) => {
-                      if (err)
-                        alert('오류 발생 : ' + err);
-                      else
-                        win.close();
-                    })
-                  }
-                });
-              });
+              quickBanPopup({author: i.author, defaultDuration: SET.quickBlockDefaultDuration, defaultReason: SET.quickBlockReasonTemplate.replace(/\$\{host\}/g, location.host)
+              .replace(/\$\{threadNo\}/g, ENV.topicNo)
+              .replace(/\$\{messageNo\}/g, i.no)});
             });
             i.nfHeadspan.appendChild(blockAnchor);
           }
@@ -3147,8 +3152,19 @@ try {
             location.href = "/w/" + encodeURIComponent(ENV.docTitle) + "?rev=" + revNo;
           })
           var historyRows = document.querySelectorAll('article .wiki-list li, body.Liberty .wiki-article .wiki-list li');
-          for (var hi = 0; hi < historyRows.length; hi++) {
-            var historyRow = historyRows[hi];
+          for (let historyRow of [].slice.call(historyRows)) {
+            // 긴급차단
+            if (SET.addQuickBlockLink) {
+              let temp = historyRow.querySelector('span').innerHTML.trim();
+              historyRow.querySelector('span').innerHTML = temp.substring(0, temp.length - 1) + ' | <a href="#" class="nf-history-quickban">차단</a>)';
+              historyRow.querySelector('a.nf-history-quickban').addEventListener('click', (evt) => {
+                evt.preventDefault();
+                let user = historyRow.querySelectorAll('a');
+                user = user[user.length - 1].textContent.trim();
+                quickBanPopup({author: {name: user, isIP: validateIP(user)}, defaultDuration: SET.quickBlockDefaultDuration, defaultReason: "긴급조치"});
+              });
+            }
+            // ACL 가독성
             var italicTag = historyRow.querySelector('i');
             if (italicTag) {
               var pattern = /\(([a-zA-Z,]+?)으로 ACL 변경\)/;
@@ -3294,9 +3310,9 @@ try {
             <h2>편의기능</h2>
             <input type="checkbox" name="addAdminLinksForLiberty" data-setname="addAdminLinksForLiberty" data-as-boolean>Liberty 스킨에 관리자 링크 추가하기</input><br>
             <input type="checkbox" name="addBatchBlockMenu" data-setname="addBatchBlockMenu" data-as-boolean>일괄 차단 메뉴 추가</input><br>
-            <input type="checkbox" name="addQuickBlockLink" data-setname="addQuickBlockLink" data-as-boolean>토론중 차단 링크 추가</input><br>
+            <input type="checkbox" name="addQuickBlockLink" data-setname="addQuickBlockLink" data-as-boolean>토론중/문서 역사페이지에 차단 링크 추가</input><br>
             토론중 빠른차단 기능에서의 차단사유 템플릿 : <input type="text" data-setname="quickBlockReasonTemplate" style="width: 500px; max-width: 75vw;"></input><br>
-            토론중 빠른차단 기능에서의 차단기간 기본값(초) : <input type="text" data-setname="quickBlockDefaultDuration"></input>
+            토론중/문서 역사에서의 빠른차단 기능에서의 차단기간 기본값(초) : <input type="text" data-setname="quickBlockDefaultDuration"></input>
             <h1>편집 편의성</h1>
             <h2>자동저장 시간 간격</h2>
             <p>편집중 자동저장 간격을 설정합니다. 0 이하의 값으로 설정할 시 자동으로 이루어지지 않으며 이 경우 단축키나 메뉴를 이용해 수동으로 저장해야 합니다.</p>
