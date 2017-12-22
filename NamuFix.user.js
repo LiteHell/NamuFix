@@ -12,15 +12,12 @@
 // @author      LiteHell
 // @downloadURL https://raw.githubusercontent.com/LiteHell/NamuFix/master/NamuFix.user.js
 // @require     https://greasemonkey.github.io/gm4-polyfill/gm4-polyfill.js
-// @require     https://cdn.rawgit.com/LiteHell/NamuFix/3bea33e76808ba9765f39135c17bfa46972131ac/mascott_pics.js
-// @require     https://cdn.rawgit.com/LiteHell/NamuFix/c7f7cf07933889a9d068a558dd90432109be6a95/engCountryNames.js
 // @require     https://cdn.rawgit.com/LiteHell/NamuFix/5326c9aada134f65bba171d12f5ca5d042fd4fca/korCountryNames.js
 // @require     https://cdn.rawgit.com/LiteHell/NamuFix/0ea78119c377402a10bbdfc33365c5195ce7fccc/FlexiColorPicker.js
 // @require     https://cdn.rawgit.com/Caligatio/jsSHA/v2.3.1/src/sha.js
 // @require     https://cdn.rawgit.com/zenozeng/color-hash/v1.0.3/dist/color-hash.js
 // @require     http://www.xarg.org/download/pnglib.js
 // @require     https://cdn.rawgit.com/stewartlord/identicon.js/7c4b4efdb7e2aba458eba14b24ba14e8e2bcdb2a/identicon.js
-// @require     https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.3.0/katex.min.js
 // @require     https://cdn.rawgit.com/LiteHell/TooSimplePopupLib/7f2a8a81f11f980c1dfa6b5b2213cd38b8bbde3c/TooSimplePopupLib.js
 // @require     https://cdn.rawgit.com/wkpark/jsdifflib/dc19d085db5ae71cdff990aac8351607fee4fd01/difflib.js
 // @require     https://cdn.rawgit.com/wkpark/jsdifflib/dc19d085db5ae71cdff990aac8351607fee4fd01/diffview.js
@@ -2502,8 +2499,7 @@ try {
           var isThreadicLike = SET.discussIdenti == 'headBg';
           var isIdenticon = SET.discussIdenti == 'identicon';
           var colorDictionary = {},
-            identiconDictionary = {},
-            mascottPics = getMascottPics();
+            identiconDictionary = {};
 
           // TO-DO : Rewrite Loop codes
           // #[0-9]+ 엥커 미리보기
@@ -2723,7 +2719,7 @@ try {
               if (typeof identiconDictionary[n] === 'undefined' && typeof SET.customIdenticons[n] !== 'undefined')
                 identiconDictionary[n] = SET.customIdenticons[n];
               if (typeof identiconDictionary[n] === 'undefined')
-                identiconDictionary[n] = mascottPics.length > 0 ? mascottPics.pop() : "data:image/png;base64," + new Identicon(n, 64).toString();
+                identiconDictionary[n] = "data:image/png;base64," + new Identicon(n, 64).toString();
               var identiconImage = identiconDictionary[n];
               identicon.querySelector('img').src = identiconImage;
               message.element.parentNode.insertBefore(identicon, message.element);
@@ -2746,7 +2742,7 @@ try {
             getIpInfo(message.author.name, function (resObj) {
               if (resObj !== null) {
                 var country = resObj.country;
-                var countryName = korCountryNames[country.toUpperCase()] ? korCountryNames[country.toUpperCase()] : engCountryNames[country.toUpperCase()];
+                var countryName = korCountryNames[country.toUpperCase()] || country;
                 var isp = resObj.org;
                 getFlagIcon(country.toLowerCase(), async function (data) {
                   span.innerHTML = `[<img src="${data}" style="height: 0.9rem;" title="${countryName}"></img> ${isp}${await checkVPNGateIP(ip) ? " (VPNGATE)" : ""}]<a href="#" class="get-whois">[WHOIS]</a>`;
@@ -2903,7 +2899,7 @@ try {
             insertBeforeTable(ipInfo);
               getIpInfo(ip, function (resObj) {
                 var country = resObj.country;
-                var countryName = korCountryNames[country.toUpperCase()] ? korCountryNames[country.toUpperCase()] : engCountryNames[country.toUpperCase()];
+                var countryName = korCountryNames[country.toUpperCase()] || country.toUpperCase();
                 var isp = resObj.org;
                 getFlagIcon(country.toLowerCase(), async function (countryIcon) {
                   ipInfo.innerHTML = `<table class="contInfo">
