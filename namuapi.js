@@ -1,4 +1,7 @@
-var namuapi = {};
+var namuapi = {}, namuapiMutex = {};
+
+if(typeof setImmediate === 'undefined')
+    var setImmediate = (c) => setTimeout(c, 0);
 
 // /check 페이지 대응
 namuapi.theseedRequest = function (options) {
@@ -13,7 +16,7 @@ namuapi.theseedRequest = function (options) {
                 aTagForParsingUrl.href = res.finalUrl;
                 if (aTagForParsingUrl.pathname.indexOf("/check") === 0) {
                     console.log('[NamuFix] /check 페이지 감지됨.');
-                    namuapi.resolveRecaptcha(function (capKeyRes) {
+                    namuapi.resolveRecaptchaMutexed(function (capKeyRes) {
                         if (capKeyRes == null) {
                             namuapi.theseedRequest(options);
                         } else {
@@ -30,7 +33,7 @@ namuapi.theseedRequest = function (options) {
                                 }
                             })
                         }
-                    })
+                    }, {name: "tooManyRequests", description: "\"서버에 너무 많은 요청을 보내고 있습니다\" 오류가 발생하고 있습니다. 방금 전 reCAPTCHA를 해결했다면 닫기 후 나머지 무시 버튼을 눌러도 무방합니다."});
                 } else {
                     options.onload(res);
                 }
@@ -40,7 +43,40 @@ namuapi.theseedRequest = function (options) {
     GM.xmlHttpRequest(_newoptions);
 }
 
-namuapi.resolveRecaptcha = function (callback) {
+namuapi.resolveRecaptchaMutexed = function (callback, mutex) {
+    namuapiMutex[mutex.name].push({
+        callback: callback,
+        description: mutex.description || null
+    });
+}
+
+namuapi.resolveRecaptchaCreateMutex = function (mutexName) {
+    namuapiMutex[mutexName] = [];
+    function internalLoop () {
+        if(namuapiMutex[mutexName].length == 0)
+            return setImmediate(internalLoop);
+        let item = namuapiMutex.pop();
+        resolveRecaptcha((apiKey, mutexArgs) => {
+            item.callback(apiKey);
+            if(mutexArgs.ignoreRest) {
+                setTimeout(() => {
+                    while(namuapiMutex[mutexName].length > 0) {
+                        let item = namuapiMutex[mutexName].pop();
+                        item.callback(null);
+                    }
+                    setImmediate(internalLoop);
+                }, 200);
+            } else {
+                setImmediate(internalLoop);
+            }
+        }, item.description, true);
+    }
+    internalLoop();
+}
+
+namuapi.resolveRecaptchaCreateMutex("tooManyRequests");
+
+namuapi.resolveRecaptcha = function (callback, description, hasMutex) {
     GM.xmlHttpRequest({
         method: 'GET',
         url: `https://${location.host}/check`,
@@ -52,7 +88,9 @@ namuapi.resolveRecaptcha = function (callback) {
                 var id = "nf-recaptcha-" + Date.now();
                 var btnId = 'nf-communicate-' + Date.now();
                 var cbName = "nfreCAPTCHACallback" + Date.now();
-                winContainer.innerHTML = '<p>reCAPTCHA를 해결해주세요.</p><div id="' + id + '"></div><button style="display: none;" type="button" id="' + btnId + '"></button>';
+                winContainer.innerHTML = '<p class="nf-recaptcha-description">reCAPTCHA를 해결해주세요.</p><div id="' + id + '"></div><button style="display: none;" type="button" id="' + btnId + '"></button>';
+                if (description)
+                    winContainer.querySelector('.nf-recaptcha-description').innerHTML += "<br>설명 : " + description;
                 var injectedButton = winContainer.querySelector('#' + btnId);
                 winContainer.querySelector('#' + id).dataset.callback = cbName;
                 winContainer.querySelector('#' + id).dataset.sitekey = siteKey;
@@ -66,9 +104,17 @@ namuapi.resolveRecaptcha = function (callback) {
                 winContainer.appendChild(scriptTag);
             });
             captchaWin.button('닫기', function () {
-                callback(null);
+                if (hasMutex)
+                    callback(null, {ignoreRest: false});
+                else
+                    callback(null);
                 captchaWin.close();
-            })
+            });
+            if (hasMutex)
+                captchaWin.button('닫은 후 나머지 무시', function () {
+                    callback(null, {ignoreRest: true})
+                    captchaWin.close();
+                });
         }
     });
 }
