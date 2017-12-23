@@ -682,8 +682,24 @@ try {
         nfMenuDivider.parentNode.insertBefore(menuItem, nfMenuDivider.nextSibling);
       }
 
+      let vpngateCache = [], vpngateCrawlledAt = -1;
       function getVPNGateIPList() {
         return new Promise((resolve, reject) => {
+          if (Date.now() - vpngateCrawlledAt < 1000 * 60 * 3)
+            return resolve(vpngateCache);
+          GM.xmlHttpRequest({
+            method: "GET",
+            url: "http://www.vpngate.net/api/iphone",
+            onload: (res) => {
+              vpngateCrawlledAt = Date.now();
+              console.log(res.responseText);
+              vpngateCache = res.responseText.split('\n').filter(v => v.indexOf('*') !== 0 && v.indexOf('#') !== 0).map(v => v.split(',')[1]);
+              resolve(vpngateCache);
+            }
+          });
+        });
+          /*
+          서버가 이상함.
           GM.xmlHttpRequest({
             method: "GET",
             url: "https://namufix.wikimasonry.org/vpngate/list",
@@ -695,11 +711,14 @@ try {
                 reject(resObj.message);
             }
           });
-        });
+        });*/
       }
 
-      function checkVPNGateIP(ip) {
-        return new Promise((resolve, reject) => {
+      async function checkVPNGateIP(ip) {
+        return (await getVPNGateIPList()).includes(ip);
+        /*
+         서버가 이상함
+         return new Promise((resolve, reject) => {
           GM.xmlHttpRequest({
             method: "GET",
             url: "https://namufix.wikimasonry.org/vpngate/check/" + encodeURIComponent(ip),
@@ -712,6 +731,7 @@ try {
             }
           });
         });
+        */
       }
 
       function makeTabs() {
@@ -3568,7 +3588,7 @@ try {
                   success: []
                 };
                 let datas = JSON.parse(JSON.stringify(_datas));
-                async.eachLimit(datas, SET.adminReqLimit || 3, (data, callback) => {
+                async.eachLimit(datas, SET.adminReqLimit, (data, callback) => {
                   namuapi[data.handlerName](data.parameter, (err, target) => {
                     if (err) {
                       result.errors.push({
