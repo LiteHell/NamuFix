@@ -651,6 +651,8 @@ try {
           SET.quickBlockDefaultDuration = 0;
         if (nOu(SET.addQuickBlockLink))
           SET.addQuickBlockLink = false;
+        if (nOu(SET.notifyForUnvisibleThreads))
+          SET.notifyForUnvisibleThreads = false;
         await SET.save();
       }
 
@@ -680,34 +682,34 @@ try {
 
       function getVPNGateIPList() {
         return new Promise((resolve, reject) => {
-        GM.xmlHttpRequest({
-          method: "GET",
-          url: "https://namufix.wikimasonry.org/vpngate/list",
-          onload: function (res) {
-            let resObj = JSON.parse(res.responseText);
-            if (resObj.success)
-              resolve(resObj.result);
-            else
-              reject(resObj.message);   
-          }
+          GM.xmlHttpRequest({
+            method: "GET",
+            url: "https://namufix.wikimasonry.org/vpngate/list",
+            onload: function (res) {
+              let resObj = JSON.parse(res.responseText);
+              if (resObj.success)
+                resolve(resObj.result);
+              else
+                reject(resObj.message);
+            }
+          });
         });
-      });
       }
 
       function checkVPNGateIP(ip) {
         return new Promise((resolve, reject) => {
-        GM.xmlHttpRequest({
-          method: "GET",
-          url: "https://namufix.wikimasonry.org/vpngate/check/" + encodeURIComponent(ip),
-          onload: function (res) {
-            let resObj = JSON.parse(res.responseText);
-            if (resObj.success)
-              resolve(resObj.result);
-            else
-              reject(resObj.message);      
-          }
+          GM.xmlHttpRequest({
+            method: "GET",
+            url: "https://namufix.wikimasonry.org/vpngate/check/" + encodeURIComponent(ip),
+            onload: function (res) {
+              let resObj = JSON.parse(res.responseText);
+              if (resObj.success)
+                resolve(resObj.result);
+              else
+                reject(resObj.message);
+            }
+          });
         });
-      });
       }
 
       function makeTabs() {
@@ -743,7 +745,7 @@ try {
           }
         };
       }
-      
+
       // i : {author : {name, isIP}, defaultReason, defaultDuration}
       function quickBanPopup(i) {
         let win = TooSimplePopup();
@@ -1065,7 +1067,7 @@ try {
         ENV.docTitle = ENV.docTitle.trim();
         if (ENV.Discussing) {
           ENV.topicNo = /^\/thread\/([^#]+)/.exec(location.pathname)[1];
-          ENV.topicTitle = document.querySelector('body.Liberty .wiki-article h2.wiki-heading:first-child , article > h2').innerHTML;
+          ENV.topicTitle = document.querySelector('body.Liberty .wiki-article h2.wiki-heading:first-child , article > h2').innerHTML.trim();
         }
         if (ENV.IsDiff) {
           //ENV.docTitle = /diff\/(.+?)\?/.exec(location.href)[1];
@@ -2447,15 +2449,13 @@ try {
 
         if (ENV.Discussing) {
           // 보여지지 않은 쓰레드도 불러오기
+          let unvisibleResesAllLoaded = false;
           if (SET.loadUnvisibleReses) {
             function doLoadUnvisibleReses() {
               var scriptTag = document.createElement("script");
               scriptTag.innerHTML = 'function nfformattime(){$("time[data-nf-format-this]").each(function(){var format = $(this).attr("data-format");var time = $(this).attr("datetime");$(this).text(formatDate(new Date(time), format));});}';
               document.body.appendChild(scriptTag);
               var allUnlockedReses = document.querySelectorAll('#res-container div.res-loading[data-locked="false"]');
-              if (allUnlockedReses.length == 0) {
-                return;
-              }
               for (var i = 0; i < allUnlockedReses.length; i++) {
                 allUnlockedReses[i].setAttribute('data-locked', 'true');
               }
@@ -2487,6 +2487,17 @@ try {
                     scriptTag.id = scriptTagId;
                     scriptTag.innerHTML = 'nfformattime(); var thisTag = document.querySelector("#' + scriptTagId + '"); thisTag.parentNode.removeChild(thisTag);';
                     document.body.appendChild(scriptTag);
+                    setTimeout(() => {
+                      if (document.querySelectorAll('#res-container div.res-loading[data-locked="false"]')) {
+                        if (!unvisibleResesAllLoaded) {
+                          unvisibleResesAllLoaded = true;
+                          console.log("[NamuFix] 모든 보이지 않은 쓰레를 불러옴!");
+                          if(SET.notifyForUnvisibleThreads) {
+                            let n = new Notification(`NamuFix 모든 보이지 않은 쓰레 불러옴`, {body: `NamuFix에서 다음 토론에서 모든 보이지 않은 쓰레를 불러왔습니다: #${ENV.topicNo} - ${ENV.topicTitle}`, icon:`https://${location.host}/favicon.ico`})
+                          }
+                        }
+                      }
+                    }, 100);
                   }
                 });
               }
@@ -2738,7 +2749,7 @@ try {
             span.style.color = "red";
             message.nfHeadspan.appendChild(span);
             span.innerHTML = "[(IP 확인중: IP정보 조회중)]";
-              // get ip info
+            // get ip info
             getIpInfo(message.author.name, function (resObj) {
               if (resObj !== null) {
                 var country = resObj.country;
@@ -2767,16 +2778,20 @@ try {
             blockAnchor.textContent = "[차단]";
             blockAnchor.addEventListener('click', (evt) => {
               evt.preventDefault();
-              quickBanPopup({author: i.author, defaultDuration: SET.quickBlockDefaultDuration, defaultReason: SET.quickBlockReasonTemplate.replace(/\$\{host\}/g, location.host)
-              .replace(/\$\{threadNo\}/g, ENV.topicNo)
-              .replace(/\$\{messageNo\}/g, i.no)});
+              quickBanPopup({
+                author: i.author,
+                defaultDuration: SET.quickBlockDefaultDuration,
+                defaultReason: SET.quickBlockReasonTemplate.replace(/\$\{host\}/g, location.host)
+                  .replace(/\$\{threadNo\}/g, ENV.topicNo)
+                  .replace(/\$\{messageNo\}/g, i.no)
+              });
             });
             i.nfHeadspan.appendChild(blockAnchor);
           }
 
           function deserializeResDom(resElement) {
             let userLink = resElement.querySelector('.r-head > a'),
-                anchor= resElement.querySelector('.r-head .num > a');
+              anchor = resElement.querySelector('.r-head .num > a');
             return {
               element: resElement,
               no: anchor.id,
@@ -2799,6 +2814,7 @@ try {
               }
             }
           }
+
           function discussLoop() {
             let handles = {
               "preview": previewFunction,
@@ -2811,13 +2827,25 @@ try {
             for (let i of messages)
               for (let j in handles) {
                 let resObj = deserializeResDom(i);
-                if (i.dataset["nfLoop_" +j] !== "yes") {
+                if (i.dataset["nfLoop_" + j] !== "yes") {
                   i.dataset["nfLoop_" + j] = "yes";
                   setTimeout(() => {
                     handles[j](resObj);
                   }, 0);
                 }
               }
+            if (SET.notifyForUnvisibleThreads) {
+              Notification.requestPermission().then(() => {
+                if (document.visibilityState === 'hidden') {
+                  if (SET.loadUnvisibleReses && !unvisibleResesAllLoaded)
+                    return;
+                  let n = new Notification(`토론 알림 : #${ENV.topicNo} - ${ENV.topicTitle}`, {
+                    body: '토론을 확인해주세요. 알람을 원하지 않으시면 NamuFix 설정에서 비활성화할 수 있습니다.',
+                    icon: `https://${location.host}/favicon.ico`
+                  })
+                }
+              });
+            }
           }
           discussLoop();
           var observer = new MutationObserver(discussLoop);
@@ -2897,12 +2925,12 @@ try {
             var ipInfo = document.createElement("p");
             ipInfo.innerHTML = '<div style="border: 1px black solid; padding: 2px;">IP 관련 정보를 조회중입니다. 잠시만 기다려주세요.</div>'
             insertBeforeTable(ipInfo);
-              getIpInfo(ip, function (resObj) {
-                var country = resObj.country;
-                var countryName = korCountryNames[country.toUpperCase()] || country.toUpperCase();
-                var isp = resObj.org;
-                getFlagIcon(country.toLowerCase(), async function (countryIcon) {
-                  ipInfo.innerHTML = `<table class="contInfo">
+            getIpInfo(ip, function (resObj) {
+              var country = resObj.country;
+              var countryName = korCountryNames[country.toUpperCase()] || country.toUpperCase();
+              var isp = resObj.org;
+              getFlagIcon(country.toLowerCase(), async function (countryIcon) {
+                ipInfo.innerHTML = `<table class="contInfo">
               <tbody>
               <tr><td>국가</td><td><img src=\"${countryIcon}\" style=\"height: 0.9rem;\"></img> ${countryName}</td></tr>
               <tr><td>통신사</td><td>${isp}</td></tr>
@@ -2915,28 +2943,28 @@ try {
               또한 차단기록의 경우 /32 마스크만 검색하며, 사측의 비공개 차단은 검색이 불가능합니다. (추후 업데이트 예정)</td></tr>
               </foot>
               </table>`;
-                  ipInfo.querySelector('a.get-whois').addEventListener('click', function (evt) {
-                    evt.preventDefault();
-                    whoisPopup(ip);
-                  })
-                  namuapi.searchBlockHistory(ip + '/32', false, function (result) {
-                    var filtered = result.filter(function (v) {
-                      return v.blocked == ip + '/32'
-                    });
-                    if (filtered.length == 0) {
-                      return ipInfo.querySelector('.nf_isipblocked').innerHTML = "차단기록 없음.";
-                    }
-                    var actType = filtered[0].type;
-                    if (actType == "blockIP") {
-                      ipInfo.querySelector('.nf_isipblocked').innerHTML = filtered[0].blocker + '에 의해 <span style="color:red">차단됨.</span> (일시 : ' + formatDateTime(filtered[0].at) + ')';
-                    } else if (actType == "unblockIP") {
-                      ipInfo.querySelector('.nf_isipblocked').innerHTML = filtered[0].blocker + '에 의해 <span style="color:green">차단이 해제됨.</span> (일시 : ' + formatDateTime(iltered[0].at) + ')';
-                    } else {
-                      ipInfo.querySelector('.nf_isipblocked').innerHTML = "??? 기록 검색중 오류가 발생함.";
-                    }
+                ipInfo.querySelector('a.get-whois').addEventListener('click', function (evt) {
+                  evt.preventDefault();
+                  whoisPopup(ip);
+                })
+                namuapi.searchBlockHistory(ip + '/32', false, function (result) {
+                  var filtered = result.filter(function (v) {
+                    return v.blocked == ip + '/32'
                   });
+                  if (filtered.length == 0) {
+                    return ipInfo.querySelector('.nf_isipblocked').innerHTML = "차단기록 없음.";
+                  }
+                  var actType = filtered[0].type;
+                  if (actType == "blockIP") {
+                    ipInfo.querySelector('.nf_isipblocked').innerHTML = filtered[0].blocker + '에 의해 <span style="color:red">차단됨.</span> (일시 : ' + formatDateTime(filtered[0].at) + ')';
+                  } else if (actType == "unblockIP") {
+                    ipInfo.querySelector('.nf_isipblocked').innerHTML = filtered[0].blocker + '에 의해 <span style="color:green">차단이 해제됨.</span> (일시 : ' + formatDateTime(iltered[0].at) + ')';
+                  } else {
+                    ipInfo.querySelector('.nf_isipblocked').innerHTML = "??? 기록 검색중 오류가 발생함.";
+                  }
                 });
               });
+            });
           }
 
           if (/\/document(?:#.+|)$/.test(location.href)) {
@@ -3157,7 +3185,14 @@ try {
                 evt.preventDefault();
                 let user = historyRow.querySelectorAll('a');
                 user = user[user.length - 1].textContent.trim();
-                quickBanPopup({author: {name: user, isIP: validateIP(user)}, defaultDuration: SET.quickBlockDefaultDuration, defaultReason: "긴급조치"});
+                quickBanPopup({
+                  author: {
+                    name: user,
+                    isIP: validateIP(user)
+                  },
+                  defaultDuration: SET.quickBlockDefaultDuration,
+                  defaultReason: "긴급조치"
+                });
               });
             }
             // ACL 가독성
@@ -3298,6 +3333,11 @@ try {
             <input type="radio" name="discussAnchorPreviewType" data-setname="discussAnchorPreviewType" data-setvalue="1">마우스를 올리면 미리보기 표시<br>
             <input type="radio" name="discussAnchorPreviewType" data-setname="discussAnchorPreviewType" data-setvalue="2">토론 메세지 위에 인용형식으로 표시<br>
             <input type="checkbox" name="removeNFQuotesInAnchorPreview" data-setname="removeNFQuotesInAnchorPreview" data-as-boolean>토론 메세지 위에 인용형식으로 표시할때, 인용문 안에 인용 형식으로 표시된 미리보기 제거
+            <h2>보지 않는 토론 알림</h2>
+            <p>보지 않는 토론(예 : 탭 여러개를 여는 경우)에 새로운 발언 혹은 블라인드가 생길시 브라우저 API를 이용해 알림을 띄웁니다.<br>
+            참고 : 토론에서 보여지지 않은 쓰레도 불러오기 기능이 활성화된 경우 보이지 않은 쓰레들을 불려오는 동안은 알림이 뜨지 않습니다.<br>
+            경고 : 현재 실험중인 기능입니다.</p>
+            <input type="checkbox" data-setname="notifyForUnvisibleThreads" data-as-boolean>보지 않는 토론 알림</input>
             <h1>가독성</h1>
             <h2>항상 펼치기</h2>
             <p>접기 문법(folding)을 이용해 접혀진 내용을 바로 펼칩니다.</p>
@@ -3355,39 +3395,41 @@ try {
         win.button('설정 백업', async function () {
           let excludeTempsaves = confirm('임시조치를 제외할까요?');
           let excludes = [];
-          if(excludeTempsaves) excludes.push('tempsaves');
+          if (excludeTempsaves) excludes.push('tempsaves');
           let backupText = [JSON.stringify(await SET.export(excludes))];
           let win = TooSimplePopup();
           win.title('백업중...');
           win.content(el => el.innerHTML = "백업중...");
-          let blob = new Blob(backupText, {type: "application/json"});
+          let blob = new Blob(backupText, {
+            type: "application/json"
+          });
           let url = URL.createObjectURL(blob);
           win.content(el => el.innerHTML = `<a href="${url}" download="namufix_backup.json">이 링크</a>을 다른 이름으로 저장해주세요.`)
           win.button('닫기', win.close);
         });
         win.button('설정 복원', async function () {
-          getFile(async (files) => {
+          getFile(async(files) => {
             if (files.length === 0)
               return alert('아무것도 선택하지 않았습니다!');
             try {
               let fileReader = new FileReader();
-              fileReader.onload = async (evt) => {
+              fileReader.onload = async(evt) => {
                 try {
                   let data = JSON.parse(evt.target.result);
                   await SET.import(data);
                   alert('완료했습니다. 확인 버튼을 누르면 새로고침됩니다.');
                   location.reload();
-                } catch(err) {
+                } catch (err) {
                   return alert('파일을 읽는 중 오류가 발생했습니다: ' + err.message);
                   console.error(err);
                 }
               }
               fileReader.readAsText(files[0]);
-            } catch(err) {
+            } catch (err) {
               return alert('파일을 읽는 중 오류가 발생했습니다: ' + err.message);
               console.error(err);
             }
-          },false)
+          }, false)
         });
         win.button('설정 초기화', async function () {
           if (confirm('되돌릴 수 없습니다. 계속 진행하시겠습니까?')) {
@@ -3446,9 +3488,9 @@ try {
               win.title('불러오는 중');
               win.content(e => e.innerHTML = "불러오는 중입니다. 잠시만 기다려주십시오.");
               let vpngateIPs = await getVPNGateIPList();
-                let textarea = con.querySelector('textarea');
-                textarea.value += '\n' + vpngateIPs.map(v => v + "/32").join("\n");
-                win.close();
+              let textarea = con.querySelector('textarea');
+              textarea.value += '\n' + vpngateIPs.map(v => v + "/32").join("\n");
+              win.close();
             })
 
             function parseTextarea() {
