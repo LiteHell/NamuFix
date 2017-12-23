@@ -749,7 +749,7 @@ try {
       }
 
       // i : {author : {name, isIP}, defaultReason, defaultDuration}
-      function quickBanPopup(i) {
+      function quickBlockPopup(i) {
         let win = TooSimplePopup();
         win.title("빠른 차단");
         win.content(el => {
@@ -2806,7 +2806,7 @@ try {
             blockAnchor.textContent = "[차단]";
             blockAnchor.addEventListener('click', (evt) => {
               evt.preventDefault();
-              quickBanPopup({
+              quickBlockPopup({
                 author: i.author,
                 defaultDuration: SET.quickBlockDefaultDuration,
                 defaultReason: SET.quickBlockReasonTemplate.replace(/\$\{host\}/g, location.host)
@@ -3208,12 +3208,12 @@ try {
             // 긴급차단
             if (SET.addQuickBlockLink) {
               let temp = historyRow.querySelector('span').innerHTML.trim();
-              historyRow.querySelector('span').innerHTML = temp.substring(0, temp.length - 1) + ' | <a href="#" class="nf-history-quickban">차단</a>)';
-              historyRow.querySelector('a.nf-history-quickban').addEventListener('click', (evt) => {
+              historyRow.querySelector('span').innerHTML = temp.substring(0, temp.length - 1) + ' | <a href="#" class="nf-history-quickblock">차단</a>)';
+              historyRow.querySelector('a.nf-history-quickblock').addEventListener('click', (evt) => {
                 evt.preventDefault();
                 let user = historyRow.querySelectorAll('a');
                 user = user[user.length - 1].textContent.trim();
-                quickBanPopup({
+                quickBlockPopup({
                   author: {
                     name: user,
                     isIP: validateIP(user)
@@ -3278,14 +3278,14 @@ try {
             if(!row.querySelector('a')) continue; // 편집 코멘트 필요없음.
             let author = {name: row.querySelector('td:nth-child(2) a').textContent.trim()}
             author.isIP = validateIP(author.name);
-            let quickBanAnchor = document.createElement("a");
-            quickBanAnchor.textContent = " [차단] "
-            quickBanAnchor.href = "#";
-            quickBanAnchor.addEventListener('click', (evt) => {
+            let quickBlockAnchor = document.createElement("a");
+            quickBlockAnchor.textContent = " [차단] "
+            quickBlockAnchor.href = "#";
+            quickBlockAnchor.addEventListener('click', (evt) => {
               evt.preventDefault();
-              quickBanPopup({author: author, defaultReason: '긴급차단 - 반달리즘', defaultDuration: SET.quickBlockDefaultDuration});
+              quickBlockPopup({author: author, defaultReason: '긴급차단 - 반달리즘', defaultDuration: SET.quickBlockDefaultDuration});
             })
-            row.querySelector('td:first-child').insertBefore(quickBanAnchor, row.querySelector('td:first-child span'));
+            row.querySelector('td:first-child').insertBefore(quickBlockAnchor, row.querySelector('td:first-child span'));
           }
         }
 
