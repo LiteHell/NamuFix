@@ -88,6 +88,10 @@ try {
     }
   }
 
+  function NFSecretary() {
+
+  }
+
   function NFStorage() {
     function jsonParsable(str) {
       try {
@@ -685,21 +689,18 @@ try {
       let vpngateCache = [], vpngateCrawlledAt = -1;
       function getVPNGateIPList() {
         return new Promise((resolve, reject) => {
-          if (Date.now() - vpngateCrawlledAt < 1000 * 60 * 3)
+       /*   if (Date.now() - vpngateCrawlledAt < 1000 * 60 * 3)
             return resolve(vpngateCache);
           GM.xmlHttpRequest({
             method: "GET",
             url: "http://www.vpngate.net/api/iphone",
             onload: (res) => {
               vpngateCrawlledAt = Date.now();
-              console.log(res.responseText);
               vpngateCache = res.responseText.split('\n').filter(v => v.indexOf('*') !== 0 && v.indexOf('#') !== 0).map(v => v.split(',')[1]);
               resolve(vpngateCache);
             }
           });
-        });
-          /*
-          서버가 이상함.
+        });*/
           GM.xmlHttpRequest({
             method: "GET",
             url: "https://namufix.wikimasonry.org/vpngate/list",
@@ -711,27 +712,24 @@ try {
                 reject(resObj.message);
             }
           });
-        });*/
+        });
       }
 
       async function checkVPNGateIP(ip) {
-        return (await getVPNGateIPList()).includes(ip);
-        /*
-         서버가 이상함
-         return new Promise((resolve, reject) => {
-          GM.xmlHttpRequest({
-            method: "GET",
-            url: "https://namufix.wikimasonry.org/vpngate/check/" + encodeURIComponent(ip),
-            onload: function (res) {
-              let resObj = JSON.parse(res.responseText);
-              if (resObj.success)
-                resolve(resObj.result);
-              else
-                reject(resObj.message);
-            }
-          });
+        //return (await getVPNGateIPList()).includes(ip);
+        return new Promise((resolve, reject) => {
+        GM.xmlHttpRequest({
+          method: "GET",
+          url: "https://namufix.wikimasonry.org/vpngate/check/" + encodeURIComponent(ip),
+          onload: function (res) {
+            let resObj = JSON.parse(res.responseText);
+            if (resObj.success)
+              resolve(resObj.result);
+            else
+              reject(resObj.message);
+          }
         });
-        */
+      });
       }
 
       function makeTabs() {
