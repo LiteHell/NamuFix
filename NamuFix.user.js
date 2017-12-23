@@ -88,10 +88,6 @@ try {
     }
   }
 
-  function NFSecretary() {
-
-  }
-
   function NFStorage() {
     function jsonParsable(str) {
       try {
