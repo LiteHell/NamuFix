@@ -1048,6 +1048,7 @@ try {
         ENV.IsIPACL = /^\/admin\/ipacl/.test(location.pathname);
         ENV.IsSuspendAccount = /^\/admin\/suspend_account/.test(location.pathname);
         ENV.IsBlockHistory = /^\/BlockHistory/.test(location.pathname);
+        ENV.IsRecentChanges = location.pathname.indexOf('/RecentChanges') == 0;
         ENV.skinName = /(senkawa|Liberty|namuvector)/i.exec(document.body.className)[1].toLowerCase();
         if (location.pathname.indexOf('/edit_request') == 0)
           ENV.EditRequestNo = /^\/edit_request\/([0-9]+)/.exec(location.pathname);
@@ -3270,6 +3271,21 @@ try {
                 italicTag.innerHTML = italicTag.innerHTML.replace(pattern.exec(italicTag.innerHTML)[0], newAclText);
               }
             }
+          }
+        } else if (ENV.IsRecentChanges) {
+          let changeRows = document.querySelectorAll('article table.table tbody tr');
+          for(let row of changeRows){
+            if(!row.querySelector('a')) continue; // 편집 코멘트 필요없음.
+            let author = {name: row.querySelector('td:nth-child(2) a').textContent.trim()}
+            author.isIP = validateIP(author.name);
+            let quickBanAnchor = document.createElement("a");
+            quickBanAnchor.textContent = " [차단] "
+            quickBanAnchor.href = "#";
+            quickBanAnchor.addEventListener('click', (evt) => {
+              evt.preventDefault();
+              quickBanPopup({author: author, defaultReason: '긴급차단 - 반달리즘', defaultDuration: SET.quickBlockDefaultDuration});
+            })
+            row.querySelector('td:first-child').insertBefore(quickBanAnchor, row.querySelector('td:first-child span'));
           }
         }
 
