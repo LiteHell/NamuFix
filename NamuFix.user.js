@@ -2465,7 +2465,7 @@ try {
           }
 
           // 새 리버전 알림
-          if (SET.newRevNotify && document.querySelector('.wiki-edit-date time')) {
+          if (SET.newRevNotify && document.querySelector('.wiki-edit-date time') && false) {
             let checkedEditTime = document.querySelector('.wiki-edit-date time').getAttribute("datetime");
             Notification.requestPermission();
             function checkNewRev() {
@@ -3412,7 +3412,7 @@ try {
             <input type="number" name="autoTempsaveSpan" data-setname="autoTempsaveSpan"></input>ms (1000ms = 1s)
             <h2>새 리버전 알림</h2>
             <p>문서를 읽는 중 새 리버전이 생기면 알림을 뜨웁니다. 4초 간격으로 확인합니다.</p>
-            <input type="checkbox" data-setname="newRevNotify" data-as-boolean>새 리버전 알림</input>
+            <input type="checkbox" data-setname="newRevNotify" data-as-boolean><del>새 리버전 알림</del> 현재 비활성화됨.</input>
             <h1>게시판</h1>
             <h2>게시판 시간대 변경</h2>
             <input type="checkbox" name="noKSTonNamuBoard" data-setname="noKSTonNamuBoard" data-as-boolean>게시판 시간대를 사용자의 시간대로 자동 변경합니다.</input>`
