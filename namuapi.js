@@ -1,6 +1,7 @@
-var namuapi = {}, namuapiMutex = {};
+var namuapi = {},
+    namuapiMutex = {};
 
-if(typeof setImmediate === 'undefined')
+if (typeof setImmediate === 'undefined')
     var setImmediate = (c) => setTimeout(c, 0);
 
 // /check 페이지 대응
@@ -33,7 +34,10 @@ namuapi.theseedRequest = function (options) {
                                 }
                             })
                         }
-                    }, {name: "tooManyRequests", description: "\"서버에 너무 많은 요청을 보내고 있습니다\" 오류가 발생하고 있습니다. 방금 전 reCAPTCHA를 해결했다면 닫기 후 나머지 무시 버튼을 눌러도 무방합니다."});
+                    }, {
+                        name: "tooManyRequests",
+                        description: "\"서버에 너무 많은 요청을 보내고 있습니다\" 오류가 발생하고 있습니다. 방금 전 reCAPTCHA를 해결했다면 닫기 후 나머지 무시 버튼을 눌러도 무방합니다."
+                    });
                 } else {
                     options.onload(res);
                 }
@@ -52,15 +56,16 @@ namuapi.resolveRecaptchaMutexed = function (callback, mutex) {
 
 namuapi.resolveRecaptchaCreateMutex = function (mutexName) {
     namuapiMutex[mutexName] = [];
-    function internalLoop () {
-        if(namuapiMutex[mutexName].length == 0)
+
+    function internalLoop() {
+        if (namuapiMutex[mutexName].length == 0)
             return setImmediate(internalLoop);
         let item = namuapiMutex.pop();
         resolveRecaptcha((apiKey, mutexArgs) => {
             item.callback(apiKey);
-            if(mutexArgs.ignoreRest) {
+            if (mutexArgs.ignoreRest) {
                 setTimeout(() => {
-                    while(namuapiMutex[mutexName].length > 0) {
+                    while (namuapiMutex[mutexName].length > 0) {
                         let item = namuapiMutex[mutexName].pop();
                         item.callback(null);
                     }
@@ -105,14 +110,18 @@ namuapi.resolveRecaptcha = function (callback, description, hasMutex) {
             });
             captchaWin.button('닫기', function () {
                 if (hasMutex)
-                    callback(null, {ignoreRest: false});
+                    callback(null, {
+                        ignoreRest: false
+                    });
                 else
                     callback(null);
                 captchaWin.close();
             });
             if (hasMutex)
                 captchaWin.button('닫은 후 나머지 무시', function () {
-                    callback(null, {ignoreRest: true})
+                    callback(null, {
+                        ignoreRest: true
+                    })
                     captchaWin.close();
                 });
         }

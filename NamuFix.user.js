@@ -682,21 +682,23 @@ try {
         nfMenuDivider.parentNode.insertBefore(menuItem, nfMenuDivider.nextSibling);
       }
 
-      let vpngateCache = [], vpngateCrawlledAt = -1;
+      let vpngateCache = [],
+        vpngateCrawlledAt = -1;
+
       function getVPNGateIPList() {
         return new Promise((resolve, reject) => {
-       /*   if (Date.now() - vpngateCrawlledAt < 1000 * 60 * 3)
-            return resolve(vpngateCache);
-          GM.xmlHttpRequest({
-            method: "GET",
-            url: "http://www.vpngate.net/api/iphone",
-            onload: (res) => {
-              vpngateCrawlledAt = Date.now();
-              vpngateCache = res.responseText.split('\n').filter(v => v.indexOf('*') !== 0 && v.indexOf('#') !== 0).map(v => v.split(',')[1]);
-              resolve(vpngateCache);
-            }
-          });
-        });*/
+          /*   if (Date.now() - vpngateCrawlledAt < 1000 * 60 * 3)
+               return resolve(vpngateCache);
+             GM.xmlHttpRequest({
+               method: "GET",
+               url: "http://www.vpngate.net/api/iphone",
+               onload: (res) => {
+                 vpngateCrawlledAt = Date.now();
+                 vpngateCache = res.responseText.split('\n').filter(v => v.indexOf('*') !== 0 && v.indexOf('#') !== 0).map(v => v.split(',')[1]);
+                 resolve(vpngateCache);
+               }
+             });
+           });*/
           GM.xmlHttpRequest({
             method: "GET",
             url: "https://namufix.wikimasonry.org/vpngate/list",
@@ -714,18 +716,18 @@ try {
       async function checkVPNGateIP(ip) {
         //return (await getVPNGateIPList()).includes(ip);
         return new Promise((resolve, reject) => {
-        GM.xmlHttpRequest({
-          method: "GET",
-          url: "https://namufix.wikimasonry.org/vpngate/check/" + encodeURIComponent(ip),
-          onload: function (res) {
-            let resObj = JSON.parse(res.responseText);
-            if (resObj.success)
-              resolve(resObj.result);
-            else
-              reject(resObj.message);
-          }
+          GM.xmlHttpRequest({
+            method: "GET",
+            url: "https://namufix.wikimasonry.org/vpngate/check/" + encodeURIComponent(ip),
+            onload: function (res) {
+              let resObj = JSON.parse(res.responseText);
+              if (resObj.success)
+                resolve(resObj.result);
+              else
+                reject(resObj.message);
+            }
+          });
         });
-      });
       }
 
       function makeTabs() {
@@ -2468,20 +2470,24 @@ try {
           if (SET.newRevNotify && document.querySelector('.wiki-edit-date time') && false) {
             let checkedEditTime = document.querySelector('.wiki-edit-date time').getAttribute("datetime");
             Notification.requestPermission();
+
             function checkNewRev() {
               namuapi.theseedRequest({
                 url: '/history/' + ENV.docTitle,
                 method: 'GET',
                 onload: (res) => {
-                let parser = new DOMParser();
-                let historyDoc = parser.parseFromString(res.responseText, "text/html");
-                let historyRow = historyDoc.querySelector('.wiki-list li')
-                let historyEditTime = historyDoc.querySelector('.wiki-list li time').getAttribute("datetime");
-                if (checkedEditTime != historyEditTime) {
-                  let n = new Notification("새 리버전 알림",{body: `${ENV.docTitle}의 새 리버전이 있습니다.\n\n${historyRow.textContent.trim().replace(/[\r\n\t]/mg, '')}`, icon:'/favicon.ico'});
-                  checkedEditTime = historyEditTime;
+                  let parser = new DOMParser();
+                  let historyDoc = parser.parseFromString(res.responseText, "text/html");
+                  let historyRow = historyDoc.querySelector('.wiki-list li')
+                  let historyEditTime = historyDoc.querySelector('.wiki-list li time').getAttribute("datetime");
+                  if (checkedEditTime != historyEditTime) {
+                    let n = new Notification("새 리버전 알림", {
+                      body: `${ENV.docTitle}의 새 리버전이 있습니다.\n\n${historyRow.textContent.trim().replace(/[\r\n\t]/mg, '')}`,
+                      icon: '/favicon.ico'
+                    });
+                    checkedEditTime = historyEditTime;
+                  }
                 }
-              }
               });
             }
             setInterval(checkNewRev, 1000 * 4); // 4초 간격
@@ -2534,8 +2540,11 @@ try {
                         if (!unvisibleResesAllLoaded) {
                           unvisibleResesAllLoaded = true;
                           console.log("[NamuFix] 모든 보이지 않은 쓰레를 불러옴!");
-                          if(SET.notifyForUnvisibleThreads) {
-                            let n = new Notification(`NamuFix 모든 보이지 않은 쓰레 불러옴`, {body: `NamuFix에서 다음 토론에서 모든 보이지 않은 쓰레를 불러왔습니다: #${ENV.topicNo} - ${ENV.topicTitle}`, icon:`/favicon.ico`})
+                          if (SET.notifyForUnvisibleThreads) {
+                            let n = new Notification(`NamuFix 모든 보이지 않은 쓰레 불러옴`, {
+                              body: `NamuFix에서 다음 토론에서 모든 보이지 않은 쓰레를 불러왔습니다: #${ENV.topicNo} - ${ENV.topicTitle}`,
+                              icon: `/favicon.ico`
+                            })
                           }
                         }
                       }
@@ -2989,7 +2998,10 @@ try {
                   evt.preventDefault();
                   whoisPopup(ip);
                 })
-                namuapi.searchBlockHistory({query: ip + '/32', isAuthor: false}, function (result) {
+                namuapi.searchBlockHistory({
+                  query: ip + '/32',
+                  isAuthor: false
+                }, function (result) {
                   var filtered = result.filter(function (v) {
                     return v.blocked == ip + '/32'
                   });
@@ -3288,16 +3300,22 @@ try {
           }
         } else if (ENV.IsRecentChanges) {
           let changeRows = document.querySelectorAll('article table.table tbody tr');
-          for(let row of changeRows){
-            if(!row.querySelector('a')) continue; // 편집 코멘트 필요없음.
-            let author = {name: row.querySelector('td:nth-child(2) a').textContent.trim()}
+          for (let row of changeRows) {
+            if (!row.querySelector('a')) continue; // 편집 코멘트 필요없음.
+            let author = {
+              name: row.querySelector('td:nth-child(2) a').textContent.trim()
+            }
             author.isIP = validateIP(author.name);
             let quickBlockAnchor = document.createElement("a");
             quickBlockAnchor.textContent = " [차단] "
             quickBlockAnchor.href = "#";
             quickBlockAnchor.addEventListener('click', (evt) => {
               evt.preventDefault();
-              quickBlockPopup({author: author, defaultReason: '긴급차단 - 반달리즘', defaultDuration: SET.quickBlockDefaultDuration});
+              quickBlockPopup({
+                author: author,
+                defaultReason: '긴급차단 - 반달리즘',
+                defaultDuration: SET.quickBlockDefaultDuration
+              });
             })
             row.querySelector('td:first-child').insertBefore(quickBlockAnchor, row.querySelector('td:first-child span'));
           }
@@ -3579,6 +3597,7 @@ try {
                 <div class="search-pagination">
                 </div>
                 `;
+
                 function processQuery() {
                   let waitingWin = TooSimplePopup();
                   waitingWin.title("진행중입니다");
@@ -3588,7 +3607,7 @@ try {
                     queryInfo.until = result.prevResultPageUntil || null;
                     let tbody = searchWinCon.querySelector('tbody');
                     tbody.innerHTML = "";
-                    for(let i of result) {
+                    for (let i of result) {
                       // checkbox, type, blocker, blocked, reason, duration, at
                       tbody.innerHTML += `<tr data-blocked="${encodeHTMLComponent(JSON.stringify(i.blocked))}"><td><input type="checkbox" checked></td><td>${i.type}</td><td>${encodeHTMLComponent(i.blocker)}</td><td>${encodeHTMLComponent(i.blocked)}</td><td>${encodeHTMLComponent(i.reason)}</td><td>${i.duration}</td><td>${formatDateTime(i.at)}</td></tr>`;
                     }
@@ -3604,9 +3623,21 @@ try {
                   쿼리 : 
                   <input type="text" class="search-query" style="width: 500px; max-width: 80vw;"></input>
                   </div>`;
-                  queryWin.button('실행자 검색', () => {queryInfo = {query: queryWinCon.querySelector('.search-query').value, isAuthor: true}; processQuery();});
-                  queryWin.button('내용 검색', () => {queryInfo = {query: queryWinCon.querySelector('.search-query').value, isAuthor: false}; processQuery();});
-                  queryWin.button('닫기', queryWin.close);
+                    queryWin.button('실행자 검색', () => {
+                      queryInfo = {
+                        query: queryWinCon.querySelector('.search-query').value,
+                        isAuthor: true
+                      };
+                      processQuery();
+                    });
+                    queryWin.button('내용 검색', () => {
+                      queryInfo = {
+                        query: queryWinCon.querySelector('.search-query').value,
+                        isAuthor: false
+                      };
+                      processQuery();
+                    });
+                    queryWin.button('닫기', queryWin.close);
                   });
                 });
                 searchWin.button('선택된 항목 추가', () => {
@@ -3615,12 +3646,12 @@ try {
                   let waitingWin = TooSimplePopup();
                   waitingWin.title('진행중입니다.');
                   waitingWin.content(c => c.innerHTML = "진행중입니다.");
-                  for(let i of searchWinCon.querySelectorAll('tbody tr')) {
-                    if(isFirst) {
+                  for (let i of searchWinCon.querySelectorAll('tbody tr')) {
+                    if (isFirst) {
                       textarea.value += '\n';
                       isFirst = false;
                     }
-                    if(i.querySelector('input[type="checkbox"]').checked)
+                    if (i.querySelector('input[type="checkbox"]').checked)
                       textarea.value += JSON.parse(i.dataset.blocked) + "\n";
                   }
                   waitingWin.close();
