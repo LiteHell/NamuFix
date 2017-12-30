@@ -2989,7 +2989,7 @@ try {
                   evt.preventDefault();
                   whoisPopup(ip);
                 })
-                namuapi.searchBlockHistory(ip + '/32', false, function (result) {
+                namuapi.searchBlockHistory({query: ip + '/32', isAuthor: false}, function (result) {
                   var filtered = result.filter(function (v) {
                     return v.blocked == ip + '/32'
                   });
@@ -3530,7 +3530,7 @@ try {
               '로그인 허용 여부 : <input type="checkbox" id="allowLogin"></input><br>' +
               '※ IP 차단 해제시에는 차단사유/영구차단 여부/로그인 허용 여부를 설정할 필요 없으며 IP는 IPv4만 인식합니다.</p>' +
               '차단할 계정/IP (개행으로 구분) : <br>' +
-              '<textarea></textarea>';
+              '<textarea style="width: 800px; max-width: 80vw; height: 500px; max-height: 80vh;"></textarea>';
             con.querySelector('a#setExpire').addEventListener('click', function (evt) {
               evt.preventDefault();
               enterTimespanPopup('차단기간 설정', function (span) {
@@ -3551,6 +3551,98 @@ try {
               let textarea = con.querySelector('textarea');
               textarea.value += '\n' + vpngateIPs.map(v => v + "/32").join("\n");
               win.close();
+            })
+            win.button('차단기록 검색', async function () {
+              let searchWin = TooSimplePopup();
+              let queryInfo;
+              searchWin.title('차단기록 검색');
+              searchWin.content(searchWinCon => {
+                searchWinCon.innerHTML = `
+                <style>.search-prev[disabled], .search-next[disabled] {background: darkgray; text-decoration: line-through;}</style>
+                <div class="table-responsive-sm">
+                <table class="table table-striped table-bordered table-hover table-sm">
+                <thead>
+                <tr>
+                <td>선택</td>
+                <td>유형</td>
+                <td>실행자</td>
+                <td>피실행자</td>
+                <td>사유</td>
+                <td>기간</td>
+                <td>차단일시</td>
+                </tr>
+                </thead>
+                <tbody>
+                </tbody>
+                </table>
+                </div>
+                <div class="search-pagination">
+                </div>
+                `;
+                function processQuery() {
+                  let waitingWin = TooSimplePopup();
+                  waitingWin.title("진행중입니다");
+                  waitingWin.content(waitingWinCon => waitingWinCon.innerHTML = "진행중입니다. 잠시만 기다려주십시오.");
+                  namuapi.searchBlockHistory(queryInfo, (result) => {
+                    queryInfo.from = result.nextResultPageFrom || null;
+                    queryInfo.until = result.prevResultPageUntil || null;
+                    let tbody = searchWinCon.querySelector('tbody');
+                    tbody.innerHTML = "";
+                    for(let i of result) {
+                      // checkbox, type, blocker, blocked, reason, duration, at
+                      tbody.innerHTML += `<tr data-blocked="${encodeHTMLComponent(JSON.stringify(i.blocked))}"><td><input type="checkbox" checked></td><td>${i.type}</td><td>${encodeHTMLComponent(i.blocker)}</td><td>${encodeHTMLComponent(i.blocked)}</td><td>${encodeHTMLComponent(i.reason)}</td><td>${i.duration}</td><td>${formatDateTime(i.at)}</td></tr>`;
+                    }
+                    waitingWin.close();
+                  });
+                }
+                searchWin.button('검색', () => {
+                  let queryWin = TooSimplePopup();
+                  queryWin.title('쿼리 입력');
+                  queryWin.content(queryWinCon => {
+                    queryWinCon.innerHTML = `
+                  <div>
+                  쿼리 : 
+                  <input type="text" class="search-query" style="width: 500px; max-width: 80vw;"></input>
+                  </div>`;
+                  queryWin.button('실행자 검색', () => {queryInfo = {query: queryWinCon.querySelector('.search-query').value, isAuthor: true}; processQuery();});
+                  queryWin.button('내용 검색', () => {queryInfo = {query: queryWinCon.querySelector('.search-query').value, isAuthor: false}; processQuery();});
+                  queryWin.button('닫기', queryWin.close);
+                  });
+                });
+                searchWin.button('선택된 항목 추가', () => {
+                  let isFirst = true;
+                  let textarea = con.querySelector('textarea');
+                  let waitingWin = TooSimplePopup();
+                  waitingWin.title('진행중입니다.');
+                  waitingWin.content(c => c.innerHTML = "진행중입니다.");
+                  for(let i of searchWinCon.querySelectorAll('tbody tr')) {
+                    if(isFirst) {
+                      textarea.value += '\n';
+                      isFirst = false;
+                    }
+                    if(i.querySelector('input[type="checkbox"]').checked)
+                      textarea.value += JSON.parse(i.dataset.blocked) + "\n";
+                  }
+                  waitingWin.close();
+                });
+                searchWin.button('이전 결과', () => {
+                  if (queryInfo.until) {
+                    delete queryInfo.from;
+                    processQuery();
+                  } else {
+                    alert('첫 페이지입니다.');
+                  }
+                });
+                searchWin.button('다음 결과', () => {
+                  if (queryInfo.from) {
+                    delete queryInfo.until;
+                    processQuery();
+                  } else {
+                    alert('마지막 페이지입니다.');
+                  }
+                });
+                searchWin.button('닫기', searchWin.close);
+              });
             })
 
             function parseTextarea() {

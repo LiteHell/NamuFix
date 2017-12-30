@@ -134,10 +134,14 @@ namuapi.raw = function (title, onfound, onnotfound) {
     })
 }
 
-namuapi.searchBlockHistory = function (query, isAuthor, callback) {
+namuapi.searchBlockHistory = function (options, callback) {
+    let query = options.query,
+        isAuthor = options.isAuthor,
+        from = options.from,
+        until = options.until;
     namuapi.theseedRequest({
         method: 'GET',
-        url: 'https://' + location.host + '/BlockHistory?target=' + (isAuthor ? "author" : "text") + '&query=' + encodeURIComponent(query),
+        url: 'https://' + location.host + '/BlockHistory?target=' + (isAuthor ? "author" : "text") + '&query=' + encodeURIComponent(query) + (from ? `&from=${from}` : '') + (until ? `&until=${until}` : ''),
         onload: function (res) {
             var parser = new DOMParser();
             var doc = parser.parseFromString(res.responseText, "text/html");
@@ -161,7 +165,16 @@ namuapi.searchBlockHistory = function (query, isAuthor, callback) {
                 else if (entry.type == "IP 주소 차단 해제") entry.type = "unblockIP"
                 else if (entry.type == "사용자 차단") entry.type = "blockUser";
                 else if (entry.type == "사용자 차단 해제") entry.type = "unblockUser";
+                else if (entry.type == "사용자 권한 설정") entry.type = "grant";
                 result.push(entry);
+            }
+            let nextButton = doc.querySelector('article .btn-group .btn.btn-secondary:nth-child(2)'),
+                prevButton = doc.querySelector('article .btn-group .btn.btn-secondary:nth-child(1)');
+            if (/[&?]from=([0-9]+)/.test(nextButton.href)) {
+                result.nextResultPageFrom = /[&?]from=([0-9]+)/.exec(nextButton.href)[1];
+            }
+            if (/[&?]until=([0-9]+)/.test(prevButton.href)) {
+                result.prevResultPageUntil = /[&?]until=([0-9]+)/.exec(prevButton.href)[1];
             }
             callback(result);
         }
