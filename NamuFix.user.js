@@ -2628,15 +2628,15 @@ try {
               if (anchorDirection == null) continue;
               var anchorTarget = deserializeResDom(anchorDirection.parentNode.parentNode.parentNode);
               var talker = anchorTarget.author.name,
-                message = anchorTarget.bodyElement.innerHTML,
+                targetMessage = anchorTarget.bodyElement.innerHTML,
                 talkedAt = anchorTarget.element.querySelector('.r-head > span.pull-right').textContent;
               var blockquoteId = uniqueID();
               var blockquoteElement = document.createElement("blockquote");
               blockquoteElement.className = "wiki-quote nf-anchor-preview";
-              blockquoteElement.innerHTML = message;
+              blockquoteElement.innerHTML = targetMessage;
               blockquoteElement.id = blockquoteId;
               blockquoteElement.innerHTML += `<div style="text-align: right; font-style: italic;">--#${numbericId}, ${talker}, ${talkedAt}</div>`;
-              rbody.insertBefore(blockquoteElement, message.bodyElement.firstChild);
+              message.bodyElement.insertBefore(blockquoteElement, message.bodyElement.firstChild);
 
               anchor.dataset.quoteId = blockquoteId;
               anchor.addEventListener('mouseenter', function (evt) {
