@@ -653,8 +653,6 @@ try {
           SET.addQuickBlockLink = false;
         if (nOu(SET.notifyForUnvisibleThreads))
           SET.notifyForUnvisibleThreads = false;
-        if (nOu(SET.newRevNotify))
-          SET.newRevNotify = true;
         await SET.save();
       }
 
@@ -2465,34 +2463,6 @@ try {
             let target = /^#redirect ([^\n]+)$/.exec(wikiInnerContent.textContent.trim())[1];
             wikiInnerContent.innerHTML = `<p>넘겨주기 : <a href="/w/${encodeURIComponent(target)}">${encodeHTMLComponent(target)}</a></p><p><em>By. NamuFix</em></p>`
           }
-
-          // 새 리버전 알림
-          if (SET.newRevNotify && document.querySelector('.wiki-edit-date time') && false) {
-            let checkedEditTime = document.querySelector('.wiki-edit-date time').getAttribute("datetime");
-            Notification.requestPermission();
-
-            function checkNewRev() {
-              namuapi.theseedRequest({
-                url: '/history/' + ENV.docTitle,
-                method: 'GET',
-                onload: (res) => {
-                  let parser = new DOMParser();
-                  let historyDoc = parser.parseFromString(res.responseText, "text/html");
-                  let historyRow = historyDoc.querySelector('.wiki-list li')
-                  let historyEditTime = historyDoc.querySelector('.wiki-list li time').getAttribute("datetime");
-                  if (checkedEditTime != historyEditTime) {
-                    let n = new Notification("새 리버전 알림", {
-                      body: `${ENV.docTitle}의 새 리버전이 있습니다.\n\n${historyRow.textContent.trim().replace(/[\r\n\t]/mg, '')}`,
-                      icon: '/favicon.ico'
-                    });
-                    checkedEditTime = historyEditTime;
-                  }
-                }
-              });
-            }
-            setInterval(checkNewRev, 1000 * 4); // 4초 간격
-            checkNewRev();
-          }
         }
 
         if (ENV.Discussing) {
@@ -2540,12 +2510,6 @@ try {
                         if (!unvisibleResesAllLoaded) {
                           unvisibleResesAllLoaded = true;
                           console.log("[NamuFix] 모든 보이지 않은 쓰레를 불러옴!");
-                          if (SET.notifyForUnvisibleThreads) {
-                            let n = new Notification(`NamuFix 모든 보이지 않은 쓰레 불러옴`, {
-                              body: `NamuFix에서 다음 토론에서 모든 보이지 않은 쓰레를 불러왔습니다: #${ENV.topicNo} - ${ENV.topicTitle}`,
-                              icon: `/favicon.ico`
-                            })
-                          }
                         }
                       }
                     }, 100);
@@ -3428,9 +3392,6 @@ try {
             <h2>자동저장 시간 간격</h2>
             <p>편집중 자동저장 간격을 설정합니다. 0 이하의 값으로 설정할 시 자동으로 이루어지지 않으며 이 경우 단축키나 메뉴를 이용해 수동으로 저장해야 합니다.</p>
             <input type="number" name="autoTempsaveSpan" data-setname="autoTempsaveSpan"></input>ms (1000ms = 1s)
-            <h2>새 리버전 알림</h2>
-            <p>문서를 읽는 중 새 리버전이 생기면 알림을 뜨웁니다. 4초 간격으로 확인합니다.</p>
-            <input type="checkbox" data-setname="newRevNotify" data-as-boolean><del>새 리버전 알림</del> 현재 비활성화됨.</input>
             <h1>게시판</h1>
             <h2>게시판 시간대 변경</h2>
             <input type="checkbox" name="noKSTonNamuBoard" data-setname="noKSTonNamuBoard" data-as-boolean>게시판 시간대를 사용자의 시간대로 자동 변경합니다.</input>`
