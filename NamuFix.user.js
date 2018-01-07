@@ -655,6 +655,8 @@ try {
           SET.addQuickBlockLink = false;
         if (nOu(SET.notifyForUnvisibleThreads))
           SET.notifyForUnvisibleThreads = false;
+        if (nOu(SET.checkWhoisNetTypeOnDiscuss))
+          SET.checkWhoisNetTypeOnDiscuss = false;
         await SET.save();
       }
 
@@ -2773,7 +2775,17 @@ try {
                 var countryName = korCountryNames[country.toUpperCase()] || country;
                 var isp = resObj.org;
                 getFlagIcon(country.toLowerCase(), async function (data) {
-                  span.innerHTML = `[<img src="${data}" style="height: 0.9rem;" title="${countryName}"></img> ${isp}${await checkVPNGateIP(ip) ? " (VPNGATE)" : ""}]<a href="#" class="get-whois">[WHOIS]</a>`;
+                  let whoisResult = SET.checkWhoisNetTypeOnDiscuss ? await (new Promise((resolve, reject) => {
+                    getIpWhois(message.author.name, whoisRes => resolve(whoisRes));
+                  })) : null;
+                  let whoisNetType = false;
+                  if(whoisResult && whoisResult.success && !whoisResult.raw) {
+                    if(whoisResult.result.korean.ISP && whoisResult.result.korean.ISP.netinfo && whoisResult.result.korean.ISP.netinfo.netType)
+                      whoisNetType = whoisResult.result.korean.ISP.netinfo.netType
+                    else if(whoisResult.result.korean.user && whoisResult.result.korean.user.netinfo && whoisResult.result.korean.user.netinfo.netType)
+                      whoisNetType = whoisResult.result.korean.user.netinfo.netType
+                  }
+                span.innerHTML = `[<img src="${data}" style="height: 0.9rem;" title="${countryName}"></img> ${isp}${await checkVPNGateIP(ip) ? " (VPNGATE)" : ""}]${whoisNetType ? "<span style=\"color: darkred;\">[" + whoisNetType + "]</span>" : ""}<a href="#" class="get-whois">[WHOIS]</a>`;
                   span.querySelector('a.get-whois').addEventListener('click', function (evt) {
                     evt.preventDefault();
                     whoisPopup(message.author.name);
@@ -3361,7 +3373,8 @@ try {
             <input type="radio" name="discussIdenti" data-setname="discussIdenti" data-setvalue="none">사용 안함
             <h2>토론에서 익명 기여자 IP주소 조회</h2>
             <p>VPNGate 여부, 통신사, 국가이미지를 IP 주소 옆에 표시합니다. 요청 수가 많을 시 실패할 수 도 있습니다.</p>
-            <input type="checkbox" name="lookupIPonDiscuss" data-setname="lookupIPonDiscuss" data-as-boolean>토론시 익명 기여자 IP 주소 조회</input>
+            <input type="checkbox" name="lookupIPonDiscuss" data-setname="lookupIPonDiscuss" data-as-boolean>토론시 익명 기여자 IP 주소 조회</input><br>
+            <input type="checkbox" name="checkWhoisNetTypeOnDiscuss" data-setname="checkWhoisNetTypeOnDiscuss" data-as-boolean>네트워크 유형도 함께 조회 (단 한국 IP만 가능)</input>
             <h2>토론에서 보여지지 않은 쓰레도 불러오기</h2>
             <p>보여지지 않은 쓰레드도 불러오도록 나무위키 토론 스크립트를 수정합니다.</p>
             <input type="checkbox" name="loadUnvisibleReses" data-setname="loadUnvisibleReses" data-as-boolean>보여지지 않은 토론 쓰레도 불러오기</input>
