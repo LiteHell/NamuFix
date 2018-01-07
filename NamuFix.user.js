@@ -400,6 +400,8 @@ try {
       }
 
       function whoisPopup(ip) {
+        if(ip === null || ip === "")
+          return alert('ip주소를 입력해주세요');
         var win = TooSimplePopup();
         win.title('IP WHOIS 조회');
         win.button('다른 IP 조회', function () {
