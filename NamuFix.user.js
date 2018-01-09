@@ -1,5 +1,6 @@
 // ==UserScript==
 // @name        NamuFix
+// @icon        https://namu.wiki/favicon.ico
 // @namespace   http://litehell.info/
 // @description 나무위키 등 더시드 사용 위키의 편집 인터페이스 등을 개선합니다.
 // @include     https://namu.wiki/*
@@ -53,6 +54,7 @@
 // @grant       GM.info
 // @grant       GM.getResourceUrl
 // @run-at      document-end
+// @noframes
 // ==/UserScript==
 /*
 Copyright (c) 2015 LiteHell
