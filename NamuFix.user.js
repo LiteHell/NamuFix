@@ -1,6 +1,5 @@
 // ==UserScript==
 // @name        NamuFix
-// @icon        https://namu.wiki/favicon.ico
 // @namespace   http://litehell.info/
 // @description 나무위키 등 더시드 사용 위키의 편집 인터페이스 등을 개선합니다.
 // @include     https://namu.wiki/*
@@ -141,6 +140,7 @@ try {
   if (location.host === 'board.namu.wiki') {
     let SET = new NFStorage();
     SET.load();
+    // BoardFix Start
     if (SET.noKSTonNamuBoard !== false) {
       let times = document.querySelectorAll('.read_header > .meta > .time, .fbMeta .time');
       let origTimezone = "UTC" // America/Asuncion 아님.
@@ -151,6 +151,30 @@ try {
       if (times.length !== 0)
         console.log(`[NamuFix] 게시판 시간대 변경 완료. ${origTimezone} > ${moment.tz.guess()}`);
     }
+    if (document.querySelector('.viewDocument .read_footer .btnArea a[onclick]')) {
+      let extraMenuLink = document.querySelector('.viewDocument .read_footer .btnArea a[onclick]');
+      if(!/document_([0-9]+)/.test(documentId)) continue;
+      let documentId = /document_([0-9]+)/.exec(extraMenuLink.className)[1];
+      let archiveLink = document.createElement("a");
+      archiveLink.href = "#";
+      archiveLink.textContent = "아카이브";
+      archiveLink.addEventListener("click", (evt) => {
+        evt.preventDefault();
+        GM.xmlHttpRequest({
+          method: 'POST',
+          url: 'http://phpgongbu.ga/archive/',
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded"
+          },
+          data: `board_num=${documentId}`,
+          onload: (res)=>{
+            GM.openInTab(res.finalUrl);
+          }
+        })
+      });
+      extraMenuLink.parentNode.insertBefore(archiveLink, extraMenuLink);
+    }
+    // BoardFix End
   } else
     (async function () {
       console.log(`[NamuFix] 현재 버전 : ${GM.info.script.version}`);
