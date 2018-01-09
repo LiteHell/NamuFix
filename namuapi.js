@@ -4,6 +4,9 @@ var namuapi = {},
 if (typeof setImmediate === 'undefined')
     var setImmediate = c => setTimeout(c, 0);
 
+let wikihost = location.host;
+if(location.host === 'board.namu.wiki') wikihost = 'namu.wiki';
+
 // /check 페이지 대응
 namuapi.theseedRequest = function (options) {
     var _newoptions = {};
@@ -47,7 +50,7 @@ namuapi.theseedRequest = function (options) {
 namuapi.resolveRecaptcha = function (callback) {
     GM.xmlHttpRequest({
         method: 'GET',
-        url: `https://${location.host}/check`,
+        url: `https://${wikihost}/check`,
         onload: function (res) {
             var siteKey = /["']sitekey["']: ["']([^"']+)["']/.exec(res.responseText)[1];
             var captchaWin = TooSimplePopup();
@@ -81,7 +84,7 @@ namuapi.resolveRecaptcha = function (callback) {
 namuapi.raw = function (title, onfound, onnotfound) {
     namuapi.theseedRequest({
         method: 'GET',
-        url: 'https://' + location.host + '/raw/' + title,
+        url: 'https://' + wikihost + '/raw/' + title,
         onload: function (res) {
             if (res.status == 404) {
                 onnotfound(title);
@@ -99,7 +102,7 @@ namuapi.searchBlockHistory = function (options, callback) {
         until = options.until;
     namuapi.theseedRequest({
         method: 'GET',
-        url: 'https://' + location.host + '/BlockHistory?target=' + (isAuthor ? "author" : "text") + '&query=' + encodeURIComponent(query) + (from ? `&from=${from}` : '') + (until ? `&until=${until}` : ''),
+        url: 'https://' + wikihost + '/BlockHistory?target=' + (isAuthor ? "author" : "text") + '&query=' + encodeURIComponent(query) + (from ? `&from=${from}` : '') + (until ? `&until=${until}` : ''),
         onload: function (res) {
             var parser = new DOMParser();
             var doc = parser.parseFromString(res.responseText, "text/html");
@@ -152,9 +155,9 @@ namuapi.uploadImage = function (data, callback) {
         query.append('g-recaptcha-response', data.recaptchaKey);
     namuapi.theseedRequest({
         method: 'POST',
-        url: `https://${location.host}/Upload`,
+        url: `https://${wikihost}/Upload`,
         headers: {
-            "Referer": `https://${location.host}/Upload`
+            "Referer": `https://${wikihost}/Upload`
         },
         data: query,
         onload: function (res) {
@@ -173,11 +176,11 @@ namuapi.uploadImage = function (data, callback) {
 namuapi.blockIP = function (data, callback) {
     namuapi.theseedRequest({
         method: 'POST',
-        url: `https://${location.host}/admin/ipacl`,
+        url: `https://${wikihost}/admin/ipacl`,
         data: 'ip=' + encodeURIComponent(data.ip) + '&note=' + encodeURIComponent(data.note || "") + '&expire=' + encodeURIComponent(data.expire) + (data.allowLogin ? '&allow_login=Y' : ''),
         headers: {
             "Content-Type": "application/x-www-form-urlencoded",
-            "Referer": `https://${location.host}/admin/ipacl`
+            "Referer": `https://${wikihost}/admin/ipacl`
         },
         onload: function (res) {
             var parser = new DOMParser();
@@ -194,11 +197,11 @@ namuapi.blockIP = function (data, callback) {
 namuapi.unblockIP = function (ip, callback) {
     namuapi.theseedRequest({
         method: 'POST',
-        url: `https://${location.host}/admin/ipacl/remove`,
+        url: `https://${wikihost}/admin/ipacl/remove`,
         data: 'ip=' + encodeURIComponent(ip),
         headers: {
             "Content-Type": "application/x-www-form-urlencoded",
-            "Referer": `https://${location.host}/admin/ipacl`
+            "Referer": `https://${wikihost}/admin/ipacl`
         },
         onload: function (res) {
             var parser = new DOMParser();
@@ -215,11 +218,11 @@ namuapi.unblockIP = function (ip, callback) {
 namuapi.blockAccount = function (data, callback) {
     namuapi.theseedRequest({
         method: 'POST',
-        url: `https://${location.host}/admin/suspend_account`,
+        url: `https://${wikihost}/admin/suspend_account`,
         data: 'username=' + encodeURIComponent(data.id) + '&note=' + encodeURIComponent(data.note || "") + '&expire=' + encodeURIComponent(data.expire),
         headers: {
             "Content-Type": "application/x-www-form-urlencoded",
-            "Referer": `https://${location.host}/admin/suspend_account`
+            "Referer": `https://${wikihost}/admin/suspend_account`
         },
         onload: function (res) {
             var parser = new DOMParser();
