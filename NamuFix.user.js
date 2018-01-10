@@ -159,6 +159,7 @@ try {
         let documentId = /document_([0-9]+)/.exec(extraMenuLink.className)[1];
         let archiveLink = document.createElement("a");
         archiveLink.href = "#";
+        archiveLink.target = "_blank";
         archiveLink.textContent = "아카이브";
         let clickHandler = (evt) => {
           evt.preventDefault();
