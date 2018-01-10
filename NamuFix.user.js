@@ -35,6 +35,7 @@
 // @connect     archive.is
 // @connect     www.vpngate.net
 // @connect     namufix.wikimasonry.org
+// @connect     phpgongbu.ga
 // @grant       GM_addStyle
 // @grant       GM_openInTab
 // @grant       GM_xmlhttpRequest
@@ -55,6 +56,7 @@
 // @run-at      document-end
 // @noframes
 // ==/UserScript==
+/* jshint ignore:start */
 /*
 Copyright (c) 2015 LiteHell
 
@@ -140,41 +142,48 @@ try {
   if (location.host === 'board.namu.wiki') {
     let SET = new NFStorage();
     SET.load();
-    // BoardFix Start
-    if (SET.noKSTonNamuBoard !== false) {
-      let times = document.querySelectorAll('.read_header > .meta > .time, .fbMeta .time');
-      let origTimezone = "UTC" // America/Asuncion 아님.
-      for (let i = 0; i < times.length; i++) {
-        let t = moment.tz(times[i].textContent.trim(), "YYYY.MM.DD HH:mm", origTimezone);
-        times[i].textContent = t.tz(moment.tz.guess()).format("YYYY.MM.DD HH:mm z")
+
+    function runBoardFix() {
+      if (SET.noKSTonNamuBoard !== false) {
+        let times = document.querySelectorAll('.read_header > .meta > .time, .fbMeta .time');
+        let origTimezone = "UTC" // America/Asuncion 아님.
+        for (let i = 0; i < times.length; i++) {
+          let t = moment.tz(times[i].textContent.trim(), "YYYY.MM.DD HH:mm", origTimezone);
+          times[i].textContent = t.tz(moment.tz.guess()).format("YYYY.MM.DD HH:mm z")
+        }
+        if (times.length !== 0)
+          console.log(`[NamuFix] 게시판 시간대 변경 완료. ${origTimezone} > ${moment.tz.guess()}`);
       }
-      if (times.length !== 0)
-        console.log(`[NamuFix] 게시판 시간대 변경 완료. ${origTimezone} > ${moment.tz.guess()}`);
+      if (document.querySelector('.viewDocument .read_footer .btnArea a[onclick]') !== null) {
+        let extraMenuLink = document.querySelector('.viewDocument .read_footer .btnArea a[onclick]');
+        let documentId = /document_([0-9]+)/.exec(extraMenuLink.className)[1];
+        let archiveLink = document.createElement("a");
+        archiveLink.href = "#";
+        archiveLink.textContent = "아카이브";
+        let clickHandler = (evt) => {
+          evt.preventDefault();
+          archiveLink.textContent = "(진행중)";
+          archiveLink.removeAttribute("href");
+          archiveLink.removeEventListener("click", clickHandler);
+          GM.xmlHttpRequest({
+            method: 'POST',
+            url: 'http://phpgongbu.ga/archive/',
+            headers: {
+              "Content-Type": "application/x-www-form-urlencoded"
+            },
+            data: `board_num=${documentId}`,
+            onload: (res) => {
+              GM.openInTab(res.finalUrl);
+              archiveLink.textContent = "아카이브됨";
+              archiveLink.href = res.finalUrl;
+            }
+          });
+        };
+        archiveLink.addEventListener("click", clickHandler);
+        extraMenuLink.parentNode.insertBefore(archiveLink, extraMenuLink.nextSibling);
+      }
     }
-    if (document.querySelector('.viewDocument .read_footer .btnArea a[onclick]')) {
-      let extraMenuLink = document.querySelector('.viewDocument .read_footer .btnArea a[onclick]');
-      if(!/document_([0-9]+)/.test(documentId)) continue;
-      let documentId = /document_([0-9]+)/.exec(extraMenuLink.className)[1];
-      let archiveLink = document.createElement("a");
-      archiveLink.href = "#";
-      archiveLink.textContent = "아카이브";
-      archiveLink.addEventListener("click", (evt) => {
-        evt.preventDefault();
-        GM.xmlHttpRequest({
-          method: 'POST',
-          url: 'http://phpgongbu.ga/archive/',
-          headers: {
-            "Content-Type": "application/x-www-form-urlencoded"
-          },
-          data: `board_num=${documentId}`,
-          onload: (res)=>{
-            GM.openInTab(res.finalUrl);
-          }
-        })
-      });
-      extraMenuLink.parentNode.insertBefore(archiveLink, extraMenuLink);
-    }
-    // BoardFix End
+    runBoardFix();
   } else
     (async function () {
       console.log(`[NamuFix] 현재 버전 : ${GM.info.script.version}`);
@@ -426,7 +435,7 @@ try {
       }
 
       function whoisPopup(ip) {
-        if(ip === null || ip === "")
+        if (ip === null || ip === "")
           return alert('ip주소를 입력해주세요');
         var win = TooSimplePopup();
         win.title('IP WHOIS 조회');
@@ -2805,13 +2814,13 @@ try {
                     getIpWhois(message.author.name, whoisRes => resolve(whoisRes));
                   })) : null;
                   let whoisNetType = false;
-                  if(whoisResult && whoisResult.success && !whoisResult.raw) {
-                    if(whoisResult.result.korean.ISP && whoisResult.result.korean.ISP.netinfo && whoisResult.result.korean.ISP.netinfo.netType)
+                  if (whoisResult && whoisResult.success && !whoisResult.raw) {
+                    if (whoisResult.result.korean.ISP && whoisResult.result.korean.ISP.netinfo && whoisResult.result.korean.ISP.netinfo.netType)
                       whoisNetType = whoisResult.result.korean.ISP.netinfo.netType
-                    else if(whoisResult.result.korean.user && whoisResult.result.korean.user.netinfo && whoisResult.result.korean.user.netinfo.netType)
+                    else if (whoisResult.result.korean.user && whoisResult.result.korean.user.netinfo && whoisResult.result.korean.user.netinfo.netType)
                       whoisNetType = whoisResult.result.korean.user.netinfo.netType
                   }
-                span.innerHTML = `[<img src="${data}" style="height: 0.9rem;" title="${countryName}"></img> ${isp}${await checkVPNGateIP(ip) ? " (VPNGATE)" : ""}]${whoisNetType ? "<span style=\"color: darkred;\">[" + whoisNetType + "]</span>" : ""}<a href="#" class="get-whois">[WHOIS]</a>`;
+                  span.innerHTML = `[<img src="${data}" style="height: 0.9rem;" title="${countryName}"></img> ${isp}${await checkVPNGateIP(ip) ? " (VPNGATE)" : ""}]${whoisNetType ? "<span style=\"color: darkred;\">[" + whoisNetType + "]</span>" : ""}<a href="#" class="get-whois">[WHOIS]</a>`;
                   span.querySelector('a.get-whois').addEventListener('click', function (evt) {
                     evt.preventDefault();
                     whoisPopup(message.author.name);
