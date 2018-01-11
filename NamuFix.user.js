@@ -144,7 +144,7 @@ try {
     SET.load();
 
     function runBoardFix() {
-      if (SET.noKSTonNamuBoard !== false) {
+      if (SET.noLocaltimeOnNamuBoard !== false) {
         let times = document.querySelectorAll('.read_header > .meta > .time, .fbMeta .time');
         let origTimezone = "UTC" // America/Asuncion 아님.
         for (let i = 0; i < times.length; i++) {
@@ -406,7 +406,7 @@ try {
             month: 60 * 60 * 24 * 7 * 4, // 4 주
             year: 60 * 60 * 24 * 7 * 48 // 48주
           }
-          winContainer.innerHTML = '<div class="timespan-container">' +
+          winContainer.innerHTML = '<style>.timespan-container input.timespan-input {width: 60px;}</style><div class="timespan-container">' +
             ' <input type="number" data-unit="year" class="timespan-input" value="0">년' +
             ' <input type="number" data-unit="month" class="timespan-input" value="0">개월' +
             ' <input type="number" data-unit="week" class="timespan-input" value="0">주' +
@@ -601,7 +601,7 @@ try {
           evt.preventDefault();
           onclick(evt);
         });
-        var buttonGroup = document.querySelector('body.Liberty .liberty-content .content-tools .btn-group , .wiki-article-menu > div.btn-group');
+        var buttonGroup = document.querySelector('body.Liberty .liberty-content .content-tools .btn-group , body.senkawa .wiki-article-menu > div.btn-group');
         buttonGroup.insertBefore(aTag, buttonGroup.firstChild);
       };
 
@@ -669,16 +669,14 @@ try {
           SET.loadUnvisibleReses = false;
         if (nOu(SET.ipInfoDefaultOrg))
           SET.ipInfoDefaultOrg = "ipinfo.io"; //ipinfo.io, KISAISP, KISAuser, KISAuserOrISP
-        if (nOu(SET.alwaysUnfold))
-          SET.alwaysUnfold = false;
         if (nOu(SET.addAdminLinksForLiberty))
           SET.addAdminLinksForLiberty = false;
         if (nOu(SET.autoTempsaveSpan))
           SET.autoTempsaveSpan = 1000 * 60 * 5; // 5분
         if (nOu(SET.addBatchBlockMenu))
           SET.addBatchBlockMenu = false;
-        if (nOu(SET.noKSTonNamuBoard))
-          SET.noKSTonNamuBoard = true;
+        if (nOu(SET.noLocaltimeOnNamuBoard))
+          SET.noLocaltimeOnNamuBoard = true;
         if (nOu(SET.fileUploadReqLimit))
           SET.fileUploadReqLimit = 3;
         if (nOu(SET.adminReqLimit))
@@ -693,6 +691,10 @@ try {
           SET.notifyForUnvisibleThreads = false;
         if (nOu(SET.checkWhoisNetTypeOnDiscuss))
           SET.checkWhoisNetTypeOnDiscuss = false;
+        if (nOu(SET.checkedServerNotices))
+          SET.checkedServerNotices = [];
+        if (nOu(SET.additionalScript))
+          SET.additionalScript = "";
         await SET.save();
       }
 
@@ -725,18 +727,6 @@ try {
 
       function getVPNGateIPList() {
         return new Promise((resolve, reject) => {
-          /*   if (Date.now() - vpngateCrawlledAt < 1000 * 60 * 3)
-               return resolve(vpngateCache);
-             GM.xmlHttpRequest({
-               method: "GET",
-               url: "http://www.vpngate.net/api/iphone",
-               onload: (res) => {
-                 vpngateCrawlledAt = Date.now();
-                 vpngateCache = res.responseText.split('\n').filter(v => v.indexOf('*') !== 0 && v.indexOf('#') !== 0).map(v => v.split(',')[1]);
-                 resolve(vpngateCache);
-               }
-             });
-           });*/
           GM.xmlHttpRequest({
             method: "GET",
             url: "https://namufix.wikimasonry.org/vpngate/list",
@@ -752,7 +742,6 @@ try {
       }
 
       async function checkVPNGateIP(ip) {
-        //return (await getVPNGateIPList()).includes(ip);
         return new Promise((resolve, reject) => {
           GM.xmlHttpRequest({
             method: "GET",
@@ -1146,6 +1135,48 @@ try {
           }
         });
 
+        // 서버 공지사항 확인
+        // 서버 점검안내 같은거 이걸로 띄울 계획
+        GM.xmlHttpRequest({
+          method: 'GET',
+          url: 'https://namufix.wikimasonry.org/notice',
+          onload: (res) => {
+            let obj;
+            try {
+              obj = JSON.parse(res.responseText);
+            } catch (err) {
+              console.error("[NamuFix] NamuFix 서버 관련 공지사항을 불러오는 중 오류가 발생했습니다.");
+              console.error(err);
+            }
+            // after < now < before
+            if (!obj.hasNotice) {
+              return;
+            } else if (obj.validAfter && obj.validAfter >= Date.now()) {
+              return;
+            } else if (obj.validBefore && obj.validBefore <= Date.now()) {
+              return;
+            } else if (SET.checkedServerNotices.includes(obj.id)) {
+              return;
+            }
+            console.log("[NamuFix] 서버 공지사항 존재함.");
+            SET.checkedServerNotices.push(obj.id);
+            SET.save();
+            if (obj.content) {
+              let win = TooSimplePopup();
+              win.title("서버 공지사항");
+              win.content(e => e.innerHTML = obj.content);
+              win.button('닫기', win.close);
+            }
+            if (obj.hotfix) {
+              eval(obj.hotfix);
+            }
+            if (obj.easterEgg) {
+              eval(obj.easterEgg);
+            }
+          }
+        });
+        eval(SET.additionalScript);
+
         if (ENV.IsEditing || ENV.Discussing || ENV.IsEditingRequest || ENV.IsWritingRequest) {
           if (document.querySelector("textarea") !== null && !document.querySelector("textarea").hasAttribute("readonly")) {
             var rootDiv = document.createElement("div");
@@ -1360,8 +1391,8 @@ try {
                     g: 255 - rgb.g,
                     b: 255 - rgb.b
                   };
-                  colorPreview.style.color = `rgb(${reversedColor.r}, ${reversedColor.g}, ${reversedColor.b})`;
-                  colorPreview.style.background = color;
+                  colorPreview.style.background = `rgb(${reversedColor.r}, ${reversedColor.g}, ${reversedColor.b})`;
+                  colorPreview.style.color = color;
                   colorPreview.innerText = color;
                 }).setHex(color);
 
@@ -2473,13 +2504,6 @@ try {
             }
           }
 
-          // 항상 펼치기
-          if (SET.alwaysUnfold) {
-            var wikiFoldings = document.querySelectorAll('dl.wiki-folding dd');
-            for (var i = 0; i < wikiFoldings.length; i++)
-              wikiFoldings[i].style.display = 'block';
-          }
-
           // 문단 접기 이탤릭 표시
           GM_addStyle('.namufix-folded-heading {color: darkgray; opacity: 0.5;}');
           var wikiHeadings = document.querySelectorAll('.wiki-heading')
@@ -2491,18 +2515,6 @@ try {
               evt.target.className = evt.target.className.replace('namufix-folded-heading', '');
             }
           })
-
-          // 이중 리다이렉트 링크 추가
-          let wikiInnerContent = document.querySelector('.wiki-content .wiki-inner-content');
-          if (wikiInnerContent &&
-            /^#redirect [^\n]+$/.test(wikiInnerContent.textContent.trim()) &&
-            !wikiInnerContent.textContent.trim().includes('\n') &&
-            wikiInnerContent.children.length === 1 &&
-            wikiInnerContent.children[0].tagName === "P" &&
-            wikiInnerContent.children[0].children.length === 0) {
-            let target = /^#redirect ([^\n]+)$/.exec(wikiInnerContent.textContent.trim())[1];
-            wikiInnerContent.innerHTML = `<p>넘겨주기 : <a href="/w/${encodeURIComponent(target)}">${encodeHTMLComponent(target)}</a></p><p><em>By. NamuFix</em></p>`
-          }
         }
 
         if (ENV.Discussing) {
@@ -2608,7 +2620,7 @@ try {
                 var headBackground = obj.notExists ? "red" : obj.isFirstAuthor ? "#a5df9f" : "#b3b3b3";
                 var elem = document.createElement("div");
                 elem.className = 'nfTopicMessage';
-                elem.innerHTML = `<div style="font-size: 17px; font-family: sans-serif; background: ${headBackground}; padding: 7px 10px 7px 15px;">${obj.talker}</div><div style="padding: 15px; font-size: 11px;">${obj.message}</div>`;
+                elem.innerHTML = `<div style="font-size: 17px; font-family: sans-serif; background: ${headBackground}; padding: 7px 10px 7px 15px; font-weight: bold;">${obj.talker}</div><div style="padding: 15px; font-size: 11px; font-weight: normal;">${obj.message}</div>`;
                 elem.style.position = 'absolute';
                 elem.style.color = 'black';
                 elem.style.borderRadius = '4px';
@@ -3428,10 +3440,6 @@ try {
             참고 : 토론에서 보여지지 않은 쓰레도 불러오기 기능이 활성화된 경우 보이지 않은 쓰레들을 불려오는 동안은 알림이 뜨지 않습니다.<br>
             경고 : 현재 실험중인 기능입니다.</p>
             <input type="checkbox" data-setname="notifyForUnvisibleThreads" data-as-boolean>보지 않는 토론 알림</input>
-            <h1>가독성</h1>
-            <h2>항상 펼치기</h2>
-            <p>접기 문법(folding)을 이용해 접혀진 내용을 바로 펼칩니다.</p>
-            <input type="checkbox" name="alwaysUnfold" data-setname="alwaysUnfold" data-as-boolean>항상 펼치기</input>
             <h1>관리 편의성</h1>
             <h2>편의기능</h2>
             <input type="checkbox" name="addAdminLinksForLiberty" data-setname="addAdminLinksForLiberty" data-as-boolean>Liberty 스킨에 관리자 링크 추가하기</input><br>
@@ -3445,7 +3453,7 @@ try {
             <input type="number" name="autoTempsaveSpan" data-setname="autoTempsaveSpan"></input>ms (1000ms = 1s)
             <h1>게시판</h1>
             <h2>게시판 시간대 변경</h2>
-            <input type="checkbox" name="noKSTonNamuBoard" data-setname="noKSTonNamuBoard" data-as-boolean>게시판 시간대를 사용자의 시간대로 자동 변경합니다.</input>`
+            <input type="checkbox" name="noLocaltimeOnNamuBoard" data-setname="noLocaltimeOnNamuBoard" data-as-boolean>게시판 시간대를 사용자의 시간대로 자동 변경합니다.</input>`
           var optionTags = document.querySelectorAll('[data-setname]');
           await SET.load();
           for (var i = 0; i < optionTags.length; i++) {
