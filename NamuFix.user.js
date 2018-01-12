@@ -8,7 +8,7 @@
 // @include     https://www.alphawiki.org/*
 // @include     https://theseed.io/*
 // @include     https://board.namu.wiki/*
-// @version     180112.0
+// @version     180112.1
 // @author      LiteHell
 // @downloadURL https://raw.githubusercontent.com/LiteHell/NamuFix/master/NamuFix.user.js
 // @require     https://greasemonkey.github.io/gm4-polyfill/gm4-polyfill.js
@@ -2932,15 +2932,6 @@ try {
             childList: true
           });
 
-          // // 취소선 숨기기
-          // switch (SET.hideDeletedWhenDiscussing) {
-          //   case 1:
-          //     GM_addStyle('.res .r-body del {display: none;}');
-          //     break;
-          //   case 0.5:
-          //     GM_addStyle('.res .r-body del, .res .r-body del a {color: transparent; background: transparent;} .res .r-body del {border: dotted 1px red;}');
-          //     break;
-          // }
         } else if (ENV.IsUserContribsPage) {
           function insertBeforeTable(element) {
             var bread = document.querySelector("article > ol.breadcrumb.link-nav, body.Liberty .wiki-article ol.breadcrumb.link-nav");
