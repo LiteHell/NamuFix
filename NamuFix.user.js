@@ -1155,12 +1155,14 @@ try {
               return;
             } else if (obj.validBefore && obj.validBefore <= Date.now()) {
               return;
-            } else if (SET.checkedServerNotices.includes(obj.id)) {
+            } else if (obj.id && SET.checkedServerNotices.includes(obj.id)) {
               return;
             }
             console.log("[NamuFix] 서버 공지사항 존재함.");
-            SET.checkedServerNotices.push(obj.id);
-            SET.save();
+            if (obj.id) {
+              SET.checkedServerNotices.push(obj.id);
+              SET.save();
+            }
             if (obj.content) {
               let win = TooSimplePopup();
               win.title("서버 공지사항");
