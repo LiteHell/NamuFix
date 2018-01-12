@@ -3178,7 +3178,9 @@ try {
             var diffLinksHtml = `<nav>
         <ul class="pagination">
         <li class="page-item"><a href="/diff/${ENV.docTitle}?oldrev=${ENV.beforeRev - 1}&rev=${ENV.beforeRev}">&lt;-- r${ENV.beforeRev - 1} vs r${ENV.beforeRev}</a></li>
-        <li class="page-item"><a href="/history/${ENV.docTitle}?from=${ENV.afterRev}">r${ENV.beforeRev} vs r${ENV.afterRev}</a></li>
+        <li class="page-item"><a href="/w/${ENV.docTitle}?rev=${ENV.beforeRev}">r${ENV.beforeRev} 보기</a></li>
+        <li class="page-item"><a href="/history/${ENV.docTitle}?from=${ENV.afterRev}">역사로</a></li>
+        <li class="page-item"><a href="/w/${ENV.docTitle}?rev=${ENV.afterRev}">r${ENV.afterRev} 보기</a></li>
         <li class="page-item"><a href="/diff/${ENV.docTitle}?oldrev=${ENV.afterRev}&rev=${ENV.afterRev + 1}">r${ENV.afterRev} vs r${ENV.afterRev + 1} --&gt;</a></li>
         </ul>
         </nav>`;
