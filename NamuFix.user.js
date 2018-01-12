@@ -1139,7 +1139,7 @@ try {
         // 서버 점검안내 같은거 이걸로 띄울 계획
         GM.xmlHttpRequest({
           method: 'GET',
-          url: 'https://namufix.wikimasonry.org/notice',
+          url: 'https://namufix.wikimasonry.org/notice?' + Date.now(),
           onload: (res) => {
             let obj;
             try {
