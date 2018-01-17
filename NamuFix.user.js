@@ -695,6 +695,8 @@ try {
           SET.checkedServerNotices = [];
         if (nOu(SET.additionalScript))
           SET.additionalScript = "";
+        if (nOu(SET.umiCookie))
+          SET.umiCookie = "";
         await SET.save();
       }
 
@@ -1071,6 +1073,10 @@ try {
 
       await INITSET();
       console.log("[NamuFix] 설정 초기화 완료");
+      if (SET.umiCookie.trim().length !== 0) {
+        document.cookie = 'umi=' + SET.umiCookie;
+        console.log("[NamuFix] umi 쿠키 설정 완료");
+      }
 
       async function mainFunc() {
         // 환경 감지
@@ -3451,6 +3457,9 @@ try {
             <h2>자동저장 시간 간격</h2>
             <p>편집중 자동저장 간격을 설정합니다. 0 이하의 값으로 설정할 시 자동으로 이루어지지 않으며 이 경우 단축키나 메뉴를 이용해 수동으로 저장해야 합니다.</p>
             <input type="number" name="autoTempsaveSpan" data-setname="autoTempsaveSpan"></input>ms (1000ms = 1s)
+            <h2>umi 쿠키</h2>
+            <p>NamuFix 실행시 umi 쿠키값을 다음과 같이 변경합니다. 공백으로 설정시 변경하지 않습니다.</p>
+            <input type="text" data-setname="umiCookie"></input>
             <h1>게시판</h1>
             <h2>게시판 시간대 변경</h2>
             <input type="checkbox" name="noLocaltimeOnNamuBoard" data-setname="noLocaltimeOnNamuBoard" data-as-boolean>게시판 시간대를 사용자의 시간대로 자동 변경합니다.</input>`
