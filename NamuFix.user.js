@@ -8,7 +8,7 @@
 // @include     https://www.alphawiki.org/*
 // @include     https://theseed.io/*
 // @include     https://board.namu.wiki/*
-// @version     180112.0
+// @version     180112.2
 // @author      LiteHell
 // @downloadURL https://raw.githubusercontent.com/LiteHell/NamuFix/master/NamuFix.user.js
 // @require     https://greasemonkey.github.io/gm4-polyfill/gm4-polyfill.js
@@ -1145,7 +1145,7 @@ try {
         // 서버 점검안내 같은거 이걸로 띄울 계획
         GM.xmlHttpRequest({
           method: 'GET',
-          url: 'https://namufix.wikimasonry.org/notice',
+          url: 'https://namufix.wikimasonry.org/notice?' + Date.now(),
           onload: (res) => {
             let obj;
             try {
@@ -1161,12 +1161,14 @@ try {
               return;
             } else if (obj.validBefore && obj.validBefore <= Date.now()) {
               return;
-            } else if (SET.checkedServerNotices.includes(obj.id)) {
+            } else if (obj.id && SET.checkedServerNotices.includes(obj.id)) {
               return;
             }
             console.log("[NamuFix] 서버 공지사항 존재함.");
-            SET.checkedServerNotices.push(obj.id);
-            SET.save();
+            if (obj.id) {
+              SET.checkedServerNotices.push(obj.id);
+              SET.save();
+            }
             if (obj.content) {
               let win = TooSimplePopup();
               win.title("서버 공지사항");
@@ -2839,7 +2841,7 @@ try {
                     else if (whoisResult.result.korean.user && whoisResult.result.korean.user.netinfo && whoisResult.result.korean.user.netinfo.netType)
                       whoisNetType = whoisResult.result.korean.user.netinfo.netType
                   }
-                  span.innerHTML = `[<img src="${data}" style="height: 0.9rem;" title="${countryName}"></img> ${isp}${await checkVPNGateIP(ip) ? " (VPNGATE)" : ""}]${whoisNetType ? "<span style=\"color: darkred;\">[" + whoisNetType + "]</span>" : ""}<a href="#" class="get-whois">[WHOIS]</a>`;
+                  span.innerHTML = `[<img src="${data}" style="height: 0.9rem;" title="${countryName}"></img> ${isp}${await checkVPNGateIP(message.author.name) ? " (VPNGATE)" : ""}]${whoisNetType ? "<span style=\"color: darkred;\">[" + whoisNetType + "]</span>" : ""}<a href="#" class="get-whois">[WHOIS]</a>`;
                   span.querySelector('a.get-whois').addEventListener('click', function (evt) {
                     evt.preventDefault();
                     whoisPopup(message.author.name);
@@ -2936,15 +2938,6 @@ try {
             childList: true
           });
 
-          // // 취소선 숨기기
-          // switch (SET.hideDeletedWhenDiscussing) {
-          //   case 1:
-          //     GM_addStyle('.res .r-body del {display: none;}');
-          //     break;
-          //   case 0.5:
-          //     GM_addStyle('.res .r-body del, .res .r-body del a {color: transparent; background: transparent;} .res .r-body del {border: dotted 1px red;}');
-          //     break;
-          // }
         } else if (ENV.IsUserContribsPage) {
           function insertBeforeTable(element) {
             var bread = document.querySelector("article > ol.breadcrumb.link-nav, body.Liberty .wiki-article ol.breadcrumb.link-nav");
@@ -3184,7 +3177,9 @@ try {
             var diffLinksHtml = `<nav>
         <ul class="pagination">
         <li class="page-item"><a href="/diff/${ENV.docTitle}?oldrev=${ENV.beforeRev - 1}&rev=${ENV.beforeRev}">&lt;-- r${ENV.beforeRev - 1} vs r${ENV.beforeRev}</a></li>
-        <li class="page-item"><a href="/history/${ENV.docTitle}?from=${ENV.afterRev}">r${ENV.beforeRev} vs r${ENV.afterRev}</a></li>
+        <li class="page-item"><a href="/w/${ENV.docTitle}?rev=${ENV.beforeRev}">r${ENV.beforeRev} 보기</a></li>
+        <li class="page-item"><a href="/history/${ENV.docTitle}?from=${ENV.afterRev}">역사로</a></li>
+        <li class="page-item"><a href="/w/${ENV.docTitle}?rev=${ENV.afterRev}">r${ENV.afterRev} 보기</a></li>
         <li class="page-item"><a href="/diff/${ENV.docTitle}?oldrev=${ENV.afterRev}&rev=${ENV.afterRev + 1}">r${ENV.afterRev} vs r${ENV.afterRev + 1} --&gt;</a></li>
         </ul>
         </nav>`;
