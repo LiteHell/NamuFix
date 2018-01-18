@@ -1074,7 +1074,7 @@ try {
       await INITSET();
       console.log("[NamuFix] 설정 초기화 완료");
       if (SET.umiCookie.trim().length !== 0) {
-        document.cookie = 'umi=' + SET.umiCookie + "path=/;domain=example.com";
+        document.cookie = 'umi=' + SET.umiCookie + ";path=/;domain=example.com";
         console.log("[NamuFix] umi 쿠키 설정 완료");
       }
 
