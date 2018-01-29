@@ -2523,6 +2523,30 @@ try {
               evt.target.className = evt.target.className.replace('namufix-folded-heading', '');
             }
           })
+
+          // 차단 링크 링크화
+          if (ENV.docTitle.startsWith('사용자:')) {
+            let banbox = document.querySelector('.wiki-content [onmouseover][onmouseout]')
+            if (banbox.querySelector('span:first-child').textContent.includes('이 사용자는 차단된 사용자입니다.')) {
+              let reason = banbox.lastChild.textContent,
+                  urlPattern = /((http[s]?|ftp):\/)?\/?([^:\/\s]+)((\/\w+)*\/)([\w\-\.]+[^#?\s]+)(.*)?(#[\w\-]+)?$/mg,
+                  urlMatch = urlPattern.exec(reason),
+                  linkIndex = 1,
+                  firstLink = null;
+              while(urlMatch) { 
+                let link = document.createElement("a");
+                link.href = urlMatch[0];
+                link.textContent = `Link #${linkIndex++}`;
+                banbox.appendChild(link);
+                if(!firstLink) firstLink = link;
+                urlMatch = urlPattern.exec(reason);
+              }
+              if (firstLink) {
+                banbox.insertBefore(document.createElement("br"), firstLink);
+                banbox.insertBefore(document.createElement("br"), firstLink);
+              }
+            }
+          }
         }
 
         if (ENV.Discussing) {
