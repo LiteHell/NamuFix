@@ -697,6 +697,8 @@ try {
           SET.additionalScript = "";
         if (nOu(SET.umiCookie))
           SET.umiCookie = "";
+        if (nOu(SET.unprefixedFilename))
+          SET.unprefixedFilename= false;
         await SET.save();
       }
 
@@ -1481,7 +1483,10 @@ try {
                   win.content(el => el.innerHTML = `현재 ${uploadLimit}개의 이미지들을 동시에 업로드하고 있습니다. 설정에서 변경가능합니다.<br><ul><li>현재 진행중</li><li><ul id="inprog"></ul></li></ul>`);
                   async.mapLimit(files, uploadLimit, (file, callback) => {
                     if (!file) callback(null, null);
-                    var fn = "파일:" + SHA256(String(Date.now()) + file.name).substring(0, 12) + "_" + file.name;
+                    var fn = "파일:" + SHA256(String(Date.now()) + file.name).substring(0, 6) + "_" + file.name;
+                    if (SET.unprefixedFilename) {
+                        fn = "파일:" + file.name;
+                    }
                     if (/\.[A-Z]+$/.test(fn)) {
                       var fnSplitted = fn.split('.');
                       fnSplitted[fnSplitted.length - 1] = fnSplitted[fnSplitted.length - 1].toLowerCase();
@@ -3438,6 +3443,9 @@ try {
             이미지 업로드시의 동시 요청 제한 : 
             <input type="number" data-setname="fileUploadReqLimit"></input>
             <br><strong>경고 : 너무 높게 설정하면 reCAPTCHA가 뜹니다.</strong>
+            <h2>umi 쿠키</h2>
+            <p>NamuFix 실행시 umi 쿠키값을 다음과 같이 변경합니다. 공백으로 설정시 변경하지 않습니다.</p>
+            <input type="text" data-setname="umiCookie"></input>
             <h1>토론 편의성</h1>
             <h2>토론 아이덴티콘</h2>
             <input type="radio" name="discussIdenti" data-setname="discussIdenti" data-setvalue="icon">디시라이트 갤러콘 방식<br>
@@ -3476,9 +3484,9 @@ try {
             <h2>자동저장 시간 간격</h2>
             <p>편집중 자동저장 간격을 설정합니다. 0 이하의 값으로 설정할 시 자동으로 이루어지지 않으며 이 경우 단축키나 메뉴를 이용해 수동으로 저장해야 합니다.</p>
             <input type="number" name="autoTempsaveSpan" data-setname="autoTempsaveSpan"></input>ms (1000ms = 1s)
-            <h2>umi 쿠키</h2>
-            <p>NamuFix 실행시 umi 쿠키값을 다음과 같이 변경합니다. 공백으로 설정시 변경하지 않습니다.</p>
-            <input type="text" data-setname="umiCookie"></input>
+            <h2>이미지 업로드시 파일이름 유지</h2>
+            <p>파일이름에 난수를 덧붙이지 않고 그대로 유지합니다. 파일이름이 중복될시 오류가 발생할 수 있습니다.</p>
+            <input type="checkbox" data-setname="unprefixedFilename" data-as-boolean>파일이름 그대로 유지</input>
             <h1>게시판</h1>
             <h2>게시판 시간대 변경</h2>
             <input type="checkbox" name="noLocaltimeOnNamuBoard" data-setname="noLocaltimeOnNamuBoard" data-as-boolean>게시판 시간대를 사용자의 시간대로 자동 변경합니다.</input>`
