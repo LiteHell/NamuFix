@@ -3066,12 +3066,54 @@ try {
                   if (actType == "blockIP") {
                     ipInfo.querySelector('.nf_isipblocked').innerHTML = filtered[0].blocker + '에 의해 <span style="color:red">차단됨.</span> (일시 : ' + formatDateTime(filtered[0].at) + ', 이유 : ' + filtered[0].reason + ')';
                   } else if (actType == "unblockIP") {
-                    ipInfo.querySelector('.nf_isipblocked').innerHTML = filtered[0].blocker + '에 의해 <span style="color:green">차단이 해제됨.</span> (일시 : ' + formatDateTime(iltered[0].at) + ')';
+                    ipInfo.querySelector('.nf_isipblocked').innerHTML = filtered[0].blocker + '에 의해 <span style="color:green">차단이 해제됨.</span> (일시 : ' + formatDateTime(filtered[0].at) + ')';
                   } else {
                     ipInfo.querySelector('.nf_isipblocked').innerHTML = "??? 기록 검색중 오류가 발생함.";
                   }
                 });
               });
+            });
+          } else {
+            var userIdPattern = /^\/contribution\/author\/(.+?)\/(?:document|discuss)/;
+            var userId = userIdPattern.exec(location.pathname)[1];
+            var userInfo = document.createElement("p");
+            userInfo.innerHTML = '<div style="border: 1px black solid; padding: 2px;" class="nf_blockhistory">차단 기록 조회중...</div>'
+            insertBeforeTable(userInfo);
+            namuapi.searchBlockHistory({
+              query: userId,
+              isAuthor: false
+            }, function (result) {
+              var filtered = result.filter(function (v) {
+                return v.blocked == userId
+              });
+              if (filtered.length == 0) {
+                return userInfo.querySelector('.nf_blockhistory').innerHTML = "차단기록 없음.";
+              }
+              userInfo.querySelector('.nf_blockhistory').innerHTML  = '<style>.nf_blockhistory p {margin: 1px; padding: 0px;}</style>';
+              for(var i = 0; i < filtered.length; i++) {
+                var filteredItem = filtered[i];
+                var actType = filteredItem.type;
+                if (actType == "blockUser") {
+                  userInfo.querySelector(i == 0 ? '.nf_blockhistory' : '.nf_blockhistory_rest').innerHTML += '<p>' + filteredItem.blocker + '에 의해 <span style="color:red">차단됨.</span> (일시 : ' + formatDateTime(filteredItem.at) + ', 이유 : ' + filteredItem.reason + ')' + '</p>';
+                } else if (actType == "unblockUser") {
+                  userInfo.querySelector(i == 0 ? '.nf_blockhistory' : '.nf_blockhistory_rest').innerHTML += '<p>' + filteredItem.blocker + '에 의해 <span style="color:green">차단이 해제됨.</span> (일시 : ' + formatDateTime(filteredItem.at) + ')' + '</p>';
+                }
+                if (i == 0) {
+                  userInfo.querySelector('.nf_blockhistory').innerHTML += '<a href="#" id="nf_more_blockhistory">[차단기록 더 보기]</a><div class="nf_blockhistory_rest" style="display: none;"></div>'
+                  userInfo.querySelector('#nf_more_blockhistory').addEventListener('click', (evt) => {
+                    evt.preventDefault();
+                    document.querySelector('.nf_blockhistory_rest').style.display = '';
+                    evt.target.style.display = 'none';
+                  })
+                } else if (i == filtered.length - 1) {
+                  userInfo.querySelector('.nf_blockhistory_rest').innerHTML += '<a href="#" id="nf_less_blockhistory">[숨기기]</a>';
+                  userInfo.querySelector('#nf_less_blockhistory').addEventListener('click', (evt) => {
+                    evt.preventDefault();
+                    document.querySelector('.nf_blockhistory_rest').style.display = 'none';
+                    userInfo.querySelector('#nf_more_blockhistory').style.display = '';
+                  })
+                }
+              }
             });
           }
 
