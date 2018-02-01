@@ -1109,9 +1109,9 @@ try {
         if (document.querySelector("input[name=section]"))
           ENV.section = document.querySelector("input[name=section]").value;
         if (document.querySelector("body.senkawa h1.title > a"))
-          ENV.docTitle = document.querySelector("body.senkawa h1.title > a").innerHTML;
+          ENV.docTitle = document.querySelector("body.senkawa h1.title > a").textContent;
         else if (document.querySelector("body.senkawa h1.title"))
-          ENV.docTitle = document.querySelector("body.senkawa h1.title").innerHTML;
+          ENV.docTitle = document.querySelector("body.senkawa h1.title").textContent;
         else if (ENV.skinName == "liberty" && ENV.IsDiscussing)
           ENV.docTitle = /^(.+) \(토론\)/.exec(document.querySelector('.liberty-content .liberty-content-header .title h1').textContent.trim())[1]
         else if (/^\/[a-zA-Z_]+\/(.+)/.test(location.pathname))
