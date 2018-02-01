@@ -220,6 +220,10 @@ try {
             return; // GitHub API 오류
           }
           var currentVersion = GM.info.script.version;
+          if(!obj.tag_name) {
+            console.log('[NamuFix] NamuFix 업데이트 연기! (최신 버전을 읽을 수 없음)');
+            return;
+          }
           var latestVersion = obj.tag_name;
           if (currentVersion != latestVersion) {
             var scriptUrl = 'https://github.com/LiteHell/NamuFix/raw/' + latestVersion + '/NamuFix.user.js';
