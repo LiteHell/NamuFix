@@ -3068,9 +3068,9 @@ try {
                   }
                   var actType = filtered[0].type;
                   if (actType == "blockIP") {
-                    ipInfo.querySelector('.nf_isipblocked').innerHTML = filtered[0].blocker + '에 의해 <span style="color:red">차단됨.</span> (일시 : ' + formatDateTime(filtered[0].at) + ', 이유 : ' + filtered[0].reason + ')';
+                    ipInfo.querySelector('.nf_isipblocked').innerHTML = filtered[0].blocker + '에 의해 ' + (filtered[0].duration || '') + ' <span style="color:red">차단됨.</span> (일시 : ' + formatDateTime(filtered[0].at) + ', 이유 : ' + filtered[0].reason + ')';
                   } else if (actType == "unblockIP") {
-                    ipInfo.querySelector('.nf_isipblocked').innerHTML = filtered[0].blocker + '에 의해 <span style="color:green">차단이 해제됨.</span> (일시 : ' + formatDateTime(filtered[0].at) + ')';
+                    ipInfo.querySelector('.nf_isipblocked').innerHTML = filtered[0].blocker + '에 의해 ' + (filtered[0].duration || '') + ' <span style="color:green">차단이 해제됨.</span> (일시 : ' + formatDateTime(filtered[0].at) + ')';
                   } else {
                     ipInfo.querySelector('.nf_isipblocked').innerHTML = "??? 기록 검색중 오류가 발생함.";
                   }
@@ -3098,9 +3098,9 @@ try {
                 var filteredItem = filtered[i];
                 var actType = filteredItem.type;
                 if (actType == "blockUser") {
-                  userInfo.querySelector(i == 0 ? '.nf_blockhistory' : '.nf_blockhistory_rest').innerHTML += '<p>' + filteredItem.blocker + '에 의해 <span style="color:red">차단됨.</span> (일시 : ' + formatDateTime(filteredItem.at) + ', 이유 : ' + filteredItem.reason + ')' + '</p>';
+                  userInfo.querySelector(i == 0 ? '.nf_blockhistory' : '.nf_blockhistory_rest').innerHTML += '<p>' + filteredItem.blocker + '에 의해 ' + (filteredItem.duration || '') + ' <span style="color:red">차단됨.</span> (일시 : ' + formatDateTime(filteredItem.at) + ', 이유 : ' + filteredItem.reason + ')' + '</p>';
                 } else if (actType == "unblockUser") {
-                  userInfo.querySelector(i == 0 ? '.nf_blockhistory' : '.nf_blockhistory_rest').innerHTML += '<p>' + filteredItem.blocker + '에 의해 <span style="color:green">차단이 해제됨.</span> (일시 : ' + formatDateTime(filteredItem.at) + ')' + '</p>';
+                  userInfo.querySelector(i == 0 ? '.nf_blockhistory' : '.nf_blockhistory_rest').innerHTML += '<p>' + filteredItem.blocker + '에 의해 ' + (filteredItem.duration || '') + ' <span style="color:green">차단이 해제됨.</span> (일시 : ' + formatDateTime(filteredItem.at) + ')' + '</p>';
                 }
                 if (i == 0) {
                   userInfo.querySelector('.nf_blockhistory').innerHTML += '<a href="#" id="nf_more_blockhistory">[차단기록 더 보기]</a><div class="nf_blockhistory_rest" style="display: none;"></div>'
