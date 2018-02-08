@@ -143,10 +143,10 @@ try {
     }
   }
   if (location.host === 'board.namu.wiki') {
-    let SET = new NFStorage();
-    SET.load();
-
-    function runBoardFix() {
+    async function runBoardFix() {
+      let SET = new NFStorage();
+      await SET.load();
+      // 시간대 자동 변경
       if (SET.noLocaltimeOnNamuBoard !== false) {
         let times = document.querySelectorAll('.read_header > .meta > .time, .fbMeta .time');
         let origTimezone = "UTC" // America/Asuncion 아님.
@@ -157,6 +157,7 @@ try {
         if (times.length !== 0)
           console.log(`[NamuFix] 게시판 시간대 변경 완료. ${origTimezone} > ${moment.tz.guess()}`);
       }
+      // 아카이브 버튼
       if (document.querySelector('.viewDocument .read_footer .btnArea a[onclick]') !== null) {
         let extraMenuLink = document.querySelector('.viewDocument .read_footer .btnArea a[onclick]');
         let documentId = /document_([0-9]+)/.exec(extraMenuLink.className)[1];
@@ -185,6 +186,40 @@ try {
         };
         archiveLink.addEventListener("click", clickHandler);
         extraMenuLink.parentNode.insertBefore(archiveLink, extraMenuLink.nextSibling);
+      }
+      // 댓글 상용구
+      if (document.querySelector('.write_comment') && SET.commentMacros) {
+        console.log('[NamuFix] 댓글창 감지됨.')
+        let writeAuthorDiv = document.querySelector('.write_author');
+        for(let i of SET.commentMacros.split(',')) {
+          let macroName = i.split(':')[0];
+          let macroContentParts = i.split(':');
+          macroContentParts.shift();
+          let macroContent = macroContentParts.join(':');
+          let macroBtn = document.createElement("button");
+          console.log(`[NamuFix] 매크로 버튼 추가중 (이름: ${macroName}, 내용: ${macroContent})`)
+          macroBtn.setAttribute('type', 'button');
+          macroBtn.innerHTML = '상용구 (' + macroName + ')';
+          macroBtn.addEventListener('click', (evt) => {
+            evt.preventDefault();
+            let xeEditor = document.querySelector('.xpress-editor'),
+                hiddenContentInput = document.querySelector('.write_comment > input[name="content"]'),
+                writeForm = document.querySelector('.write_comment > .write_form');
+            // XE에디터 제거
+            xeEditor.parentNode.removeChild(xeEditor);
+            // 기존 content input 제거
+            hiddenContentInput.parentNode.removeChild(hiddenContentInput);
+            // content input 추가
+            let newContentInput = document.createElement('input');
+            newContentInput.setAttribute('type', 'hidden');
+            newContentInput.name = "content";
+            newContentInput.value = macroContent;
+            writeForm.appendChild(newContentInput);
+            // 댓글 작성
+            document.querySelector('.write_author button[type="submit"]').click();
+          })
+          writeAuthorDiv.appendChild(macroBtn,writeAuthorDiv.lastChild);
+        }
       }
     }
     runBoardFix();
@@ -708,6 +743,8 @@ try {
           SET.unprefixedFilename= false;
         if (nOu(SET.addSnsShareButton))
           SET.addSnsShareButton = false;
+        if (nOu(SET.commentMacros))
+          SET.commentMacros = '';
         await SET.save();
       }
 
@@ -3554,6 +3591,9 @@ try {
             <h1>게시판</h1>
             <h2>게시판 시간대 변경</h2>
             <input type="checkbox" name="noLocaltimeOnNamuBoard" data-setname="noLocaltimeOnNamuBoard" data-as-boolean>게시판 시간대를 사용자의 시간대로 자동 변경합니다.</input>
+            <h2>댓글 사용구</h2>
+            <p>상용구와 상용구는 ,로 구분하며 상용구 이름과 상용구 내용은 :로 구분합니다. (예시: <em>처리중:처리중입니다,기각:기각합니다</em>)</p>
+            <input type="text" data-setname="commentMacros"></input>
             <h1>기타</h1>
             <h2>SNS 공유 버튼</h2>
             <input type="checkbox" name="addSnsShareButton" data-setname="addSnsShareButton" data-as-boolean>문서에 트위터/페이스북 공유 버튼을 추가합니다.</input>`
