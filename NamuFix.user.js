@@ -755,6 +755,8 @@ try {
           SET.addSnsShareButton = false;
         if (nOu(SET.commentMacros))
           SET.commentMacros = '';
+        if (nOu(SET.ipBlockHistoryCheckDelay))
+          SET.ipBlockHistoryCheckDelay = 500;
         await SET.save();
       }
 
@@ -3159,7 +3161,7 @@ try {
                     if(!prefixes.includes('/32')) prefixes.push('/32');
                     let delay = 0;
                     for(let prefix of prefixes) {
-                      setTimeout(() => {displayIsBlocked(prefix, ipInfo.querySelector('tbody'));}, (delay++) * 500 + 1);
+                      setTimeout(() => {displayIsBlocked(prefix, ipInfo.querySelector('tbody'));}, (delay++) * SET.ipBlockHistoryCheckDelay + 1);
                     }
                   }
                 });
@@ -3575,7 +3577,9 @@ try {
             관리작업시의 동시요청제한 : 
             <input type="number" data-setname="adminReqLimit"></input><br>
             이미지 업로드시의 동시 요청 제한 : 
-            <input type="number" data-setname="fileUploadReqLimit"></input>
+            <input type="number" data-setname="fileUploadReqLimit"></input><br>
+            IP이용자의 기여목록에서 차단기록 검색 딜레이 : 
+            <input type="number" data-setname="ipBlockHistoryCheckDelay"></input>ms (1000ms=1초)
             <br><strong>경고 : 너무 높게 설정하면 reCAPTCHA가 뜹니다.</strong>
             <h2>umi 쿠키</h2>
             <p>NamuFix 실행시 umi 쿠키값을 다음과 같이 변경합니다. 공백으로 설정시 변경하지 않습니다.</p>
