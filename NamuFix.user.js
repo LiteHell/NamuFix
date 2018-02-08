@@ -3110,34 +3110,57 @@ try {
               <tr><td>통신사</td><td>${isp}</td></tr>
               <tr><td>VPNGATE?</td><td>${await checkVPNGateIP(ip) ? "<span style=\"color: red;\">YES! This is currently WORKING VPNGATE IP!</span>" : "Not a vpngate ip"}</td></tr>
               <tr><td>KISA WHOIS</td><td><a href="#" class="get-whois">조회하기</a></td></tr>
-              <tr><td>IP차단기록(/32 마스크)</td><td class="nf_isipblocked">차단기록을 검색하고 있습니다... 잠시만 기다려주세요.</td></tr>
+              <tr class="nf_ipblockchecking"><td colspan="2">IP 차단기록을 검색하고 있습니다... 잠시만 기다려주세요.</td></tr>
               </tbody>
               <tfoot>
               <tr><td colspan="2" style="border-top: 1px solid black;">기술적인 한계로, VPNGATE 여부는 "현재 VPNGATE VPN인가?"의 여부이지, "작성 당시에 VPNGATE VPN인가?"의 여부가 아닙니다.<br>
-              또한 차단기록의 경우 /32 마스크만 검색하며, 사측의 비공개 차단은 검색이 불가능합니다. (추후 업데이트 예정)</td></tr>
+              또한 외국 IP의 차단기록의 경우 /32 마스크만 검색하며, 사측의 비공개 차단은 검색이 불가능합니다.</td></tr>
               </foot>
               </table>`;
                 ipInfo.querySelector('a.get-whois').addEventListener('click', function (evt) {
                   evt.preventDefault();
                   whoisPopup(ip);
                 })
-                namuapi.searchBlockHistory({
-                  query: ip + '/32',
-                  isAuthor: false
-                }, function (result) {
-                  var filtered = result.filter(function (v) {
-                    return v.blocked == ip + '/32'
+                function displayIsBlocked(mask, tbody) {
+                  let row = document.createElement("tr");
+                  row.innerHTML = "<td>IP차단기록 (" + mask + ")</td><td class=\"nf_isipblocked\">조회중입니다...</td>";
+                  tbody.appendChild(row);
+                  namuapi.searchBlockHistory({
+                    query: ip + mask,
+                    isAuthor: false
+                  }, function (result) {
+                    var filtered = result.filter(function (v) {
+                      return v.blocked === ip + mask;
+                    });
+                    if (filtered.length == 0) {
+                      return row.querySelector('.nf_isipblocked').innerHTML = "차단기록 없음.";
+                    }
+                    var actType = filtered[0].type;
+                    if (actType == "blockIP") {
+                      row.querySelector('.nf_isipblocked').innerHTML = filtered[0].blocker + '에 의해 ' + (filtered[0].duration || '') + ' <span style="color:red">차단됨.</span> (일시 : ' + formatDateTime(filtered[0].at) + ', 이유 : ' + filtered[0].reason + ')';
+                    } else if (actType == "unblockIP") {
+                      row.querySelector('.nf_isipblocked').innerHTML = filtered[0].blocker + '에 의해 ' + (filtered[0].duration || '') + ' <span style="color:green">차단이 해제됨.</span> (일시 : ' + formatDateTime(filtered[0].at) + ')';
+                    } else {
+                      row.querySelector('.nf_isipblocked').innerHTML = "??? 기록 검색중 오류가 발생함.";
+                    }
                   });
-                  if (filtered.length == 0) {
-                    return ipInfo.querySelector('.nf_isipblocked').innerHTML = "차단기록 없음.";
-                  }
-                  var actType = filtered[0].type;
-                  if (actType == "blockIP") {
-                    ipInfo.querySelector('.nf_isipblocked').innerHTML = filtered[0].blocker + '에 의해 ' + (filtered[0].duration || '') + ' <span style="color:red">차단됨.</span> (일시 : ' + formatDateTime(filtered[0].at) + ', 이유 : ' + filtered[0].reason + ')';
-                  } else if (actType == "unblockIP") {
-                    ipInfo.querySelector('.nf_isipblocked').innerHTML = filtered[0].blocker + '에 의해 ' + (filtered[0].duration || '') + ' <span style="color:green">차단이 해제됨.</span> (일시 : ' + formatDateTime(filtered[0].at) + ')';
+                }
+                getIpWhois(ip, (whoisRes) => {
+                  ipInfo.querySelector('.nf_ipblockchecking').parentNode.removeChild(ipInfo.querySelector('.nf_ipblockchecking'));
+                  if(!whoisRes.success || whoisRes.raw) {
+                    displayIsBlocked('/32', ipInfo.querySelector('tbody'))
                   } else {
-                    ipInfo.querySelector('.nf_isipblocked').innerHTML = "??? 기록 검색중 오류가 발생함.";
+                    let prefixes = [];
+                    if(whoisRes.result.korean.ISP && whoisRes.result.korean.ISP.netinfo && whoisRes.result.korean.ISP.netinfo.prefix)
+                      prefixes = prefixes.concat(whoisRes.result.korean.ISP.netinfo.prefix.split('+'));
+                    if(whoisRes.result.korean.user && whoisRes.result.korean.user.netinfo && whoisRes.result.korean.user.netinfo.prefix)
+                      prefixes = prefixes.concat(whoisRes.result.korean.user.netinfo.prefix.split('+'));
+                    prefixes = prefixes.filter((v,i,s) => s.indexOf(v) === i); // https://stackoverflow.com/a/14438954
+                    if(!prefixes.includes('/32')) prefixes.push('/32');
+                    let delay = 0;
+                    for(let prefix of prefixes) {
+                      setTimeout(() => {displayIsBlocked(prefix, ipInfo.querySelector('tbody'));}, (delay++) * 500 + 1);
+                    }
                   }
                 });
               });
