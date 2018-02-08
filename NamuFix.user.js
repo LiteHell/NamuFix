@@ -36,6 +36,9 @@
 // @connect     www.vpngate.net
 // @connect     namufix.wikimasonry.org
 // @connect     phpgongbu.ga
+// @connect     twitter.com
+// @connect     facebook.com
+// @connect     www.facebook.com
 // @grant       GM_addStyle
 // @grant       GM_openInTab
 // @grant       GM_xmlhttpRequest
@@ -703,6 +706,8 @@ try {
           SET.umiCookie = "";
         if (nOu(SET.unprefixedFilename))
           SET.unprefixedFilename= false;
+        if (nOu(SET.addSnsShareButton))
+          SET.addSnsShareButton = false;
         await SET.save();
       }
 
@@ -2450,6 +2455,19 @@ try {
               location.href = 'https://' + location.host + '/edit/' + redirectFrom + '?redirectTo=' + ENV.docTitle;
           });
 
+
+          if (SET.addSnsShareButton && ENV.IsDocument) {
+            addArticleButton('<span class="icon ion-social-facebook"></span>', (evt) => {
+              evt.preventDefault();
+
+              GM.openInTab(`http://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(location.href)}`)
+            })
+            addArticleButton('<span class="icon ion-social-twitter"></span>', (evt) => {
+              evt.preventDefault();
+
+              GM.openInTab(`http://twitter.com/intent/tweet?url=${encodeURIComponent(location.href)}&text=${ENV.docTitle}`)
+            })
+          }
           // 리다이렉트로 왔을 시 그 라디이렉트 문서 편집/삭제 링크 추가
           if (document.querySelector('article .alert.alert-info, .Liberty .wiki-article .alert.alert-info') && document.querySelector('article .alert.alert-info, .Liberty .wiki-article .alert.alert-info').innerHTML.indexOf('에서 넘어옴') != -1) {
             var redirectAlert = document.querySelector('article .alert.alert-info, .Liberty .wiki-article .alert.alert-info');
@@ -3535,7 +3553,10 @@ try {
             <input type="checkbox" data-setname="unprefixedFilename" data-as-boolean>파일이름 그대로 유지</input>
             <h1>게시판</h1>
             <h2>게시판 시간대 변경</h2>
-            <input type="checkbox" name="noLocaltimeOnNamuBoard" data-setname="noLocaltimeOnNamuBoard" data-as-boolean>게시판 시간대를 사용자의 시간대로 자동 변경합니다.</input>`
+            <input type="checkbox" name="noLocaltimeOnNamuBoard" data-setname="noLocaltimeOnNamuBoard" data-as-boolean>게시판 시간대를 사용자의 시간대로 자동 변경합니다.</input>
+            <h1>기타</h1>
+            <h2>SNS 공유 버튼</h2>
+            <input type="checkbox" name="addSnsShareButton" data-setname="addSnsShareButton" data-as-boolean>문서에 트위터/페이스북 공유 버튼을 추가합니다.</input>`
           var optionTags = document.querySelectorAll('[data-setname]');
           await SET.load();
           for (var i = 0; i < optionTags.length; i++) {
