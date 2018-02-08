@@ -16,8 +16,7 @@
 // @require     https://cdn.rawgit.com/LiteHell/NamuFix/0ea78119c377402a10bbdfc33365c5195ce7fccc/FlexiColorPicker.js
 // @require     https://cdn.rawgit.com/Caligatio/jsSHA/v2.3.1/src/sha.js
 // @require     https://cdn.rawgit.com/zenozeng/color-hash/v1.0.3/dist/color-hash.js
-// @require     http://www.xarg.org/download/pnglib.js
-// @require     https://cdn.rawgit.com/stewartlord/identicon.js/7c4b4efdb7e2aba458eba14b24ba14e8e2bcdb2a/identicon.js
+// @require     https://cdn.jsdelivr.net/npm/jdenticon@1.8.0
 // @require     https://cdn.rawgit.com/LiteHell/TooSimplePopupLib/7f2a8a81f11f980c1dfa6b5b2213cd38b8bbde3c/TooSimplePopupLib.js
 // @require     https://cdn.rawgit.com/wkpark/jsdifflib/dc19d085db5ae71cdff990aac8351607fee4fd01/difflib.js
 // @require     https://cdn.rawgit.com/wkpark/jsdifflib/dc19d085db5ae71cdff990aac8351607fee4fd01/diffview.js
@@ -27,6 +26,7 @@
 // @require     https://cdnjs.cloudflare.com/ajax/libs/async/2.6.0/async.min.js
 // @connect     cdn.rawgit.com
 // @connect     cdnjs.cloudflare.com
+// @connect     jsdelivr.net
 // @connect     api.github.com
 // @connect     ipinfo.io
 // @connect     wtfismyip.com
@@ -2893,7 +2893,7 @@ try {
               if (typeof identiconDictionary[n] === 'undefined' && typeof SET.customIdenticons[n] !== 'undefined')
                 identiconDictionary[n] = SET.customIdenticons[n];
               if (typeof identiconDictionary[n] === 'undefined')
-                identiconDictionary[n] = "data:image/png;base64," + new Identicon(n, 64).toString();
+                identiconDictionary[n] = "data:image/svg+xml;base64," + btoa(jdenticon.toSvg(n, 64));
               var identiconImage = identiconDictionary[n];
               identicon.querySelector('img').src = identiconImage;
               message.element.parentNode.insertBefore(identicon, message.element);
