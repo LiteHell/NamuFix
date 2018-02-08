@@ -349,17 +349,27 @@ try {
         }).join(' ');
       }
 
-      var hashDictionary = {};
+      var hashDictionary512 = {};
+      var hashDictionary1 = {};
       var hashDictionary256 = {};
       var ipDictionary = {};
 
       function SHA512(text) {
-        if (typeof hashDictionary[text] === 'undefined') {
+        if (typeof hashDictionary512[text] === 'undefined') {
           var shaObj = new jsSHA("SHA-512", "TEXT");
           shaObj.update(text);
-          hashDictionary[text] = shaObj.getHash("HEX");
+          hashDictionary512[text] = shaObj.getHash("HEX");
         }
-        return hashDictionary[text];
+        return hashDictionary512[text];
+      }
+
+      function SHA1(text) {
+        if (typeof hashDictionary1[text] === 'undefined') {
+          var shaObj = new jsSHA("SHA-1", "TEXT");
+          shaObj.update(text);
+          hashDictionary1[text] = shaObj.getHash("HEX");
+        }
+        return hashDictionary1[text];
       }
 
       function SHA256(text) {
@@ -2819,7 +2829,7 @@ try {
               // IP
               n = '!IP!' + n;
             }
-            n = SHA512(n);
+            n = SHA1(n);
 
             var nColor;
             if (typeof colorDictionary[n] === 'undefined') {
