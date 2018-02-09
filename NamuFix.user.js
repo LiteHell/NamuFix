@@ -761,6 +761,8 @@ try {
           SET.ipBlockHistoryCheckDelay = 500;
         if (nOu(SET.identiconLibrary))
           SET.identiconLibrary = 'jdenticon'; // jdenticon, identicon, gravatar, gravatar-monster
+        if (nOu(SET.emphasizeResesWhenMouseover))
+          SEt.emphasizeResesWhenMouseover = false;
         await SET.save();
       }
 
@@ -2993,6 +2995,16 @@ try {
             i.nfHeadspan.appendChild(blockAnchor);
           }
 
+          let emphasizeResStyle = document.createElement("style");
+          document.head.appendChild(emphasizeResStyle);
+
+          function emphasizeWhenMouseoverLoop(i) {
+            let usernameHash = SHA1((i.author.isIP ? '!IP!' : '!ID!') + i.author.name);
+            i.element.dataset.usernameHash = usernameHash;
+            i.element.addEventListener('mouseover', () => emphasizeResStyle.innerHTML = `.res[data-username-hash="${usernameHash}"] .r-head {background: #8a8a8a !important} .res[data-username-hash="${usernameHash}"] .r-head.first-author {background: #8DAD8A !important}`)
+            i.element.addEventListener('mouseout', () => emphasizeResStyle.innerHTML = '');
+          }
+
           function deserializeResDom(resElement) {
             let userLink = resElement.querySelector('.r-head > a'),
               anchor = resElement.querySelector('.r-head .num > a');
@@ -3026,6 +3038,7 @@ try {
             };
             if (SET.addQuickBlockLink) handles.quickBlock = quickBlockLoop
             if (SET.lookupIPonDiscuss) handles.checkIp = checkIP;
+            if (SET.emphasizeResesWhenMouseover) handles.emphasizeReses = emphasizeWhenMouseoverLoop;
             let messages = document.querySelectorAll('.res-wrapper:not(.res-loading) > .res:not([nf-looped])');
             let tmpcnt = 0; //fordebug
             for (let i of messages)
@@ -3636,6 +3649,9 @@ try {
             참고 : 토론에서 보여지지 않은 쓰레도 불러오기 기능이 활성화된 경우 보이지 않은 쓰레들을 불려오는 동안은 알림이 뜨지 않습니다.<br>
             경고 : 현재 실험중인 기능입니다.</p>
             <input type="checkbox" data-setname="notifyForUnvisibleThreads" data-as-boolean>보지 않는 토론 알림</input>
+            <h2>마우스를 올리면 해당 사용자의 다른 쓰레 강조</h2>
+            <p>토론에서 쓰레에 마우스를 올리면 그 사용자의 다른 쓰레를 강조합니다.</p>
+            <input type="checkbox" data-setname="emphasizeResesWhenMouseover" data-as-boolean>마우스를 올리면 해당 사용자의 다른 쓰레 강조</input>
             <h1>관리 편의성</h1>
             <h2>편의기능</h2>
             <input type="checkbox" name="addAdminLinksForLiberty" data-setname="addAdminLinksForLiberty" data-as-boolean>Liberty 스킨에 관리자 링크 추가하기</input><br>
