@@ -762,7 +762,7 @@ try {
         if (nOu(SET.identiconLibrary))
           SET.identiconLibrary = 'jdenticon'; // jdenticon, identicon, gravatar, gravatar-monster
         if (nOu(SET.emphasizeResesWhenMouseover))
-          SEt.emphasizeResesWhenMouseover = false;
+          SET.emphasizeResesWhenMouseover = false;
         await SET.save();
       }
 
@@ -2913,10 +2913,10 @@ try {
               if (typeof identiconDictionary[n] === 'undefined') {
                 switch(SET.identiconLibrary) {
                   case 'gravatar':
-                    identiconDictionary[n] = "https://www.gravatar.com/avatar/" + n.substring(0, 32) + "?s=64&d=identicon"
+                    identiconDictionary[n] = "https://secure.gravatar.com/avatar/" + n.substring(0, 32) + "?s=64&d=identicon"
                     break;
                   case 'gravatar-monster':
-                    identiconDictionary[n] = "https://www.gravatar.com/avatar/" + n.substring(0, 32) + "?s=64&d=monsterid"
+                    identiconDictionary[n] = "https://secure.gravatar.com/avatar/" + n.substring(0, 32) + "?s=64&d=monsterid"
                     break;
                   case 'identicon':
                     identiconDictionary[n] = "data:image/png;base64," + new Identicon(n, 64).toString();
