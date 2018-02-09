@@ -16,6 +16,8 @@
 // @require     https://cdn.rawgit.com/LiteHell/NamuFix/0ea78119c377402a10bbdfc33365c5195ce7fccc/FlexiColorPicker.js
 // @require     https://cdn.rawgit.com/Caligatio/jsSHA/v2.3.1/src/sha.js
 // @require     https://cdn.rawgit.com/zenozeng/color-hash/v1.0.3/dist/color-hash.js
+// @require     http://www.xarg.org/download/pnglib.js
+// @require     https://cdn.rawgit.com/stewartlord/identicon.js/7c4b4efdb7e2aba458eba14b24ba14e8e2bcdb2a/identicon.js
 // @require     https://cdn.jsdelivr.net/npm/jdenticon@1.8.0
 // @require     https://cdn.rawgit.com/LiteHell/TooSimplePopupLib/7f2a8a81f11f980c1dfa6b5b2213cd38b8bbde3c/TooSimplePopupLib.js
 // @require     https://cdn.rawgit.com/wkpark/jsdifflib/dc19d085db5ae71cdff990aac8351607fee4fd01/difflib.js
@@ -757,6 +759,8 @@ try {
           SET.commentMacros = '';
         if (nOu(SET.ipBlockHistoryCheckDelay))
           SET.ipBlockHistoryCheckDelay = 500;
+        if (nOu(SET.identiconLibrary))
+          SET.identiconLibrary = 'jdenticon'; // jdenticon, identicon, gravatar, gravatar-monster
         await SET.save();
       }
 
@@ -2904,8 +2908,23 @@ try {
               });
               if (typeof identiconDictionary[n] === 'undefined' && typeof SET.customIdenticons[n] !== 'undefined')
                 identiconDictionary[n] = SET.customIdenticons[n];
-              if (typeof identiconDictionary[n] === 'undefined')
-                identiconDictionary[n] = "data:image/svg+xml;base64," + btoa(jdenticon.toSvg(n, 64));
+              if (typeof identiconDictionary[n] === 'undefined') {
+                switch(SET.identiconLibrary) {
+                  case 'gravatar':
+                    identiconDictionary[n] = "https://www.gravatar.com/avatar/" + n.substring(0, 32) + "?s=64&d=identicon"
+                    break;
+                  case 'gravatar-monster':
+                    identiconDictionary[n] = "https://www.gravatar.com/avatar/" + n.substring(0, 32) + "?s=64&d=monsterid"
+                    break;
+                  case 'identicon':
+                    identiconDictionary[n] = "data:image/png;base64," + new Identicon(n, 64).toString();
+                    break;
+                  default:
+                  case 'jdenticon':
+                    identiconDictionary[n] = "data:image/svg+xml;base64," + btoa(jdenticon.toSvg(n, 64));
+                    break;
+                }
+              }
               var identiconImage = identiconDictionary[n];
               identicon.querySelector('img').src = identiconImage;
               message.element.parentNode.insertBefore(identicon, message.element);
@@ -3590,6 +3609,12 @@ try {
             <input type="radio" name="discussIdenti" data-setname="discussIdenti" data-setvalue="headBg">스레딕 헬퍼 방식<br>
             <input type="radio" name="discussIdenti" data-setname="discussIdenti" data-setvalue="identicon">아이덴티콘<br>
             <input type="radio" name="discussIdenti" data-setname="discussIdenti" data-setvalue="none">사용 안함
+            <h2>아이덴티콘 라이브러리</h2>
+            <p>참고 : NamuFix에서 특정 사용자의 이메일주소를 조회할 수 없기에 Gravatar, Gravatar(monsterid)는 해당 사용자의 그라바타와 다르게 나옴.</p>
+            <input type="radio" name="identiconLibrary" data-setname="identiconLibrary" data-setvalue="identicon">stewartlord/identicon.js (GitHub스타일의 아이덴티콘)<br>
+            <input type="radio" name="identiconLibrary" data-setname="identiconLibrary" data-setvalue="jdenticon">jdenticon (원을 포함하는 여러 도형과 다양한 색으로 이루어진 아이덴티콘)<br>
+            <input type="radio" name="identiconLibrary" data-setname="identiconLibrary" data-setvalue="gravatar">Gravatar (Gravatar에서 생성되는 기하학적 패턴 기반의 아이덴티콘)<br>
+            <input type="radio" name="identiconLibrary" data-setname="identiconLibrary" data-setvalue="gravatar-monster">Gravatar(monsterid) (Gravatar에서 생성되는 <del style="color: gray;">존나 못생긴</del> 몬스터)
             <h2>토론에서 익명 기여자 IP주소 조회</h2>
             <p>VPNGate 여부, 통신사, 국가이미지를 IP 주소 옆에 표시합니다. 요청 수가 많을 시 실패할 수 도 있습니다.</p>
             <input type="checkbox" name="lookupIPonDiscuss" data-setname="lookupIPonDiscuss" data-as-boolean>토론시 익명 기여자 IP 주소 조회</input><br>
