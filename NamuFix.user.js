@@ -2862,9 +2862,10 @@ try {
               a.parentNode.insertBefore(span, a.nextSibling);
             } else if (isIdenticon) {
               message.element.className += " hasNFIdenticon";
-              var identicon = document.createElement("div");
+              let identicon = document.createElement("div");
               identicon.className = "nf-identicon";
-              identicon.innerHTML = '<a><img style="width: 64px; height: 64px;"></img></a>';
+              identicon.style.position = 'relative';
+              identicon.innerHTML = '<div class="identicon-pointer" style="width: 0px;height: 0px;position: absolute;border-top: 20px solid transparent;border-right: 15px solid #B0D3AD;left: 64px;border-bottom: 20px solid transparent;"></div><a><img style="width: 64px; height: 64px;"></img></a>';
               identicon.querySelector("img").dataset.hash = n;
               identicon.querySelector("a").dataset.hash = n;
               identicon.querySelector("a").href = "#NothingToLink";
@@ -2919,7 +2920,7 @@ try {
                     identiconDictionary[n] = "https://secure.gravatar.com/avatar/" + n.substring(0, 32) + "?s=64&d=monsterid"
                     break;
                   case 'identicon':
-                    identiconDictionary[n] = "data:image/png;base64," + new Identicon(n, 64).toString();
+                    identiconDictionary[n] = "data:image/svg+xml;base64," + new Identicon(n, {size: 64, format: 'svg'}).toString();
                     break;
                   default:
                   case 'jdenticon':
@@ -2927,10 +2928,12 @@ try {
                     break;
                 }
               }
-              var identiconImage = identiconDictionary[n];
+              let identiconImage = identiconDictionary[n];
               identicon.querySelector('img').src = identiconImage;
               message.element.parentNode.insertBefore(identicon, message.element);
+              message.element.querySelector('.r-head').style.borderLeft = 'none';
 
+              identicon.querySelector('.identicon-pointer').style.borderRight = '15px solid ' + getComputedStyle(message.element.querySelector('.r-head')).backgroundColor;
               if (message.element.parentNode.dataset.id != 1) {
                 message.element.parentNode.style.marginTop = '-76px';
                 identicon.style.marginTop = '-66px';
