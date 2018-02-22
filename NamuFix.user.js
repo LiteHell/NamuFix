@@ -3600,15 +3600,19 @@ try {
         await SET.load();
         win.content(async function (el) {
           el.className += " NFSettingsContainer";
-          el.innerHTML = `<style>.NFSettingsContainer h1 {font-size: 17pt;} .NFSettingsContainer h2 {font-size: 13pt;}</style>
+          el.innerHTML = `<style>.NFSettingsContainer h1 {font-size: 17pt; margin-left: 8px;} .NFSettingsContainer h2 {font-size: 13pt; margin-left: 8px;} .NFSettingsContainer .settings-paragraph {margin-left: 8px;}</style>
             <h1>NamuFix 전역</h1>
+            <div class="settings-paragraph">
             <h2>IP정보 조회시 기관명</h2>
+            <div class="settings-paragraph">
             <p>IP정보 조회시에 무슨 기관명을 이용할지 결정합니다. 아래 설정에서 KISA WHOIS 결과에서의 기관명이 선택됐는데 KISA WHOIS 결과가 조회되지 않을 시 자동으로 ipinfo.io에서 조회됩니다. 이 설정은 KISA WHOIS 조회를 제외한 모든 IP정보 조회를 동반한 기능(예: 토론시 익명 기여자 IP주소 조회, 익명 기여자 기여목록에서의 IP 정보 등)에 영향을 끼칩니다.</p>
             <input type="radio" name="ipInfoDefaultOrg" data-setname="ipInfoDefaultOrg" data-setvalue="ipinfo.io">ipinfo.io에서 조회 (기본값)<br>
             <input type="radio" name="ipInfoDefaultOrg" data-setname="ipInfoDefaultOrg" data-setvalue="KISAuser">KISA WHOIS 결과에서 IP 이용 기관명<br>
             <input type="radio" name="ipInfoDefaultOrg" data-setname="ipInfoDefaultOrg" data-setvalue="KISAISP">KISA WHOIS 결과에서 IP 보유 기관명<br>
             <input type="radio" name="ipInfoDefaultOrg" data-setname="ipInfoDefaultOrg" data-setvalue="KISAuserOrISP">KISA WHOIS 결과에서 IP 보유 기관명 혹은 IP 이용 기관명<br>
+            </div>
             <h2>동시요청제한</h2>
+            <div class="settings-paragraph">
             관리작업시의 동시요청제한 : 
             <input type="number" data-setname="adminReqLimit"></input><br>
             이미지 업로드시의 동시 요청 제한 : 
@@ -3616,68 +3620,110 @@ try {
             IP이용자의 기여목록에서 차단기록 검색 딜레이 : 
             <input type="number" data-setname="ipBlockHistoryCheckDelay"></input>ms (1000ms=1초)
             <br><strong>경고 : 너무 높게 설정하면 reCAPTCHA가 뜹니다.</strong>
+            </div>
             <h2>umi 쿠키</h2>
+            <div class="settings-paragraph">
             <p>NamuFix 실행시 umi 쿠키값을 다음과 같이 변경합니다. 공백으로 설정시 변경하지 않습니다.</p>
             <input type="text" data-setname="umiCookie"></input>
+            </div>
+            </div>
             <h1>토론 편의성</h1>
+            <div class="settings-paragraph">
             <h2>토론 아이덴티콘</h2>
+            <div class="settings-paragraph">
             <input type="radio" name="discussIdenti" data-setname="discussIdenti" data-setvalue="icon">디시라이트 갤러콘 방식<br>
             <input type="radio" name="discussIdenti" data-setname="discussIdenti" data-setvalue="headBg">스레딕 헬퍼 방식<br>
             <input type="radio" name="discussIdenti" data-setname="discussIdenti" data-setvalue="identicon">아이덴티콘<br>
             <input type="radio" name="discussIdenti" data-setname="discussIdenti" data-setvalue="none">사용 안함
+            </div>
             <h2>아이덴티콘 라이브러리</h2>
+            <div class="settings-paragraph">
             <p>참고 : NamuFix에서 특정 사용자의 이메일주소를 조회할 수 없기에 Gravatar, Gravatar(monsterid)는 해당 사용자의 그라바타와 다르게 나옴.</p>
             <input type="radio" name="identiconLibrary" data-setname="identiconLibrary" data-setvalue="identicon">stewartlord/identicon.js (GitHub스타일의 아이덴티콘)<br>
             <input type="radio" name="identiconLibrary" data-setname="identiconLibrary" data-setvalue="jdenticon">jdenticon (원을 포함하는 여러 도형과 다양한 색으로 이루어진 아이덴티콘)<br>
             <input type="radio" name="identiconLibrary" data-setname="identiconLibrary" data-setvalue="gravatar">Gravatar (Gravatar에서 생성되는 기하학적 패턴 기반의 아이덴티콘)<br>
             <input type="radio" name="identiconLibrary" data-setname="identiconLibrary" data-setvalue="gravatar-monster">Gravatar(monsterid) (Gravatar에서 생성되는 <del style="color: gray;">존나 못생긴</del> 몬스터)
+            </div>
             <h2>토론에서 익명 기여자 IP주소 조회</h2>
+            <div class="settings-paragraph">
             <p>VPNGate 여부, 통신사, 국가이미지를 IP 주소 옆에 표시합니다. 요청 수가 많을 시 실패할 수 도 있습니다.</p>
             <input type="checkbox" name="lookupIPonDiscuss" data-setname="lookupIPonDiscuss" data-as-boolean>토론시 익명 기여자 IP 주소 조회</input><br>
             <input type="checkbox" name="checkWhoisNetTypeOnDiscuss" data-setname="checkWhoisNetTypeOnDiscuss" data-as-boolean>네트워크 유형도 함께 조회 (단 한국 IP만 가능)</input>
+            </div>
             <h2>토론에서 보여지지 않은 쓰레도 불러오기</h2>
+            <div class="settings-paragraph">
             <p>보여지지 않은 쓰레드도 불러오도록 나무위키 토론 스크립트를 수정합니다.</p>
             <input type="checkbox" name="loadUnvisibleReses" data-setname="loadUnvisibleReses" data-as-boolean>보여지지 않은 토론 쓰레도 불러오기</input>
+            </div>
             <h2>토론 아이덴티콘 명도</h2>
+            <div class="settings-paragraph">
             <p>스레딕 헬퍼 방식을 사용하는 경우에만 적용됩니다.</p>
             <label for="discussIdentiLightness">명도</label><input name="discussIdentiLightness" data-setname="discussIdentiLightness" type="range" max="1" min="0" step="0.01"><br>
             <label for="discussIdentiSaturation">순도</label><input name="discussIdentiSaturation" data-setname="discussIdentiSaturation" type="range" max="1" min="0" step="0.01">
+            </div>
             <h2>토론시 앵커 미리보기</h2>
+            <div class="settings-paragraph">
             <input type="radio" name="discussAnchorPreviewType" data-setname="discussAnchorPreviewType" data-setvalue="0">사용하지 않음<br>
             <input type="radio" name="discussAnchorPreviewType" data-setname="discussAnchorPreviewType" data-setvalue="1">마우스를 올리면 미리보기 표시<br>
             <input type="radio" name="discussAnchorPreviewType" data-setname="discussAnchorPreviewType" data-setvalue="2">토론 메세지 위에 인용형식으로 표시<br>
             <input type="checkbox" name="removeNFQuotesInAnchorPreview" data-setname="removeNFQuotesInAnchorPreview" data-as-boolean>토론 메세지 위에 인용형식으로 표시할때, 인용문 안에 인용 형식으로 표시된 미리보기 제거
+            </div>
             <h2>보지 않는 토론 알림</h2>
+            <div class="settings-paragraph">
             <p>보지 않는 토론(예 : 탭 여러개를 여는 경우)에 새로운 발언 혹은 블라인드가 생길시 브라우저 API를 이용해 알림을 띄웁니다.<br>
             참고 : 토론에서 보여지지 않은 쓰레도 불러오기 기능이 활성화된 경우 보이지 않은 쓰레들을 불려오는 동안은 알림이 뜨지 않습니다.<br>
             경고 : 현재 실험중인 기능입니다.</p>
             <input type="checkbox" data-setname="notifyForUnvisibleThreads" data-as-boolean>보지 않는 토론 알림</input>
+            </div>
             <h2>마우스를 올리면 해당 사용자의 다른 쓰레 강조</h2>
+            <div class="settings-paragraph">
             <p>토론에서 쓰레에 마우스를 올리면 그 사용자의 다른 쓰레를 강조합니다.</p>
             <input type="checkbox" data-setname="emphasizeResesWhenMouseover" data-as-boolean>마우스를 올리면 해당 사용자의 다른 쓰레 강조</input>
+            </div>
+            </div>
             <h1>관리 편의성</h1>
+            <div class="settings-paragraph">
             <h2>편의기능</h2>
+            <div class="settings-paragraph">
             <input type="checkbox" name="addAdminLinksForLiberty" data-setname="addAdminLinksForLiberty" data-as-boolean>Liberty 스킨에 관리자 링크 추가하기</input><br>
             <input type="checkbox" name="addBatchBlockMenu" data-setname="addBatchBlockMenu" data-as-boolean>일괄 차단 메뉴 추가</input><br>
             <input type="checkbox" name="addQuickBlockLink" data-setname="addQuickBlockLink" data-as-boolean>토론중/문서 역사페이지에 차단 링크 추가</input><br>
             토론중 빠른차단 기능에서의 차단사유 템플릿 : <input type="text" data-setname="quickBlockReasonTemplate" style="width: 500px; max-width: 75vw;"></input><br>
             토론중/문서 역사에서의 빠른차단 기능에서의 차단기간 기본값(초) : <input type="text" data-setname="quickBlockDefaultDuration"></input>
+            </div>
+            </div>
             <h1>편집 편의성</h1>
+            <div class="settings-paragraph">
             <h2>자동저장 시간 간격</h2>
+            <div class="settings-paragraph">
             <p>편집중 자동저장 간격을 설정합니다. 0 이하의 값으로 설정할 시 자동으로 이루어지지 않으며 이 경우 단축키나 메뉴를 이용해 수동으로 저장해야 합니다.</p>
             <input type="number" name="autoTempsaveSpan" data-setname="autoTempsaveSpan"></input>ms (1000ms = 1s)
+            </div>
             <h2>이미지 업로드시 파일이름 유지</h2>
+            <div class="settings-paragraph">
             <p>파일이름에 난수를 덧붙이지 않고 그대로 유지합니다. 파일이름이 중복될시 오류가 발생할 수 있습니다.</p>
             <input type="checkbox" data-setname="unprefixedFilename" data-as-boolean>파일이름 그대로 유지</input>
+            </div>
+            </div>
             <h1>게시판</h1>
+            <div class="settings-paragraph">
             <h2>게시판 시간대 변경</h2>
+            <div class="settings-paragraph">
             <input type="checkbox" name="noLocaltimeOnNamuBoard" data-setname="noLocaltimeOnNamuBoard" data-as-boolean>게시판 시간대를 사용자의 시간대로 자동 변경합니다.</input>
+            </div>
             <h2>댓글 사용구</h2>
+            <div class="settings-paragraph">
             <p>상용구와 상용구는 ,로 구분하며 상용구 이름과 상용구 내용은 :로 구분합니다. (예시: <em>처리중:처리중입니다,기각:기각합니다</em>)</p>
             <input type="text" data-setname="commentMacros"></input>
+            </div>
+            </div>
             <h1>기타</h1>
+            <div class="settings-paragraph">
             <h2>SNS 공유 버튼</h2>
-            <input type="checkbox" name="addSnsShareButton" data-setname="addSnsShareButton" data-as-boolean>문서에 트위터/페이스북 공유 버튼을 추가합니다.</input>`
+            <div class="settings-paragraph">
+            <input type="checkbox" name="addSnsShareButton" data-setname="addSnsShareButton" data-as-boolean>문서에 트위터/페이스북 공유 버튼을 추가합니다.</input>
+            </div>
+            </div>`
           var optionTags = document.querySelectorAll('[data-setname]');
           await SET.load();
           for (var i = 0; i < optionTags.length; i++) {
