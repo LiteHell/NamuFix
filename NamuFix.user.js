@@ -672,7 +672,7 @@ try {
         var scriptElement = document.createElement("script");
 
         // configure button
-        pjaxButton.style.dispaly = "none";
+        pjaxButton.style.display = "none";
         pjaxButton.id = "nfFuckingPJAX"
         pjaxButton.addEventListener("click", callback);
 
