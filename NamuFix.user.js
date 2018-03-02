@@ -1161,8 +1161,9 @@ try {
         ENV.IsEditingRequest = /^\/edit_request\/([0-9]+)\/edit/.test(location.pathname);
         ENV.IsWritingRequest = /^\/new_edit_request\/.+/.test(location.pathname);
         ENV.IsIPACL = /^\/admin\/ipacl/.test(location.pathname);
-        ENV.IsSuspendAccount = /^\/admin\/suspend_account/.test(location.pathname);
-        ENV.IsBlockHistory = /^\/BlockHistory/.test(location.pathname);
+        ENV.IsBoardIPACL = /^\/admin\/boardipacl/.test(location.pathname);
+        ENV.IsSuspendAccount = /^\/admin\/boardsuspendaccount/.test(location.pathname);
+        ENV.IsBoardSuspendAccount = /^\/admin\/suspend_account/.test(location.pathname);
         ENV.IsRecentChanges = location.pathname.indexOf('/RecentChanges') == 0;
         ENV.skinName = /(senkawa|Liberty|namuvector)/i.exec(document.body.className)[1].toLowerCase();
         if (location.pathname.indexOf('/edit_request') == 0)
@@ -3405,7 +3406,7 @@ try {
               location.pathname = '/contribution/author/' + target + '/document';
             }
           }
-        } else if (ENV.IsIPACL || ENV.IsSuspendAccount) {
+        } else if (ENV.IsIPACL || ENV.IsSuspendAccount  || ENV.IsBoardIPACL || ENV.IsBoardSuspendAccount) {
           var expireSelect = document.querySelector('select[name=expire]');
 
           function enterEasily() {
