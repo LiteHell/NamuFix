@@ -1164,6 +1164,7 @@ try {
         ENV.IsBoardIPACL = /^\/admin\/boardipacl/.test(location.pathname);
         ENV.IsSuspendAccount = /^\/admin\/boardsuspendaccount/.test(location.pathname);
         ENV.IsBoardSuspendAccount = /^\/admin\/suspend_account/.test(location.pathname);
+        ENV.IsBlockHistory = /^\/BlockHistory/.test(location.pathname);
         ENV.IsRecentChanges = location.pathname.indexOf('/RecentChanges') == 0;
         ENV.skinName = /(senkawa|Liberty|namuvector)/i.exec(document.body.className)[1].toLowerCase();
         if (location.pathname.indexOf('/edit_request') == 0)
