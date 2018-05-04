@@ -3152,7 +3152,7 @@ try {
               <tr><td>VPNGATE?</td><td>${await checkVPNGateIP(ip) ? "<span style=\"color: red;\">YES! This is currently WORKING VPNGATE IP!</span>" : "Not a vpngate ip"}</td></tr>
               <tr><td>KISA WHOIS</td><td><a href="#" class="get-whois">조회하기</a></td></tr>
               <tr class="nf_ipblockchecking"><td colspan="2">IP 차단기록을 검색하고 있습니다... 잠시만 기다려주세요.</td></tr>
-              <tr><td>빠른차단</td><td><a class="nf-quickblock">빠른차단</a></td></tr>
+              <tr class="nf-quickblock-row"><td>빠른차단</td><td><a class="nf-quickblock">빠른차단</a></td></tr>
               </tbody>
               <tfoot>
               <tr><td colspan="2" style="border-top: 1px solid black;">기술적인 한계로, VPNGATE 여부는 "현재 VPNGATE VPN인가?"의 여부이지, "작성 당시에 VPNGATE VPN인가?"의 여부가 아닙니다.<br>
@@ -3174,6 +3174,8 @@ try {
                     defaultReason: "긴급조치"
                   })
                 });
+                if(!SET.addQuickBlockLink)
+                  ipInfo.querySelector('.nf-quickblock-row').style.display = 'none';
                 function displayIsBlocked(mask, tbody) {
                   let row = document.createElement("tr");
                   row.innerHTML = "<td>IP차단기록 (" + mask + ")</td><td class=\"nf_isipblocked\">조회중입니다...</td>";
@@ -3224,21 +3226,22 @@ try {
             var userId = userIdPattern.exec(location.pathname)[1];
 
             // block user link
-            let quickBlockLink = document.createElement("div");
-            quickBlockLink.innerHTML = '<div style="border: 1px black solid; padding: 2px;">빠른차단 : <a href="#">[차단]</a></div>'
-            quickBlockLink.querySelector('a').addEventListener('click', (evt)=>{
-              evt.preventDefault();
-              quickBlockPopup({
-                author: {
-                  name: userId,
-                  isIP: false
-                },
-                defaultDuration: SET.quickBlockDefaultDuration,
-                defaultReason: "긴급조치"
+            if(SET.addQuickBlockLink) {
+              let quickBlockLink = document.createElement("div");
+              quickBlockLink.innerHTML = '<div style="border: 1px black solid; padding: 2px;">빠른차단 : <a href="#">[차단]</a></div>'
+              quickBlockLink.querySelector('a').addEventListener('click', (evt)=>{
+                evt.preventDefault();
+                quickBlockPopup({
+                  author: {
+                    name: userId,
+                    isIP: false
+                  },
+                  defaultDuration: SET.quickBlockDefaultDuration,
+                  defaultReason: "긴급조치"
+                })
               })
-            })
-            insertBeforeTable(quickBlockLink);
-
+              insertBeforeTable(quickBlockLink);
+            }
             // user blockhistory
             var userInfo = document.createElement("p");
             userInfo.innerHTML = '<div style="border: 1px black solid; padding: 2px;" class="nf_blockhistory">차단 기록 조회중...</div>'
@@ -3571,18 +3574,20 @@ try {
               name: row.querySelector('td:nth-child(2) a').textContent.trim()
             }
             author.isIP = validateIP(author.name);
-            let quickBlockAnchor = document.createElement("a");
-            quickBlockAnchor.textContent = " [차단] "
-            quickBlockAnchor.href = "#";
-            quickBlockAnchor.addEventListener('click', (evt) => {
-              evt.preventDefault();
-              quickBlockPopup({
-                author: author,
-                defaultReason: '긴급차단 - 반달리즘',
-                defaultDuration: SET.quickBlockDefaultDuration
-              });
-            })
-            row.querySelector('td:first-child').insertBefore(quickBlockAnchor, row.querySelector('td:first-child span'));
+            if(SET.addQuickBlockLink) {
+              let quickBlockAnchor = document.createElement("a");
+              quickBlockAnchor.textContent = " [차단] "
+              quickBlockAnchor.href = "#";
+              quickBlockAnchor.addEventListener('click', (evt) => {
+                evt.preventDefault();
+                quickBlockPopup({
+                  author: author,
+                  defaultReason: '긴급차단 - 반달리즘',
+                  defaultDuration: SET.quickBlockDefaultDuration
+                });
+              })
+              row.querySelector('td:first-child').insertBefore(quickBlockAnchor, row.querySelector('td:first-child span'));
+            }
           }
         }
 
@@ -3725,11 +3730,11 @@ try {
             <div class="settings-paragraph">
             <input type="checkbox" name="addAdminLinksForLiberty" data-setname="addAdminLinksForLiberty" data-as-boolean>Liberty 스킨에 관리자 링크 추가하기</input><br>
             <input type="checkbox" name="addBatchBlockMenu" data-setname="addBatchBlockMenu" data-as-boolean>일괄 차단 메뉴 추가</input><br>
-            <input type="checkbox" name="addQuickBlockLink" data-setname="addQuickBlockLink" data-as-boolean>토론중/문서 역사페이지에 차단 링크 추가</input><br>
+            <input type="checkbox" name="addQuickBlockLink" data-setname="addQuickBlockLink" data-as-boolean>빠른 차단 링크 추가</input><br>
             토론중 빠른차단 기능에서의 차단사유 템플릿 : <input type="text" data-setname="quickBlockReasonTemplate_discuss" style="width: 500px; max-width: 75vw;"></input><br>
             역사페이지 빠른차단 기능에서의 차단사유 템플릿 : <input type="text" data-setname="quickBlockReasonTemplate_history" style="width: 500px; max-width: 75vw;"></input><br>
             <strong>참고:</strong> 문서명(\${docName})은 URL 인코딩이 되지 않고 리버전 번호(\${revisionNo})는 r로 시작하기 때문에 주소형태의 차단사유 템플릿을 쓰는 것을 권장하지 않습니다.)<br>
-            토론중/문서 역사에서의 빠른차단 기능에서의 차단기간 기본값(초) : <input type="text" data-setname="quickBlockDefaultDuration"></input>
+            빠른차단 기능에서의 차단기간 기본값(초) : <input type="text" data-setname="quickBlockDefaultDuration"></input>
             </div>
             </div>
             <h1>편집 편의성</h1>
