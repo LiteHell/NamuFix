@@ -174,9 +174,10 @@ try {
           archiveLink.removeEventListener("click", clickHandler);
           GM.xmlHttpRequest({
             method: 'POST',
-            url: 'http://phpgongbu.ga/archive/',
+            url: 'https://phpgongbu.ga/archive/',
             headers: {
-              "Content-Type": "application/x-www-form-urlencoded"
+              "Content-Type": "application/x-www-form-urlencoded",
+              "User-Agent": `Mozilla/5.0 (compatible; NamuFix/${GM.info.script.version}`
             },
             data: `board_num=${documentId}`,
             onload: (res) => {
