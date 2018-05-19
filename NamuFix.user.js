@@ -2528,8 +2528,8 @@ try {
             })
           }
           // 리다이렉트로 왔을 시 그 라디이렉트 문서 편집/삭제 링크 추가
-          if (document.querySelector('article .alert.alert-info, .Liberty .wiki-article .alert.alert-info') && document.querySelector('article .alert.alert-info, .Liberty .wiki-article .alert.alert-info').innerHTML.indexOf('에서 넘어옴') != -1) {
-            var redirectAlert = document.querySelector('article .alert.alert-info, .Liberty .wiki-article .alert.alert-info');
+          if (document.querySelector('.alert.alert-info') && document.querySelector('.alert.alert-info').innerHTML.indexOf('에서 넘어옴') != -1) {
+            var redirectAlert = document.querySelector('.alert.alert-info');
             var origDocuName = decodeURIComponent(/\/w\/(.+?)\?noredirect=1/.exec(redirectAlert.querySelector('a.document').href)[1]);
             var editUrl = '/edit/' + origDocuName;
             var deleteUrl = '/delete/' + origDocuName;
@@ -2571,7 +2571,7 @@ try {
               if (i == higherDocs.length - 1) {
                 var hdinid = setInterval(function () {
                   if (codwe + codwnf != higherDocs.length) return;
-                  var docTitleTag = document.querySelector('h1.title, body.Liberty .liberty-content .liberty-content-header h1.title');
+                  var docTitleTag = document.querySelector('h1.title');
                   var hdsPT = document.createElement("p");
                   var sstl = 0;
                   for (var i = 0; i < higherDocs.length; i++) {
@@ -3113,7 +3113,7 @@ try {
 
         } else if (ENV.IsUserContribsPage) {
           function insertBeforeTable(element) {
-            var bread = document.querySelector("article > ol.breadcrumb.link-nav, body.Liberty .wiki-article ol.breadcrumb.link-nav");
+            var bread = document.querySelector("ol.breadcrumb.link-nav");
             bread.parentNode.insertBefore(element, bread);
           }
 
@@ -3528,7 +3528,7 @@ try {
             }
             location.href = "/w/" + encodeURIComponent(ENV.docTitle) + "?rev=" + revNo;
           })
-          var historyRows = document.querySelectorAll('article .wiki-list li, body.Liberty .wiki-article .wiki-list li');
+          var historyRows = document.querySelectorAll('.wiki-list li');
           for (let historyRow of [].slice.call(historyRows)) {
             // 긴급차단
             if (SET.addQuickBlockLink) {
