@@ -22,6 +22,7 @@
 // @require     https://cdn.rawgit.com/wkpark/jsdifflib/dc19d085db5ae71cdff990aac8351607fee4fd01/difflib.js
 // @require     https://cdn.rawgit.com/wkpark/jsdifflib/dc19d085db5ae71cdff990aac8351607fee4fd01/diffview.js
 // @require     https://cdn.rawgit.com/LiteHell/NamuFix/d6bcc377c563c2745af0b8078ce5dc97f2c19910/namuapi.js
+// @require     https://cdn.rawgit.com/LiteHell/NamuFix/81c5359fc3f0ee27b9dad7fdd879b833e8367740/skinDependency.js
 // @require     https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.19.3/moment-with-locales.min.js
 // @require     https://cdnjs.cloudflare.com/ajax/libs/moment-timezone/0.5.14/moment-timezone-with-data.min.js
 // @require     https://cdnjs.cloudflare.com/ajax/libs/async/2.6.0/async.min.js
@@ -645,19 +646,7 @@ try {
       }
 
       // 문서/역사/편집 페이지 등에서 버튼 추가 함수
-      function addArticleButton(text, onclick) {
-        var aTag = document.createElement("a");
-        aTag.className = "btn btn-secondary";
-        aTag.setAttribute("role", "button");
-        aTag.innerHTML = text;
-        aTag.href = "#";
-        aTag.addEventListener('click', (evt) => {
-          evt.preventDefault();
-          onclick(evt);
-        });
-        var buttonGroup = document.querySelector('body.Liberty .liberty-content .content-tools .btn-group , body.senkawa .wiki-article-menu > div.btn-group');
-        buttonGroup.insertBefore(aTag, buttonGroup.firstChild);
-      };
+      var addArticleButton = skinDepedency.addArticleButtons;
 
       function uniqueID() {
         var dt = Date.now();
@@ -1158,7 +1147,7 @@ try {
         ENV.IsUserContribsPage = /^\/contribution\/(?:author|ip)\/.+\/(?:document|discuss)/.test(location.pathname);
         ENV.IsUploadPage = location.pathname.toLowerCase().indexOf('/upload/') == 0;
         ENV.IsDiff = location.pathname.toLowerCase().indexOf('/diff/') == 0;
-        ENV.IsLoggedIn = document.querySelectorAll('body.Liberty img.profile-img, img.user-img').length == 1;
+        ENV.IsLoggedIn = skinDepedency.isLoggedIn;
         ENV.IsSearch = location.pathname.indexOf('/search/') == 0;
         ENV.IsEditingRequest = /^\/edit_request\/([0-9]+)\/edit/.test(location.pathname);
         ENV.IsWritingRequest = /^\/new_edit_request\/.+/.test(location.pathname);
@@ -1172,24 +1161,14 @@ try {
         if (location.pathname.indexOf('/edit_request') == 0)
           ENV.EditRequestNo = /^\/edit_request\/([0-9]+)/.exec(location.pathname);
         if (ENV.IsLoggedIn) {
-          ENV.UserName = document.querySelector('body.Liberty .navbar-login .login-menu .dropdown-menu .dropdown-item:first-child, div.user-info > div.user-info > div:first-child').textContent.trim();
+          ENV.UserName = skinDepedency.username;
         }
         if (document.querySelector("input[name=section]"))
           ENV.section = document.querySelector("input[name=section]").value;
-        if (document.querySelector("body.senkawa h1.title > a"))
-          ENV.docTitle = document.querySelector("body.senkawa h1.title > a").textContent;
-        else if (document.querySelector("body.senkawa h1.title"))
-          ENV.docTitle = document.querySelector("body.senkawa h1.title").textContent;
-        else if (ENV.skinName == "liberty" && ENV.IsDiscussing)
-          ENV.docTitle = /^(.+) \(토론\)/.exec(document.querySelector('.liberty-content .liberty-content-header .title h1').textContent.trim())[1]
-        else if (/^\/[a-zA-Z_]+\/(.+)/.test(location.pathname))
-          ENV.docTitle = decodeURIComponent(/^\/[a-zA-Z_]+\/(.+)/.exec(location.pathname)[1]);
-        else
-          ENV.docTitle = document.querySelector('body.Liberty .liberty-content-header .title h1').textContent;
-        ENV.docTitle = ENV.docTitle.trim();
+        ENV.docTitle = skinDepedency.docTitle;
         if (ENV.Discussing) {
           ENV.topicNo = /^\/thread\/([^#]+)/.exec(location.pathname)[1];
-          ENV.topicTitle = document.querySelector('body.Liberty .wiki-article h2.wiki-heading:first-child , article > h2').innerHTML.trim();
+          ENV.topicTitle = skinDepedency.topicTitle;
         }
         if (ENV.IsDiff) {
           //ENV.docTitle = /diff\/(.+?)\?/.exec(location.href)[1];
@@ -4153,7 +4132,7 @@ try {
       listenPJAX(mainFunc);
       await mainFunc();
 
-      if (document.querySelector('body').getAttribute('class').indexOf('senkawa') == -1 && document.querySelector('body').getAttribute('class').indexOf('Liberty') == -1) {
+      if (skinDepedency === null) {
         await SET.load();
         if (!SET.ignoreNonSenkawaWarning) {
           var win = TooSimplePopup();

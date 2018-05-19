@@ -64,6 +64,38 @@ let skinDependencies = {
         }
     },
     "buma": {
+        addArticleButtons: (text, onclick) => {
+            let wikimenu = document.querySelector('.wiki-article.menu ul');
+            let li = document.createElement("li");
+            li.innerHTML = `<a href="#">
+            <span class="icon">
+            <i class="fas fa-wrench"></i>
+            </span>
+            <span class="wiki-article-menu-text is-hidden-touch"> ${text}</span>
+            </a>`;
+            li.querySelector('a').addEventListener('click', (evt) => {
+              evt.preventDefault();
+              onclick(evt);
+            });
+            wikimenu.appendChild(li);
+        },
+        get isLoggedIn() {
+            return document.querySelector('body.Liberty img.profile-img') !== null;
+        },
+        get username() {
+            return document.querySelector('#mainNavbar .navbar-item.has-dropdown a.navbar-link').textContent.trim();
+        },
+        get docTitle() {
+
+            if (location.pathname.toLowerCase().startsWith('/thread/'))
+                return /^(.+) \(토론\)/.exec(document.querySelector('.liberty-content .liberty-content-header .title h1').textContent.trim())[1].trim();
+            if (/^\/[a-zA-Z_]+\/(.+)/.test(location.pathname))
+                return decodeURIComponent(/^\/[a-zA-Z_]+\/(.+)/.exec(location.pathname)[1]).trim();
+            return document.querySelector('body.Liberty .liberty-content-header .title h1').textContent.trim();
+        },
+        get topicTitle() {
+            return document.querySelector('body.Liberty .wiki-article h2.wiki-heading:first-child').innerHTML.trim();
+        }
 
     },
     "vector": {
@@ -72,7 +104,7 @@ let skinDependencies = {
 }
 let skinDepedency = null;
 for(var i in skinDependencies) {
-    if(document.className.includes(i)) {
+    if(document.body.className.includes(i)) {
         skinDepedency = skinDependencies[i]
         break;
     }
