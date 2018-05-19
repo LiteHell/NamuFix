@@ -2516,12 +2516,12 @@ try {
 
 
           if (SET.addSnsShareButton && ENV.IsDocument) {
-            addArticleButton('<span class="icon ion-social-facebook"></span>', (evt) => {
+            addArticleButton('<span class="icon ion-social-facebook fa fab fa-facebook-square"></span>', (evt) => {
               evt.preventDefault();
 
               GM.openInTab(`http://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(location.href)}`)
             })
-            addArticleButton('<span class="icon ion-social-twitter"></span>', (evt) => {
+            addArticleButton('<span class="icon ion-social-twitter fa fab fa-twitter"></span>', (evt) => {
               evt.preventDefault();
 
               GM.openInTab(`http://twitter.com/intent/tweet?url=${encodeURIComponent(location.href)}&text=${ENV.docTitle}`)
