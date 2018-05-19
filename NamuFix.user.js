@@ -3003,13 +3003,35 @@ try {
           }
 
           let emphasizeResStyle = document.createElement("style");
+          let emphasizedHash = null;
           document.head.appendChild(emphasizeResStyle);
 
           function emphasizeWhenMouseoverLoop(i) {
             let usernameHash = SHA1((i.author.isIP ? '!IP!' : '!ID!') + i.author.name);
             i.element.dataset.usernameHash = usernameHash;
-            i.element.addEventListener('mouseover', () => emphasizeResStyle.innerHTML = `.res[data-username-hash="${usernameHash}"] .r-head {background: #8a8a8a !important} .res[data-username-hash="${usernameHash}"] .r-head.first-author {background: #8DAD8A !important}`)
-            i.element.addEventListener('mouseout', () => emphasizeResStyle.innerHTML = '');
+            let linkAnchor = document.createElement("a");
+            linkAnchor.href = "#";
+            linkAnchor.className = "nf-emp-thread-link"
+            linkAnchor.innerHTML = '[강조]' // ionicon에 압정 아이콘이 안 보인다. 이런데 쓰면 딱인데...
+            linkAnchor.title = "이 사용자의 쓰레드를 강조합니다."
+            linkAnchor.addEventListener("click", (evt) => {
+              evt.preventDefault();
+              if (emphasizedHash !== usernameHash) {
+                emphasizedHash = usernameHash;
+                emphasizeResStyle.innerHTML = `.res[data-username-hash="${usernameHash}"] .r-head {background: #8a8a8a !important} .res[data-username-hash="${usernameHash}"] .r-head.first-author {background: #8DAD8A !important} .res[data-username-hash="${usernameHash}"] .nf-emp-thread-link {color: red;} .res:not([data-username-hash="${usernameHash}"]) {filter: blur(1.5px);}`
+              } else {
+                emphasizedHash = null;
+                emphasizeResStyle.innerHTML = "";
+              }
+              console.log(emphasizedHash);
+            });
+            i.nfRightHeadSpan.appendChild(linkAnchor);
+            i.element.addEventListener('mouseover', () => {
+              if(emphasizedHash === null) emphasizeResStyle.innerHTML = `.res[data-username-hash="${usernameHash}"] .r-head {background: #8a8a8a !important} .res[data-username-hash="${usernameHash}"] .r-head.first-author {background: #8DAD8A !important}`
+            })
+            i.element.addEventListener('mouseout', () => {
+              if(emphasizedHash === null) emphasizeResStyle.innerHTML = ''
+            });
           }
 
           function deserializeResDom(resElement) {
@@ -3028,12 +3050,24 @@ try {
                 let headspan = resElement.querySelector('.nf-headinfo')
                 if (!headspan) {
                   headspan = document.createElement("span");
-                  headspan.className = "namufix-headinfo";
+                  headspan.className = "nf-headinfo";
                   userLink.parentNode.insertBefore(headspan, userLink.nextSibling);
                   headspan.style.marginLeft = "1em";
                 }
                 delete this.nfHeadspan;
                 return this.nfHeadspan = headspan;
+              },
+              get nfRightHeadSpan() {
+                let rightHeadSpan = resElement.querySelector('.nf-headinfo-right')
+                if (!rightHeadSpan) {
+                  rightHeadSpan = document.createElement("span");
+                  rightHeadSpan.className = "nf-headinfo-right"
+                  let time = resElement.querySelector('.r-head > .pull-right > time');
+                  time.parentNode.insertBefore(rightHeadSpan, time.nextSibling);
+                  rightHeadSpan.style.marginLeft = "0.25rem";
+                }
+                delete this.nfRightHeadSpan;
+                return this.nfRightHeadSpan = rightHeadSpan;
               }
             }
           }
