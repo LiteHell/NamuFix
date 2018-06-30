@@ -22,7 +22,6 @@
 // @require     https://cdn.rawgit.com/wkpark/jsdifflib/dc19d085db5ae71cdff990aac8351607fee4fd01/difflib.js
 // @require     https://cdn.rawgit.com/wkpark/jsdifflib/dc19d085db5ae71cdff990aac8351607fee4fd01/diffview.js
 // @require     https://cdn.rawgit.com/LiteHell/NamuFix/d6bcc377c563c2745af0b8078ce5dc97f2c19910/namuapi.js
-// @require     https://cdn.rawgit.com/LiteHell/NamuFix/81c5359fc3f0ee27b9dad7fdd879b833e8367740/skinDependency.js
 // @require     https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.19.3/moment-with-locales.min.js
 // @require     https://cdnjs.cloudflare.com/ajax/libs/moment-timezone/0.5.14/moment-timezone-with-data.min.js
 // @require     https://cdnjs.cloudflare.com/ajax/libs/async/2.6.0/async.min.js
@@ -646,7 +645,19 @@ try {
       }
 
       // 문서/역사/편집 페이지 등에서 버튼 추가 함수
-      var addArticleButton = skinDepedency.addArticleButtons;
+      function addArticleButton(text, onclick) {
+        var aTag = document.createElement("a");
+        aTag.className = "btn btn-secondary";
+        aTag.setAttribute("role", "button");
+        aTag.innerHTML = text;
+        aTag.href = "#";
+        aTag.addEventListener('click', (evt) => {
+          evt.preventDefault();
+          onclick(evt);
+        });
+        var buttonGroup = document.querySelector('body.Liberty .liberty-content .content-tools .btn-group , body.senkawa .wiki-article-menu > div.btn-group');
+        buttonGroup.insertBefore(aTag, buttonGroup.firstChild);
+      };
 
       function uniqueID() {
         var dt = Date.now();
@@ -1147,7 +1158,7 @@ try {
         ENV.IsUserContribsPage = /^\/contribution\/(?:author|ip)\/.+\/(?:document|discuss)/.test(location.pathname);
         ENV.IsUploadPage = location.pathname.toLowerCase().indexOf('/upload/') == 0;
         ENV.IsDiff = location.pathname.toLowerCase().indexOf('/diff/') == 0;
-        ENV.IsLoggedIn = skinDepedency.isLoggedIn;
+        ENV.IsLoggedIn = document.querySelectorAll('body.Liberty img.profile-img, img.user-img').length == 1;
         ENV.IsSearch = location.pathname.indexOf('/search/') == 0;
         ENV.IsEditingRequest = /^\/edit_request\/([0-9]+)\/edit/.test(location.pathname);
         ENV.IsWritingRequest = /^\/new_edit_request\/.+/.test(location.pathname);
@@ -1161,14 +1172,24 @@ try {
         if (location.pathname.indexOf('/edit_request') == 0)
           ENV.EditRequestNo = /^\/edit_request\/([0-9]+)/.exec(location.pathname);
         if (ENV.IsLoggedIn) {
-          ENV.UserName = skinDepedency.username;
+          ENV.UserName = document.querySelector('body.Liberty .navbar-login .login-menu .dropdown-menu .dropdown-item:first-child, div.user-info > div.user-info > div:first-child').textContent.trim();
         }
         if (document.querySelector("input[name=section]"))
           ENV.section = document.querySelector("input[name=section]").value;
-        ENV.docTitle = skinDepedency.docTitle;
+        if (document.querySelector("body.senkawa h1.title > a"))
+          ENV.docTitle = document.querySelector("body.senkawa h1.title > a").textContent;
+        else if (document.querySelector("body.senkawa h1.title"))
+          ENV.docTitle = document.querySelector("body.senkawa h1.title").textContent;
+        else if (ENV.skinName == "liberty" && ENV.IsDiscussing)
+          ENV.docTitle = /^(.+) \(토론\)/.exec(document.querySelector('.liberty-content .liberty-content-header .title h1').textContent.trim())[1]
+        else if (/^\/[a-zA-Z_]+\/(.+)/.test(location.pathname))
+          ENV.docTitle = decodeURIComponent(/^\/[a-zA-Z_]+\/(.+)/.exec(location.pathname)[1]);
+        else
+          ENV.docTitle = document.querySelector('body.Liberty .liberty-content-header .title h1').textContent;
+        ENV.docTitle = ENV.docTitle.trim();
         if (ENV.Discussing) {
           ENV.topicNo = /^\/thread\/([^#]+)/.exec(location.pathname)[1];
-          ENV.topicTitle = skinDepedency.topicTitle;
+          ENV.topicTitle = document.querySelector('body.Liberty .wiki-article h2.wiki-heading:first-child , article > h2').innerHTML.trim();
         }
         if (ENV.IsDiff) {
           //ENV.docTitle = /diff\/(.+?)\?/.exec(location.href)[1];
@@ -2507,8 +2528,8 @@ try {
             })
           }
           // 리다이렉트로 왔을 시 그 라디이렉트 문서 편집/삭제 링크 추가
-          if (document.querySelector('.alert.alert-info') && document.querySelector('.alert.alert-info').innerHTML.indexOf('에서 넘어옴') != -1) {
-            var redirectAlert = document.querySelector('.alert.alert-info');
+          if (document.querySelector('article .alert.alert-info, .Liberty .wiki-article .alert.alert-info') && document.querySelector('article .alert.alert-info, .Liberty .wiki-article .alert.alert-info').innerHTML.indexOf('에서 넘어옴') != -1) {
+            var redirectAlert = document.querySelector('article .alert.alert-info, .Liberty .wiki-article .alert.alert-info');
             var origDocuName = decodeURIComponent(/\/w\/(.+?)\?noredirect=1/.exec(redirectAlert.querySelector('a.document').href)[1]);
             var editUrl = '/edit/' + origDocuName;
             var deleteUrl = '/delete/' + origDocuName;
@@ -2550,7 +2571,7 @@ try {
               if (i == higherDocs.length - 1) {
                 var hdinid = setInterval(function () {
                   if (codwe + codwnf != higherDocs.length) return;
-                  var docTitleTag = document.querySelector('h1.title');
+                  var docTitleTag = document.querySelector('h1.title, body.Liberty .liberty-content .liberty-content-header h1.title');
                   var hdsPT = document.createElement("p");
                   var sstl = 0;
                   for (var i = 0; i < higherDocs.length; i++) {
@@ -3092,7 +3113,7 @@ try {
 
         } else if (ENV.IsUserContribsPage) {
           function insertBeforeTable(element) {
-            var bread = document.querySelector("ol.breadcrumb.link-nav");
+            var bread = document.querySelector("article > ol.breadcrumb.link-nav, body.Liberty .wiki-article ol.breadcrumb.link-nav");
             bread.parentNode.insertBefore(element, bread);
           }
 
@@ -3507,7 +3528,7 @@ try {
             }
             location.href = "/w/" + encodeURIComponent(ENV.docTitle) + "?rev=" + revNo;
           })
-          var historyRows = document.querySelectorAll('.wiki-list li');
+          var historyRows = document.querySelectorAll('article .wiki-list li, body.Liberty .wiki-article .wiki-list li');
           for (let historyRow of [].slice.call(historyRows)) {
             // 긴급차단
             if (SET.addQuickBlockLink) {
@@ -4132,7 +4153,7 @@ try {
       listenPJAX(mainFunc);
       await mainFunc();
 
-      if (skinDepedency === null) {
+      if (document.querySelector('body').getAttribute('class').indexOf('senkawa') == -1 && document.querySelector('body').getAttribute('class').indexOf('Liberty') == -1) {
         await SET.load();
         if (!SET.ignoreNonSenkawaWarning) {
           var win = TooSimplePopup();
