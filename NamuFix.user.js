@@ -15,7 +15,7 @@
 // @require     https://cdn.rawgit.com/LiteHell/NamuFix/0ea78119c377402a10bbdfc33365c5195ce7fccc/FlexiColorPicker.js
 // @require     https://cdn.rawgit.com/Caligatio/jsSHA/v2.3.1/src/sha.js
 // @require     https://cdn.rawgit.com/zenozeng/color-hash/v1.0.3/dist/color-hash.js
-// @require     http://www.xarg.org/download/pnglib.js
+// @require     https://cdn.rawgit.com/ben-liang/pnglib/91a91b7f840fdf19ef34a32df8051f2178957293/pnglib.js
 // @require     https://cdn.rawgit.com/stewartlord/identicon.js/7c4b4efdb7e2aba458eba14b24ba14e8e2bcdb2a/identicon.js
 // @require     https://cdn.jsdelivr.net/npm/jdenticon@1.8.0
 // @require     https://cdn.rawgit.com/LiteHell/TooSimplePopupLib/7f2a8a81f11f980c1dfa6b5b2213cd38b8bbde3c/TooSimplePopupLib.js
@@ -772,13 +772,13 @@ try {
       if (document.querySelectorAll('.dropdown-divider').length == 0) {
         (function () {
           nfMenuDivider.className = "dropdown-divider";
-          document.querySelector('nav.navbar ul.nav li.nav-item.dropdown .dropdown-menu').appendChild(nfMenuDivider);
-          document.querySelector('nav.navbar ul.nav li.nav-item.dropdown .dropdown-menu').appendChild(document.createElement("div"));
+          document.querySelector('nav.navbar ul.nav li.nav-item.dropdown.user-menu-parent .dropdown-menu').appendChild(nfMenuDivider);
+          document.querySelector('nav.navbar ul.nav li.nav-item.dropdown.user-menu-parent .dropdown-menu').appendChild(document.createElement("div"));
         })();
       } else {
         (function () {
           nfMenuDivider.className = "dropdown-divider";
-          var secondDivider = document.querySelectorAll('.dropdown-divider')[1];
+          var secondDivider = document.querySelectorAll('.user-menu-parent .dropdown-divider')[1];
           secondDivider.parentNode.insertBefore(nfMenuDivider, secondDivider);
         })();
       }
