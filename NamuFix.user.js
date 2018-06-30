@@ -9,7 +9,7 @@
 // @include     https://board.namu.wiki/*
 // @version     180519.0
 // @author      LiteHell
-// @downloadURL https://raw.githubusercontent.com/LiteHell/NamuFix/master/NamuFix.user.js
+// @downloadURL https://namufix.wikimasonry.org/latest.js
 // @require     https://greasemonkey.github.io/gm4-polyfill/gm4-polyfill.js
 // @require     https://cdn.rawgit.com/LiteHell/NamuFix/5326c9aada134f65bba171d12f5ca5d042fd4fca/korCountryNames.js
 // @require     https://cdn.rawgit.com/LiteHell/NamuFix/0ea78119c377402a10bbdfc33365c5195ce7fccc/FlexiColorPicker.js
