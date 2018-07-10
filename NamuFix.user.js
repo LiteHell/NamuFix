@@ -144,6 +144,481 @@ try {
       }
     }
   }
+  function nOu(a) {
+    return typeof a === 'undefined' || a == null;
+  }
+
+  // HTML 이스케이프 함수
+  function encodeHTMLComponent(text) {
+    var result = text;
+    // http://www.w3schools.com/php/func_string_htmlspecialchars.asp 참고함.
+    result = result.replace(/&/gmi, "&amp;");
+    result = result.replace(/</gmi, "&lt;");
+    result = result.replace(/>/gmi, "&gt;");
+    result = result.replace(/'/gmi, "&#039;");
+    result = result.replace(/"/gmi, "&quot;");
+    return result;
+  }
+
+  function validateIP(ip) {
+    return /^(?:\d{1,3}\.){3}\d{1,3}$/.test(ip) || /^([0-9a-f]){1,4}(:([0-9a-f]){1,4}){7}$/i.test(ip);
+  }
+
+  function formatDateTime(t) {
+    var d = new Date(t);
+    return `${d.getFullYear()}년 ${d.getMonth() + 1}월 ${d.getDate()}일 ${(['일', '월', '화', '수', '목', '금', '토'])[d.getDay()]}요일 ${ d.getHours() > 12 ? '오후' : '오전'} ${d.getHours() - (d.getHours() > 12 ? 12 : 0)}시 ${d.getMinutes()}분 ${d.getSeconds()}초`;
+  }
+
+  function formatTimespan(timespan) {
+    var units = [{
+        name: "주",
+        unit: 60 * 60 * 24 * 7,
+        value: 0
+      },
+      {
+        name: "일",
+        unit: 60 * 60 * 24,
+        value: 0
+      },
+      {
+        name: "시간",
+        unit: 60 * 60,
+        value: 0
+      },
+      {
+        name: "분",
+        unit: 60,
+        value: 0
+      },
+      {
+        name: "초",
+        unit: 1,
+        value: 0
+      }
+    ];
+    for (var i = 0; i < units.length; i++) {
+      while (timespan >= units[i].unit) {
+        timespan -= units[i].unit;
+        units[i].value++;
+      }
+    }
+    return units.filter(function (x) {
+      return x.value != 0;
+    }).map(function (x) {
+      return x.value + x.name
+    }).join(' ');
+  }
+
+  var hashDictionary512 = {};
+  var hashDictionary1 = {};
+  var hashDictionary256 = {};
+  var ipDictionary = {};
+
+  function SHA512(text) {
+    if (typeof hashDictionary512[text] === 'undefined') {
+      var shaObj = new jsSHA("SHA-512", "TEXT");
+      shaObj.update(text);
+      hashDictionary512[text] = shaObj.getHash("HEX");
+    }
+    return hashDictionary512[text];
+  }
+
+  function SHA1(text) {
+    if (typeof hashDictionary1[text] === 'undefined') {
+      var shaObj = new jsSHA("SHA-1", "TEXT");
+      shaObj.update(text);
+      hashDictionary1[text] = shaObj.getHash("HEX");
+    }
+    return hashDictionary1[text];
+  }
+
+  function SHA256(text) {
+    if (typeof hashDictionary256[text] === 'undefined') {
+      var shaObj = new jsSHA("SHA-256", "TEXT");
+      shaObj.update(text);
+      hashDictionary256[text] = shaObj.getHash("HEX");
+    }
+    return hashDictionary256[text];
+  }
+
+  function getIpInfo(ip, cb) {
+    if (ipDictionary[ip])
+      return cb(ipDictionary[ip]);
+    GM.xmlHttpRequest({
+      method: "GET",
+      url: `http://ipinfo.io/${ip}/json`,
+      onload: function (res) {
+        var resObj = JSON.parse(res.responseText);
+        if (res.status === 200 || res.status === 304) {
+          if (/^AS[0-9]+ /.test(resObj.org)) {
+            resObj.org = resObj.org.replace(/^AS[0-9]+ /, '');
+          }
+          if (SET.ipInfoDefaultOrg != 'ipinfo.io') {
+            getIpWhois(ip, function (whoisRes) {
+              if (!whoisRes.success || whoisRes.raw) {
+                ipDictionary[ip] = resObj;
+                cb(resObj);
+                return;
+              }
+              var koreanISP = null,
+                koreanUser = null;
+              if (whoisRes.result.korean && whoisRes.result.korean.ISP && whoisRes.result.korean.ISP.netinfo && whoisRes.result.korean.ISP.netinfo.orgName) {
+                koreanISP = whoisRes.result.korean.ISP.netinfo.orgName;
+              } else if (whoisRes.result.korean && whoisRes.result.korean.user && whoisRes.result.korean.user.netinfo && whoisRes.result.korean.user.netinfo.orgName) {
+                koreanUser = whoisRes.result.korean.user.netinfo.orgName;
+              }
+              if (SET.ipInfoDefaultOrg === 'KISAuser' && koreanUser !== null) {
+                resObj.org = koreanUser;
+              } else if (SET.ipInfoDefaultOrg === 'KISAISP' && koreanISP !== null) {
+                resObj.org = koreanISP;
+              } else if (SET.ipInfoDefaultOrg === 'KISAuserOrISP' && (koreanUser !== null || koreanISP !== null)) {
+                resObj.org = koreanUser !== null ? koreanUser : koreanISP;
+              }
+              ipDictionary[ip] = resObj;
+              cb(resObj);
+              return;
+            });
+          } else {
+            ipDictionary[ip] = resObj;
+            cb(resObj);
+          }
+        } else {
+          cb(null);
+        }
+      }
+    });
+  }
+
+  var whoisDictionary = {};
+
+  function getIpWhois(ip, cb) {
+    if (whoisDictionary[ip])
+      return cb(whoisDictionary[ip]);
+    GM.xmlHttpRequest({
+      method: "GET",
+      url: `http://namufix.wikimasonry.org/whois/ip/${ip}`,
+      onload: function (res) {
+        var resObj = JSON.parse(res.responseText);
+        whoisDictionary[ip] = resObj;
+        cb(resObj);
+      }
+    });
+  }
+
+  function enterTimespanPopup(title, callback) {
+    var win = TooSimplePopup();
+    win.title(title);
+    win.content(function (winContainer) {
+      var units = {
+        second: 1,
+        minute: 60,
+        hour: 60 * 60,
+        day: 60 * 60 * 24,
+        week: 60 * 60 * 24 * 7,
+        month: 60 * 60 * 24 * 7 * 4, // 4 주
+        year: 60 * 60 * 24 * 7 * 48 // 48주
+      }
+      winContainer.innerHTML = '<style>.timespan-container input.timespan-input {width: 60px;}</style><div class="timespan-container">' +
+        ' <input type="number" data-unit="year" class="timespan-input" value="0">년' +
+        ' <input type="number" data-unit="month" class="timespan-input" value="0">개월' +
+        ' <input type="number" data-unit="week" class="timespan-input" value="0">주' +
+        ' <input type="number" data-unit="day" class="timespan-input" value="0">일' +
+        ' <input type="number" data-unit="hour" class="timespan-input" value="0">시간' +
+        ' <input type="number" data-unit="minute" class="timespan-input" value="0">분' +
+        ' <input type="number" data-unit="second" class="timespan-input" value="0">초' +
+        '</div>';
+      win.button('닫기', function () {
+        win.close();
+        callback(null);
+      });
+      win.button('입력', function () {
+        var result = 0;
+        var isNumberic = function (v) {
+          return !isNaN(parseFloat(v)) && isFinite(v);
+        } // https://stackoverflow.com/a/9716488
+        var timespanInputs = winContainer.querySelectorAll('input.timespan-input')
+        for (var i = 0; i < timespanInputs.length; i++) {
+          var timespanInput = timespanInputs[i];
+          if (isNumberic(timespanInput.value)) result += timespanInput.value * units[timespanInput.dataset.unit];
+        }
+        win.close();
+        callback(result);
+      })
+    });
+  }
+  let vpngateCache = [],
+    vpngateCrawlledAt = -1;
+
+  function getVPNGateIPList() {
+    return new Promise((resolve, reject) => {
+      GM.xmlHttpRequest({
+        method: "GET",
+        url: "https://namufix.wikimasonry.org/vpngate/list",
+        onload: function (res) {
+          let resObj = JSON.parse(res.responseText);
+          if (resObj.success)
+            resolve(resObj.result);
+          else
+            reject(resObj.message);
+        }
+      });
+    });
+  }
+  function batchBlockFunction (evt) {
+    evt.preventDefault();
+    var win = TooSimplePopup();
+    win.title('계정/IP 일괄 차단');
+    win.content(function (con) {
+      var expire = 0;
+      con.innerHTML = '<p>아래에 차단할 IP주소/계정들을 입력해주세요.' +
+        '차단 사유 : <input type="text" id="note"></input><br>' +
+        '차단기간 : <span id="expire_display">영구</span> <a href="#" id="setExpire">(차단기간 설정)</a>(참고 : 0초 = 영구차단)<br>' +
+        '로그인 허용 여부 : <input type="checkbox" id="allowLogin"></input><br>' +
+        '※ IP 차단 해제시에는 차단사유/영구차단 여부/로그인 허용 여부를 설정할 필요 없으며 IP는 IPv4만 인식합니다.</p>' +
+        '차단할 계정/IP (개행으로 구분) : <br>' +
+        '<textarea style="width: 800px; max-width: 80vw; height: 500px; max-height: 80vh;"></textarea>';
+      con.querySelector('a#setExpire').addEventListener('click', function (evt) {
+        evt.preventDefault();
+        enterTimespanPopup('차단기간 설정', function (span) {
+          if (span === null) {
+            return alert('입력이 없습니다.');
+          } else {
+            expire = span;
+            con.querySelector('#expire_display').textContent = span == 0 ? '영구' : expire + '초 ';
+          }
+        });
+      })
+      win.button('닫기', win.close);
+      win.button('VPNGATE IP 불러오기', async function () {
+        let win = TooSimplePopup();
+        win.title('불러오는 중');
+        win.content(e => e.innerHTML = "불러오는 중입니다. 잠시만 기다려주십시오.");
+        let vpngateIPs = await getVPNGateIPList();
+        let textarea = con.querySelector('textarea');
+        textarea.value += '\n' + vpngateIPs.map(v => v + "/32").join("\n");
+        win.close();
+      })
+      win.button('차단기록 검색', async function () {
+        let searchWin = TooSimplePopup();
+        let queryInfo;
+        searchWin.title('차단기록 검색');
+        searchWin.content(searchWinCon => {
+          searchWinCon.innerHTML = `
+          <style>.search-prev[disabled], .search-next[disabled] {background: darkgray; text-decoration: line-through;}</style>
+          <div class="table-responsive-sm">
+          <table class="table table-striped table-bordered table-hover table-sm">
+          <thead>
+          <tr>
+          <td>선택</td>
+          <td>유형</td>
+          <td>실행자</td>
+          <td>피실행자</td>
+          <td>사유</td>
+          <td>기간</td>
+          <td>차단일시</td>
+          </tr>
+          </thead>
+          <tbody>
+          </tbody>
+          </table>
+          </div>
+          <div class="search-pagination">
+          </div>
+          `;
+
+          function processQuery() {
+            let waitingWin = TooSimplePopup();
+            waitingWin.title("진행중입니다");
+            waitingWin.content(waitingWinCon => waitingWinCon.innerHTML = "진행중입니다. 잠시만 기다려주십시오.");
+            namuapi.searchBlockHistory(queryInfo, (result) => {
+              queryInfo.from = result.nextResultPageFrom || null;
+              queryInfo.until = result.prevResultPageUntil || null;
+              let tbody = searchWinCon.querySelector('tbody');
+              tbody.innerHTML = "";
+              for (let i of result) {
+                // checkbox, type, blocker, blocked, reason, duration, at
+                tbody.innerHTML += `<tr data-blocked="${encodeHTMLComponent(JSON.stringify(i.blocked))}"><td><input type="checkbox" checked></td><td>${i.type}</td><td>${encodeHTMLComponent(i.blocker)}</td><td>${encodeHTMLComponent(i.blocked)}</td><td>${encodeHTMLComponent(i.reason)}</td><td>${i.duration}</td><td>${formatDateTime(i.at)}</td></tr>`;
+              }
+              waitingWin.close();
+            });
+          }
+          searchWin.button('검색', () => {
+            let queryWin = TooSimplePopup();
+            queryWin.title('쿼리 입력');
+            queryWin.content(queryWinCon => {
+              queryWinCon.innerHTML = `
+            <div>
+            쿼리 : 
+            <input type="text" class="search-query" style="width: 500px; max-width: 80vw;"></input>
+            </div>`;
+              queryWin.button('실행자 검색', () => {
+                queryInfo = {
+                  query: queryWinCon.querySelector('.search-query').value,
+                  isAuthor: true
+                };
+                processQuery();
+              });
+              queryWin.button('내용 검색', () => {
+                queryInfo = {
+                  query: queryWinCon.querySelector('.search-query').value,
+                  isAuthor: false
+                };
+                processQuery();
+              });
+              queryWin.button('닫기', queryWin.close);
+            });
+          });
+          searchWin.button('선택된 항목 추가', () => {
+            let isFirst = true;
+            let textarea = con.querySelector('textarea');
+            let waitingWin = TooSimplePopup();
+            waitingWin.title('진행중입니다.');
+            waitingWin.content(c => c.innerHTML = "진행중입니다.");
+            for (let i of searchWinCon.querySelectorAll('tbody tr')) {
+              if (isFirst) {
+                textarea.value += '\n';
+                isFirst = false;
+              }
+              if (i.querySelector('input[type="checkbox"]').checked)
+                textarea.value += JSON.parse(i.dataset.blocked) + "\n";
+            }
+            waitingWin.close();
+          });
+          searchWin.button('이전 결과', () => {
+            if (queryInfo.until) {
+              delete queryInfo.from;
+              processQuery();
+            } else {
+              alert('첫 페이지입니다.');
+            }
+          });
+          searchWin.button('다음 결과', () => {
+            if (queryInfo.from) {
+              delete queryInfo.until;
+              processQuery();
+            } else {
+              alert('마지막 페이지입니다.');
+            }
+          });
+          searchWin.button('닫기', searchWin.close);
+        });
+      })
+
+      function parseTextarea() {
+        let commonData = {
+          note: con.querySelector('input#note').value,
+          expire: expire,
+          allowLogin: con.querySelector('input#allowLogin').checked
+        }
+        return con.querySelector('textarea').value
+          .split('\n')
+          .map(v => v.trim())
+          .filter(v => v != "")
+          .map((v) => {
+            let ipWithCIDR = /^([0-9]{1,3}\.){3}[0-9]{1,3}(\/([0-9]|[1-2][0-9]|3[0-2]))?$/;
+            let data = JSON.parse(JSON.stringify(commonData));
+            if (ipWithCIDR.test(v))
+              data.ip = v;
+            else
+              data.id = v;
+            if (data.ip && !data.ip.includes("/")) data.ip += "/32";
+            return data;
+          });
+      }
+
+      function commonLoop(_datas, progressCallback) { // returns error object
+        return new Promise((resolve, reject) => {
+          let result = {
+            errors: [],
+            success: []
+          };
+          let datas = JSON.parse(JSON.stringify(_datas));
+          async.eachLimit(datas, SET.adminReqLimit, (data, callback) => {
+            namuapi[data.handlerName](data.parameter, (err, target) => {
+              if (err) {
+                result.errors.push({
+                  target: data.parameter,
+                  error: err
+                });
+              } else {
+                result.success.push(data.parameter);
+              }
+              if (progressCallback)
+                progressCallback(data);
+              callback();
+            });
+          }, (err) => {
+            return resolve(result);
+          });
+        });
+      }
+      win.button('차단', async function () {
+        var waitingWin = TooSimplePopup();
+        var errors = [];
+        waitingWin.title('처리중');
+        waitingWin.content(function (wwcon) {
+          wwcon.innerHTML = "처리중입니다."
+        });
+        let datas = parseTextarea().map(v => ({
+          parameter: v,
+          handlerName: v.ip ? "blockIP" : "blockAccount"
+        }));
+        let result = await commonLoop(datas, d => waitingWin.content(wwcon => wwcon.innerHTML = `처리 완료: ${d.parameter.ip || d.parameter.id}`));
+        if (result.errors.length > 0) {
+          waitingWin.content(wwcon => {
+            wwcon.innerHTML = "오류가 있습니다.<br><br>" + result.errors.map(v => `${encodeHTMLComponent(v.target.ip || v.target.id)} : ${v.error}`).join("<br>");
+          });
+          waitingWin.button('닫기', waitingWin.close);
+        } else {
+          waitingWin.close();
+        }
+      });
+      win.button('차단 해제', async function () {
+        var waitingWin = TooSimplePopup();
+        var errors = [];
+        waitingWin.title('처리중');
+        waitingWin.content(function (wwcon) {
+          wwcon.innerHTML = "처리중입니다."
+        });
+        let datas = parseTextarea().map(v => {
+          if (v.ip) {
+            return {
+              parameter: v.ip,
+              handlerName: 'unblockIP'
+            };
+          } else {
+            let tmp = {
+              parameter: v,
+              handlerName: 'blockAccount'
+            };
+            tmp.parameter.expire = -1;
+            return tmp;
+          }
+        });
+        let result = await commonLoop(datas, d => waitingWin.content(wwcon => wwcon.innerHTML = `처리 완료: ${d.parameter.id ? d.parameter.id : d.parameter}`));
+        if (result.errors.length > 0) {
+          waitingWin.content(wwcon => {
+            wwcon.innerHTML = "오류가 있습니다.<br><br>" + result.errors.map(v => `${encodeHTMLComponent(v.target.id || v.target)} : ${v.error}`).join("<br>");
+          });
+          waitingWin.button('닫기', waitingWin.close);
+        } else {
+          waitingWin.close();
+        }
+      });
+    });
+  }
+  function insertCSS(url) {
+    // 나무위키 CSP 빡세서 getResourceUrl 쓰면 보안 오류남.
+    GM.xmlHttpRequest({
+      method: 'GET',
+      url: url,
+      onload: (res) => {
+        let styleTag = document.createElement("style");
+        styleTag.innerHTML = res.responseText;
+        document.head.appendChild(styleTag);
+      }
+    });
+  }
   if (location.host === 'board.namu.wiki') {
     async function runBoardFix() {
       let SET = new NFStorage();
@@ -224,6 +699,15 @@ try {
           writeAuthorDiv.appendChild(macroBtn,writeAuthorDiv.lastChild);
         }
       }
+      // 일괄 차단 메뉴추가
+      if (SET.addBatchBlockMenu) {
+        insertCSS("https://cdn.rawgit.com/LiteHell/TooSimplePopupLib/edad912e28eeacdc3fd8b6e6b7ac5cafc46d95b6/TooSimplePopupLib.css");
+        let menu = document.querySelector('nav#navbar #main-navbar ul.nav.navbar-nav');
+        let item = document.createElement('li');
+        item.innerHTML = '<a href="#">일괄 차단</a>';
+        item.querySelector('a').addEventListener('click', batchBlockFunction);
+        menu.appendChild(item);
+      }
     }
     runBoardFix();
   } else
@@ -231,19 +715,6 @@ try {
       console.log(`[NamuFix] 현재 버전 : ${GM.info.script.version}`);
       if (location.hostname == 'no-ssl.namu.wiki')
         location.hostname = 'namu.wiki';
-
-      function insertCSS(url) {
-        // 나무위키 CSP 빡세서 getResourceUrl 쓰면 보안 오류남.
-        GM.xmlHttpRequest({
-          method: 'GET',
-          url: url,
-          onload: (res) => {
-            let styleTag = document.createElement("style");
-            styleTag.innerHTML = res.responseText;
-            document.head.appendChild(styleTag);
-          }
-        });
-      }
 
       insertCSS("https://cdn.rawgit.com/LiteHell/NamuFix/284db44ac1d89ff0cbd1155c3372db38be3bc140/NamuFix.css");
       insertCSS("https://cdn.rawgit.com/LiteHell/TooSimplePopupLib/edad912e28eeacdc3fd8b6e6b7ac5cafc46d95b6/TooSimplePopupLib.css");
@@ -286,209 +757,6 @@ try {
           }
         }
       });
-
-      function nOu(a) {
-        return typeof a === 'undefined' || a == null;
-      }
-
-      // HTML 이스케이프 함수
-      function encodeHTMLComponent(text) {
-        var result = text;
-        // http://www.w3schools.com/php/func_string_htmlspecialchars.asp 참고함.
-        result = result.replace(/&/gmi, "&amp;");
-        result = result.replace(/</gmi, "&lt;");
-        result = result.replace(/>/gmi, "&gt;");
-        result = result.replace(/'/gmi, "&#039;");
-        result = result.replace(/"/gmi, "&quot;");
-        return result;
-      }
-
-      function validateIP(ip) {
-        return /^(?:\d{1,3}\.){3}\d{1,3}$/.test(ip) || /^([0-9a-f]){1,4}(:([0-9a-f]){1,4}){7}$/i.test(ip);
-      }
-
-      function formatDateTime(t) {
-        var d = new Date(t);
-        return `${d.getFullYear()}년 ${d.getMonth() + 1}월 ${d.getDate()}일 ${(['일', '월', '화', '수', '목', '금', '토'])[d.getDay()]}요일 ${ d.getHours() > 12 ? '오후' : '오전'} ${d.getHours() - (d.getHours() > 12 ? 12 : 0)}시 ${d.getMinutes()}분 ${d.getSeconds()}초`;
-      }
-
-      function formatTimespan(timespan) {
-        var units = [{
-            name: "주",
-            unit: 60 * 60 * 24 * 7,
-            value: 0
-          },
-          {
-            name: "일",
-            unit: 60 * 60 * 24,
-            value: 0
-          },
-          {
-            name: "시간",
-            unit: 60 * 60,
-            value: 0
-          },
-          {
-            name: "분",
-            unit: 60,
-            value: 0
-          },
-          {
-            name: "초",
-            unit: 1,
-            value: 0
-          }
-        ];
-        for (var i = 0; i < units.length; i++) {
-          while (timespan >= units[i].unit) {
-            timespan -= units[i].unit;
-            units[i].value++;
-          }
-        }
-        return units.filter(function (x) {
-          return x.value != 0;
-        }).map(function (x) {
-          return x.value + x.name
-        }).join(' ');
-      }
-
-      var hashDictionary512 = {};
-      var hashDictionary1 = {};
-      var hashDictionary256 = {};
-      var ipDictionary = {};
-
-      function SHA512(text) {
-        if (typeof hashDictionary512[text] === 'undefined') {
-          var shaObj = new jsSHA("SHA-512", "TEXT");
-          shaObj.update(text);
-          hashDictionary512[text] = shaObj.getHash("HEX");
-        }
-        return hashDictionary512[text];
-      }
-
-      function SHA1(text) {
-        if (typeof hashDictionary1[text] === 'undefined') {
-          var shaObj = new jsSHA("SHA-1", "TEXT");
-          shaObj.update(text);
-          hashDictionary1[text] = shaObj.getHash("HEX");
-        }
-        return hashDictionary1[text];
-      }
-
-      function SHA256(text) {
-        if (typeof hashDictionary256[text] === 'undefined') {
-          var shaObj = new jsSHA("SHA-256", "TEXT");
-          shaObj.update(text);
-          hashDictionary256[text] = shaObj.getHash("HEX");
-        }
-        return hashDictionary256[text];
-      }
-
-      function getIpInfo(ip, cb) {
-        if (ipDictionary[ip])
-          return cb(ipDictionary[ip]);
-        GM.xmlHttpRequest({
-          method: "GET",
-          url: `http://ipinfo.io/${ip}/json`,
-          onload: function (res) {
-            var resObj = JSON.parse(res.responseText);
-            if (res.status === 200 || res.status === 304) {
-              if (/^AS[0-9]+ /.test(resObj.org)) {
-                resObj.org = resObj.org.replace(/^AS[0-9]+ /, '');
-              }
-              if (SET.ipInfoDefaultOrg != 'ipinfo.io') {
-                getIpWhois(ip, function (whoisRes) {
-                  if (!whoisRes.success || whoisRes.raw) {
-                    ipDictionary[ip] = resObj;
-                    cb(resObj);
-                    return;
-                  }
-                  var koreanISP = null,
-                    koreanUser = null;
-                  if (whoisRes.result.korean && whoisRes.result.korean.ISP && whoisRes.result.korean.ISP.netinfo && whoisRes.result.korean.ISP.netinfo.orgName) {
-                    koreanISP = whoisRes.result.korean.ISP.netinfo.orgName;
-                  } else if (whoisRes.result.korean && whoisRes.result.korean.user && whoisRes.result.korean.user.netinfo && whoisRes.result.korean.user.netinfo.orgName) {
-                    koreanUser = whoisRes.result.korean.user.netinfo.orgName;
-                  }
-                  if (SET.ipInfoDefaultOrg === 'KISAuser' && koreanUser !== null) {
-                    resObj.org = koreanUser;
-                  } else if (SET.ipInfoDefaultOrg === 'KISAISP' && koreanISP !== null) {
-                    resObj.org = koreanISP;
-                  } else if (SET.ipInfoDefaultOrg === 'KISAuserOrISP' && (koreanUser !== null || koreanISP !== null)) {
-                    resObj.org = koreanUser !== null ? koreanUser : koreanISP;
-                  }
-                  ipDictionary[ip] = resObj;
-                  cb(resObj);
-                  return;
-                });
-              } else {
-                ipDictionary[ip] = resObj;
-                cb(resObj);
-              }
-            } else {
-              cb(null);
-            }
-          }
-        });
-      }
-
-      var whoisDictionary = {};
-
-      function getIpWhois(ip, cb) {
-        if (whoisDictionary[ip])
-          return cb(whoisDictionary[ip]);
-        GM.xmlHttpRequest({
-          method: "GET",
-          url: `http://namufix.wikimasonry.org/whois/ip/${ip}`,
-          onload: function (res) {
-            var resObj = JSON.parse(res.responseText);
-            whoisDictionary[ip] = resObj;
-            cb(resObj);
-          }
-        });
-      }
-
-      function enterTimespanPopup(title, callback) {
-        var win = TooSimplePopup();
-        win.title(title);
-        win.content(function (winContainer) {
-          var units = {
-            second: 1,
-            minute: 60,
-            hour: 60 * 60,
-            day: 60 * 60 * 24,
-            week: 60 * 60 * 24 * 7,
-            month: 60 * 60 * 24 * 7 * 4, // 4 주
-            year: 60 * 60 * 24 * 7 * 48 // 48주
-          }
-          winContainer.innerHTML = '<style>.timespan-container input.timespan-input {width: 60px;}</style><div class="timespan-container">' +
-            ' <input type="number" data-unit="year" class="timespan-input" value="0">년' +
-            ' <input type="number" data-unit="month" class="timespan-input" value="0">개월' +
-            ' <input type="number" data-unit="week" class="timespan-input" value="0">주' +
-            ' <input type="number" data-unit="day" class="timespan-input" value="0">일' +
-            ' <input type="number" data-unit="hour" class="timespan-input" value="0">시간' +
-            ' <input type="number" data-unit="minute" class="timespan-input" value="0">분' +
-            ' <input type="number" data-unit="second" class="timespan-input" value="0">초' +
-            '</div>';
-          win.button('닫기', function () {
-            win.close();
-            callback(null);
-          });
-          win.button('입력', function () {
-            var result = 0;
-            var isNumberic = function (v) {
-              return !isNaN(parseFloat(v)) && isFinite(v);
-            } // https://stackoverflow.com/a/9716488
-            var timespanInputs = winContainer.querySelectorAll('input.timespan-input')
-            for (var i = 0; i < timespanInputs.length; i++) {
-              var timespanInput = timespanInputs[i];
-              if (isNumberic(timespanInput.value)) result += timespanInput.value * units[timespanInput.dataset.unit];
-            }
-            win.close();
-            callback(result);
-          })
-        });
-      }
 
       function whoisPopup(ip) {
         if (ip === null || ip === "")
@@ -762,24 +1030,6 @@ try {
       console.log(skinDependency);
       let addItemToMemberMenu = skinDependency.addItemToMemberMenu;
 
-      let vpngateCache = [],
-        vpngateCrawlledAt = -1;
-
-      function getVPNGateIPList() {
-        return new Promise((resolve, reject) => {
-          GM.xmlHttpRequest({
-            method: "GET",
-            url: "https://namufix.wikimasonry.org/vpngate/list",
-            onload: function (res) {
-              let resObj = JSON.parse(res.responseText);
-              if (resObj.success)
-                resolve(resObj.result);
-              else
-                reject(resObj.message);
-            }
-          });
-        });
-      }
 
       async function checkVPNGateIP(ip) {
         return new Promise((resolve, reject) => {
@@ -3868,249 +4118,7 @@ try {
       })
 
       if (SET.addBatchBlockMenu) {
-        addItemToMemberMenu('계정/IP 일괄 차단', function (evt) {
-          evt.preventDefault();
-          var win = TooSimplePopup();
-          win.title('계정/IP 일괄 차단');
-          win.content(function (con) {
-            var expire = 0;
-            con.innerHTML = '<p>아래에 차단할 IP주소/계정들을 입력해주세요.' +
-              '차단 사유 : <input type="text" id="note"></input><br>' +
-              '차단기간 : <span id="expire_display">영구</span> <a href="#" id="setExpire">(차단기간 설정)</a>(참고 : 0초 = 영구차단)<br>' +
-              '로그인 허용 여부 : <input type="checkbox" id="allowLogin"></input><br>' +
-              '※ IP 차단 해제시에는 차단사유/영구차단 여부/로그인 허용 여부를 설정할 필요 없으며 IP는 IPv4만 인식합니다.</p>' +
-              '차단할 계정/IP (개행으로 구분) : <br>' +
-              '<textarea style="width: 800px; max-width: 80vw; height: 500px; max-height: 80vh;"></textarea>';
-            con.querySelector('a#setExpire').addEventListener('click', function (evt) {
-              evt.preventDefault();
-              enterTimespanPopup('차단기간 설정', function (span) {
-                if (span === null) {
-                  return alert('입력이 없습니다.');
-                } else {
-                  expire = span;
-                  con.querySelector('#expire_display').textContent = span == 0 ? '영구' : expire + '초 ';
-                }
-              });
-            })
-            win.button('닫기', win.close);
-            win.button('VPNGATE IP 불러오기', async function () {
-              let win = TooSimplePopup();
-              win.title('불러오는 중');
-              win.content(e => e.innerHTML = "불러오는 중입니다. 잠시만 기다려주십시오.");
-              let vpngateIPs = await getVPNGateIPList();
-              let textarea = con.querySelector('textarea');
-              textarea.value += '\n' + vpngateIPs.map(v => v + "/32").join("\n");
-              win.close();
-            })
-            win.button('차단기록 검색', async function () {
-              let searchWin = TooSimplePopup();
-              let queryInfo;
-              searchWin.title('차단기록 검색');
-              searchWin.content(searchWinCon => {
-                searchWinCon.innerHTML = `
-                <style>.search-prev[disabled], .search-next[disabled] {background: darkgray; text-decoration: line-through;}</style>
-                <div class="table-responsive-sm">
-                <table class="table table-striped table-bordered table-hover table-sm">
-                <thead>
-                <tr>
-                <td>선택</td>
-                <td>유형</td>
-                <td>실행자</td>
-                <td>피실행자</td>
-                <td>사유</td>
-                <td>기간</td>
-                <td>차단일시</td>
-                </tr>
-                </thead>
-                <tbody>
-                </tbody>
-                </table>
-                </div>
-                <div class="search-pagination">
-                </div>
-                `;
-
-                function processQuery() {
-                  let waitingWin = TooSimplePopup();
-                  waitingWin.title("진행중입니다");
-                  waitingWin.content(waitingWinCon => waitingWinCon.innerHTML = "진행중입니다. 잠시만 기다려주십시오.");
-                  namuapi.searchBlockHistory(queryInfo, (result) => {
-                    queryInfo.from = result.nextResultPageFrom || null;
-                    queryInfo.until = result.prevResultPageUntil || null;
-                    let tbody = searchWinCon.querySelector('tbody');
-                    tbody.innerHTML = "";
-                    for (let i of result) {
-                      // checkbox, type, blocker, blocked, reason, duration, at
-                      tbody.innerHTML += `<tr data-blocked="${encodeHTMLComponent(JSON.stringify(i.blocked))}"><td><input type="checkbox" checked></td><td>${i.type}</td><td>${encodeHTMLComponent(i.blocker)}</td><td>${encodeHTMLComponent(i.blocked)}</td><td>${encodeHTMLComponent(i.reason)}</td><td>${i.duration}</td><td>${formatDateTime(i.at)}</td></tr>`;
-                    }
-                    waitingWin.close();
-                  });
-                }
-                searchWin.button('검색', () => {
-                  let queryWin = TooSimplePopup();
-                  queryWin.title('쿼리 입력');
-                  queryWin.content(queryWinCon => {
-                    queryWinCon.innerHTML = `
-                  <div>
-                  쿼리 : 
-                  <input type="text" class="search-query" style="width: 500px; max-width: 80vw;"></input>
-                  </div>`;
-                    queryWin.button('실행자 검색', () => {
-                      queryInfo = {
-                        query: queryWinCon.querySelector('.search-query').value,
-                        isAuthor: true
-                      };
-                      processQuery();
-                    });
-                    queryWin.button('내용 검색', () => {
-                      queryInfo = {
-                        query: queryWinCon.querySelector('.search-query').value,
-                        isAuthor: false
-                      };
-                      processQuery();
-                    });
-                    queryWin.button('닫기', queryWin.close);
-                  });
-                });
-                searchWin.button('선택된 항목 추가', () => {
-                  let isFirst = true;
-                  let textarea = con.querySelector('textarea');
-                  let waitingWin = TooSimplePopup();
-                  waitingWin.title('진행중입니다.');
-                  waitingWin.content(c => c.innerHTML = "진행중입니다.");
-                  for (let i of searchWinCon.querySelectorAll('tbody tr')) {
-                    if (isFirst) {
-                      textarea.value += '\n';
-                      isFirst = false;
-                    }
-                    if (i.querySelector('input[type="checkbox"]').checked)
-                      textarea.value += JSON.parse(i.dataset.blocked) + "\n";
-                  }
-                  waitingWin.close();
-                });
-                searchWin.button('이전 결과', () => {
-                  if (queryInfo.until) {
-                    delete queryInfo.from;
-                    processQuery();
-                  } else {
-                    alert('첫 페이지입니다.');
-                  }
-                });
-                searchWin.button('다음 결과', () => {
-                  if (queryInfo.from) {
-                    delete queryInfo.until;
-                    processQuery();
-                  } else {
-                    alert('마지막 페이지입니다.');
-                  }
-                });
-                searchWin.button('닫기', searchWin.close);
-              });
-            })
-
-            function parseTextarea() {
-              let commonData = {
-                note: con.querySelector('input#note').value,
-                expire: expire,
-                allowLogin: con.querySelector('input#allowLogin').checked
-              }
-              return con.querySelector('textarea').value
-                .split('\n')
-                .map(v => v.trim())
-                .filter(v => v != "")
-                .map((v) => {
-                  let ipWithCIDR = /^([0-9]{1,3}\.){3}[0-9]{1,3}(\/([0-9]|[1-2][0-9]|3[0-2]))?$/;
-                  let data = JSON.parse(JSON.stringify(commonData));
-                  if (ipWithCIDR.test(v))
-                    data.ip = v;
-                  else
-                    data.id = v;
-                  if (data.ip && !data.ip.includes("/")) data.ip += "/32";
-                  return data;
-                });
-            }
-
-            function commonLoop(_datas, progressCallback) { // returns error object
-              return new Promise((resolve, reject) => {
-                let result = {
-                  errors: [],
-                  success: []
-                };
-                let datas = JSON.parse(JSON.stringify(_datas));
-                async.eachLimit(datas, SET.adminReqLimit, (data, callback) => {
-                  namuapi[data.handlerName](data.parameter, (err, target) => {
-                    if (err) {
-                      result.errors.push({
-                        target: data.parameter,
-                        error: err
-                      });
-                    } else {
-                      result.success.push(data.parameter);
-                    }
-                    if (progressCallback)
-                      progressCallback(data);
-                    callback();
-                  });
-                }, (err) => {
-                  return resolve(result);
-                });
-              });
-            }
-            win.button('차단', async function () {
-              var waitingWin = TooSimplePopup();
-              var errors = [];
-              waitingWin.title('처리중');
-              waitingWin.content(function (wwcon) {
-                wwcon.innerHTML = "처리중입니다."
-              });
-              let datas = parseTextarea().map(v => ({
-                parameter: v,
-                handlerName: v.ip ? "blockIP" : "blockAccount"
-              }));
-              let result = await commonLoop(datas, d => waitingWin.content(wwcon => wwcon.innerHTML = `처리 완료: ${d.parameter.ip || d.parameter.id}`));
-              if (result.errors.length > 0) {
-                waitingWin.content(wwcon => {
-                  wwcon.innerHTML = "오류가 있습니다.<br><br>" + result.errors.map(v => `${encodeHTMLComponent(v.target.ip || v.target.id)} : ${v.error}`).join("<br>");
-                });
-                waitingWin.button('닫기', waitingWin.close);
-              } else {
-                waitingWin.close();
-              }
-            });
-            win.button('차단 해제', async function () {
-              var waitingWin = TooSimplePopup();
-              var errors = [];
-              waitingWin.title('처리중');
-              waitingWin.content(function (wwcon) {
-                wwcon.innerHTML = "처리중입니다."
-              });
-              let datas = parseTextarea().map(v => {
-                if (v.ip) {
-                  return {
-                    parameter: v.ip,
-                    handlerName: 'unblockIP'
-                  };
-                } else {
-                  let tmp = {
-                    parameter: v,
-                    handlerName: 'blockAccount'
-                  };
-                  tmp.parameter.expire = -1;
-                  return tmp;
-                }
-              });
-              let result = await commonLoop(datas, d => waitingWin.content(wwcon => wwcon.innerHTML = `처리 완료: ${d.parameter.id ? d.parameter.id : d.parameter}`));
-              if (result.errors.length > 0) {
-                waitingWin.content(wwcon => {
-                  wwcon.innerHTML = "오류가 있습니다.<br><br>" + result.errors.map(v => `${encodeHTMLComponent(v.target.id || v.target)} : ${v.error}`).join("<br>");
-                });
-                waitingWin.button('닫기', waitingWin.close);
-              } else {
-                waitingWin.close();
-              }
-            });
-          });
-        })
+        addItemToMemberMenu('계정/IP 일괄 차단', batchBlockFunction)
       }
 
       listenPJAX(mainFunc);
