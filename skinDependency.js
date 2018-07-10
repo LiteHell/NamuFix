@@ -104,9 +104,11 @@ let skinDependencies = {
         }
     }
 }
+
 function getSkinDependency(skinName) {
     return skinDependencies[skinName] || null;
 }
+
 function getSkinSupports() {
     return Object.keys(skinDependencies);
 }

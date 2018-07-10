@@ -5,7 +5,7 @@ if (typeof setImmediate === 'undefined')
     var setImmediate = c => setTimeout(c, 0);
 
 let wikihost = location.host;
-if(location.host === 'board.namu.wiki') wikihost = 'namu.wiki';
+if (location.host === 'board.namu.wiki') wikihost = 'namu.wiki';
 
 // /check 페이지 대응
 namuapi.theseedRequest = function (options) {

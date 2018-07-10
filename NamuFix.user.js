@@ -144,6 +144,7 @@ try {
       }
     }
   }
+
   function nOu(a) {
     return typeof a === 'undefined' || a == null;
   }
@@ -364,7 +365,8 @@ try {
       });
     });
   }
-  function batchBlockFunction (evt) {
+
+  function batchBlockFunction(evt) {
     evt.preventDefault();
     var win = TooSimplePopup();
     win.title('계정/IP 일괄 차단');
@@ -607,6 +609,7 @@ try {
       });
     });
   }
+
   function insertCSS(url) {
     // 나무위키 CSP 빡세서 getResourceUrl 쓰면 보안 오류남.
     GM.xmlHttpRequest({
@@ -669,7 +672,7 @@ try {
       if (document.querySelector('.write_comment') && SET.commentMacros) {
         console.log('[NamuFix] 댓글창 감지됨.')
         let writeAuthorDiv = document.querySelector('.write_author');
-        for(let i of SET.commentMacros.split(',')) {
+        for (let i of SET.commentMacros.split(',')) {
           let macroName = i.split(':')[0];
           let macroContentParts = i.split(':');
           macroContentParts.shift();
@@ -681,8 +684,8 @@ try {
           macroBtn.addEventListener('click', (evt) => {
             evt.preventDefault();
             let xeEditor = document.querySelector('.xpress-editor'),
-                hiddenContentInput = document.querySelector('.write_comment > input[name="content"]'),
-                writeForm = document.querySelector('.write_comment > .write_form');
+              hiddenContentInput = document.querySelector('.write_comment > input[name="content"]'),
+              writeForm = document.querySelector('.write_comment > .write_form');
             // XE에디터 제거
             xeEditor.parentNode.removeChild(xeEditor);
             // 기존 content input 제거
@@ -696,7 +699,7 @@ try {
             // 댓글 작성
             document.querySelector('.write_author button[type="submit"]').click();
           })
-          writeAuthorDiv.appendChild(macroBtn,writeAuthorDiv.lastChild);
+          writeAuthorDiv.appendChild(macroBtn, writeAuthorDiv.lastChild);
         }
       }
       // 일괄 차단 메뉴추가
@@ -732,7 +735,7 @@ try {
             return; // GitHub API 오류
           }
           var currentVersion = GM.info.script.version;
-          if(!obj.tag_name) {
+          if (!obj.tag_name) {
             console.log('[NamuFix] NamuFix 업데이트 연기! (최신 버전을 읽을 수 없음)');
             return;
           }
@@ -1013,7 +1016,7 @@ try {
         if (nOu(SET.umiCookie))
           SET.umiCookie = "";
         if (nOu(SET.unprefixedFilename))
-          SET.unprefixedFilename= false;
+          SET.unprefixedFilename = false;
         if (nOu(SET.addSnsShareButton))
           SET.addSnsShareButton = false;
         if (nOu(SET.commentMacros))
@@ -1026,7 +1029,7 @@ try {
           SET.emphasizeResesWhenMouseover = false;
         await SET.save();
       }
-      
+
       console.log(skinDependency);
       let addItemToMemberMenu = skinDependency.addItemToMemberMenu;
 
@@ -1766,7 +1769,7 @@ try {
                     if (!file) callback(null, null);
                     var fn = "파일:" + SHA256(String(Date.now()) + file.name).substring(0, 6) + "_" + file.name;
                     if (SET.unprefixedFilename) {
-                        fn = "파일:" + file.name;
+                      fn = "파일:" + file.name;
                     }
                     if (/\.[A-Z]+$/.test(fn)) {
                       var fnSplitted = fn.split('.');
@@ -2828,16 +2831,16 @@ try {
             let banbox = document.querySelector('.wiki-content [onmouseover][onmouseout]')
             if (banbox.querySelector('span:first-child').textContent.includes('이 사용자는 차단된 사용자입니다.')) {
               let reason = banbox.lastChild.textContent,
-                  urlPattern = /((http[s]?|ftp):\/)?\/?([^:\/\s]+)((\/\w+)*\/)([\w\-\.]+[^#?\s]+)(.*)?(#[\w\-]+)?$/mg,
-                  urlMatch = urlPattern.exec(reason),
-                  linkIndex = 1,
-                  firstLink = null;
-              while(urlMatch) { 
+                urlPattern = /((http[s]?|ftp):\/)?\/?([^:\/\s]+)((\/\w+)*\/)([\w\-\.]+[^#?\s]+)(.*)?(#[\w\-]+)?$/mg,
+                urlMatch = urlPattern.exec(reason),
+                linkIndex = 1,
+                firstLink = null;
+              while (urlMatch) {
                 let link = document.createElement("a");
                 link.href = urlMatch[0];
                 link.textContent = `Link #${linkIndex++}`;
                 banbox.appendChild(link);
-                if(!firstLink) firstLink = link;
+                if (!firstLink) firstLink = link;
                 urlMatch = urlPattern.exec(reason);
               }
               if (firstLink) {
@@ -3129,7 +3132,7 @@ try {
               if (typeof identiconDictionary[n] === 'undefined' && typeof SET.customIdenticons[n] !== 'undefined')
                 identiconDictionary[n] = SET.customIdenticons[n];
               if (typeof identiconDictionary[n] === 'undefined') {
-                switch(SET.identiconLibrary) {
+                switch (SET.identiconLibrary) {
                   case 'gravatar':
                     identiconDictionary[n] = "https://secure.gravatar.com/avatar/" + n.substring(0, 32) + "?s=64&d=identicon"
                     break;
@@ -3137,7 +3140,10 @@ try {
                     identiconDictionary[n] = "https://secure.gravatar.com/avatar/" + n.substring(0, 32) + "?s=64&d=monsterid"
                     break;
                   case 'identicon':
-                    identiconDictionary[n] = "data:image/svg+xml;base64," + new Identicon(n, {size: 64, format: 'svg'}).toString();
+                    identiconDictionary[n] = "data:image/svg+xml;base64," + new Identicon(n, {
+                      size: 64,
+                      format: 'svg'
+                    }).toString();
                     break;
                   default:
                   case 'jdenticon':
@@ -3240,10 +3246,10 @@ try {
             });
             i.nfRightHeadSpan.appendChild(linkAnchor);
             i.element.addEventListener('mouseover', () => {
-              if(emphasizedHash === null) emphasizeResStyle.innerHTML = `.res[data-username-hash="${usernameHash}"] .r-head {background: #8a8a8a !important} .res[data-username-hash="${usernameHash}"] .r-head.first-author {background: #8DAD8A !important}`
+              if (emphasizedHash === null) emphasizeResStyle.innerHTML = `.res[data-username-hash="${usernameHash}"] .r-head {background: #8a8a8a !important} .res[data-username-hash="${usernameHash}"] .r-head.first-author {background: #8DAD8A !important}`
             })
             i.element.addEventListener('mouseout', () => {
-              if(emphasizedHash === null) emphasizeResStyle.innerHTML = ''
+              if (emphasizedHash === null) emphasizeResStyle.innerHTML = ''
             });
           }
 
@@ -3421,8 +3427,9 @@ try {
                     defaultReason: "긴급조치"
                   })
                 });
-                if(!SET.addQuickBlockLink)
+                if (!SET.addQuickBlockLink)
                   ipInfo.querySelector('.nf-quickblock-row').style.display = 'none';
+
                 function displayIsBlocked(mask, tbody) {
                   let row = document.createElement("tr");
                   row.innerHTML = "<td>IP차단기록 (" + mask + ")</td><td class=\"nf_isipblocked\">조회중입니다...</td>";
@@ -3449,19 +3456,21 @@ try {
                 }
                 getIpWhois(ip, (whoisRes) => {
                   ipInfo.querySelector('.nf_ipblockchecking').parentNode.removeChild(ipInfo.querySelector('.nf_ipblockchecking'));
-                  if(!whoisRes.success || whoisRes.raw) {
+                  if (!whoisRes.success || whoisRes.raw) {
                     displayIsBlocked('/32', ipInfo.querySelector('tbody'))
                   } else {
                     let prefixes = [];
-                    if(whoisRes.result.korean.ISP && whoisRes.result.korean.ISP.netinfo && whoisRes.result.korean.ISP.netinfo.prefix)
+                    if (whoisRes.result.korean.ISP && whoisRes.result.korean.ISP.netinfo && whoisRes.result.korean.ISP.netinfo.prefix)
                       prefixes = prefixes.concat(whoisRes.result.korean.ISP.netinfo.prefix.split('+'));
-                    if(whoisRes.result.korean.user && whoisRes.result.korean.user.netinfo && whoisRes.result.korean.user.netinfo.prefix)
+                    if (whoisRes.result.korean.user && whoisRes.result.korean.user.netinfo && whoisRes.result.korean.user.netinfo.prefix)
                       prefixes = prefixes.concat(whoisRes.result.korean.user.netinfo.prefix.split('+'));
-                    prefixes = prefixes.filter((v,i,s) => s.indexOf(v) === i); // https://stackoverflow.com/a/14438954
-                    if(!prefixes.includes('/32')) prefixes.push('/32');
+                    prefixes = prefixes.filter((v, i, s) => s.indexOf(v) === i); // https://stackoverflow.com/a/14438954
+                    if (!prefixes.includes('/32')) prefixes.push('/32');
                     let delay = 0;
-                    for(let prefix of prefixes) {
-                      setTimeout(() => {displayIsBlocked(prefix, ipInfo.querySelector('tbody'));}, (delay++) * SET.ipBlockHistoryCheckDelay + 1);
+                    for (let prefix of prefixes) {
+                      setTimeout(() => {
+                        displayIsBlocked(prefix, ipInfo.querySelector('tbody'));
+                      }, (delay++) * SET.ipBlockHistoryCheckDelay + 1);
                     }
                   }
                 });
@@ -3473,10 +3482,10 @@ try {
             var userId = userIdPattern.exec(location.pathname)[1];
 
             // block user link
-            if(SET.addQuickBlockLink) {
+            if (SET.addQuickBlockLink) {
               let quickBlockLink = document.createElement("div");
               quickBlockLink.innerHTML = '<div style="border: 1px black solid; padding: 2px;">빠른차단 : <a href="#">[차단]</a></div>'
-              quickBlockLink.querySelector('a').addEventListener('click', (evt)=>{
+              quickBlockLink.querySelector('a').addEventListener('click', (evt) => {
                 evt.preventDefault();
                 quickBlockPopup({
                   author: {
@@ -3503,8 +3512,8 @@ try {
               if (filtered.length == 0) {
                 return userInfo.querySelector('.nf_blockhistory').innerHTML = "차단기록 없음.";
               }
-              userInfo.querySelector('.nf_blockhistory').innerHTML  = '<style>.nf_blockhistory p {margin: 1px; padding: 0px;}</style>';
-              for(var i = 0; i < filtered.length; i++) {
+              userInfo.querySelector('.nf_blockhistory').innerHTML = '<style>.nf_blockhistory p {margin: 1px; padding: 0px;}</style>';
+              for (var i = 0; i < filtered.length; i++) {
                 var filteredItem = filtered[i];
                 var actType = filteredItem.type;
                 if (actType == "blockUser") {
@@ -3690,7 +3699,7 @@ try {
               location.pathname = '/contribution/author/' + target + '/document';
             }
           }
-        } else if (ENV.IsIPACL || ENV.IsSuspendAccount  || ENV.IsBoardIPACL || ENV.IsBoardSuspendAccount) {
+        } else if (ENV.IsIPACL || ENV.IsSuspendAccount || ENV.IsBoardIPACL || ENV.IsBoardSuspendAccount) {
           var expireSelect = document.querySelector('select[name=expire]');
 
           function enterEasily() {
@@ -3759,8 +3768,8 @@ try {
                   },
                   defaultDuration: SET.quickBlockDefaultDuration,
                   defaultReason: SET.quickBlockReasonTemplate_history.replace(/\$\{host\}/g, location.host)
-                                                                     .replace(/\$\{revisionNo\}/g, revisionNo)
-                                                                     .replace(/\$\{docName\}/g, ENV.docTitle)
+                    .replace(/\$\{revisionNo\}/g, revisionNo)
+                    .replace(/\$\{docName\}/g, ENV.docTitle)
                 });
               });
             }
@@ -3821,7 +3830,7 @@ try {
               name: row.querySelector('td:nth-child(2) a').textContent.trim()
             }
             author.isIP = validateIP(author.name);
-            if(SET.addQuickBlockLink) {
+            if (SET.addQuickBlockLink) {
               let quickBlockAnchor = document.createElement("a");
               quickBlockAnchor.textContent = " [차단] "
               quickBlockAnchor.href = "#";
@@ -4068,12 +4077,12 @@ try {
           win.button('닫기', win.close);
         });
         win.button('설정 복원', async function () {
-          getFile(async(files) => {
+          getFile(async (files) => {
             if (files.length === 0)
               return alert('아무것도 선택하지 않았습니다!');
             try {
               let fileReader = new FileReader();
-              fileReader.onload = async(evt) => {
+              fileReader.onload = async (evt) => {
                 try {
                   let data = JSON.parse(evt.target.result);
                   await SET.import(data);
