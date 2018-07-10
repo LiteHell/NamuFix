@@ -21,8 +21,8 @@
 // @require     https://cdn.rawgit.com/LiteHell/TooSimplePopupLib/7f2a8a81f11f980c1dfa6b5b2213cd38b8bbde3c/TooSimplePopupLib.js
 // @require     https://cdn.rawgit.com/wkpark/jsdifflib/dc19d085db5ae71cdff990aac8351607fee4fd01/difflib.js
 // @require     https://cdn.rawgit.com/wkpark/jsdifflib/dc19d085db5ae71cdff990aac8351607fee4fd01/diffview.js
-// @require     https://cdn.rawgit.com/LiteHell/NamuFix/d6bcc377c563c2745af0b8078ce5dc97f2c19910/namuapi.js
-// @require     https://cdn.rawgit.com/LiteHell/NamuFix/84ae4261d243e9d50c79916db6f83587454467eb/skinDependency.js
+// @require     https://cdn.rawgit.com/LiteHell/NamuFix/cdc72d2ad0ffab4fa3ba85088ff9c5a13916e2ca/namuapi.js
+// @require     https://cdn.rawgit.com/LiteHell/NamuFix/cdc72d2ad0ffab4fa3ba85088ff9c5a13916e2ca/skinDependency.js
 // @require     https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.19.3/moment-with-locales.min.js
 // @require     https://cdnjs.cloudflare.com/ajax/libs/moment-timezone/0.5.14/moment-timezone-with-data.min.js
 // @require     https://cdnjs.cloudflare.com/ajax/libs/async/2.6.0/async.min.js
