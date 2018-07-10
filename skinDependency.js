@@ -49,14 +49,14 @@ let skinDependencies = {
             if (!menu.querySelector('.navbar-divider.nf-divider'))
                 menu.appendChild((() => {
                     let i = document.createElement('div');
-                    i.className = 'navbar-dropdown nf-divider';
+                    i.className = 'navbar-divider nf-divider';
                     return i;
                 })());
             let menuItem = document.createElement("a");
             menuItem.className = "navbar-item";
             menuItem.href = "#";
             menuItem.innerHTML = `<span class="icon"><i class="fas fa-wrench"></i></span>${text}`;
-            menuItem.appendChild('click', onclick);
+            menuItem.addEventListener('click', onclick);
             menu.appendChild(menuItem);
         },
         get IsLoggedIn() {
@@ -102,11 +102,10 @@ let skinDependencies = {
         get UserName() {
             return document.querySelector('body.Liberty .navbar-login .login-menu .dropdown-menu .dropdown-item:first-child, div.user-info > div.user-info > div:first-child').textContent.trim();
         }
-
     }
 }
 function getSkinDependency(skinName) {
-    return skinDependencies[skinName] | null;
+    return skinDependencies[skinName] || null;
 }
 function getSkinSupports() {
     return Object.keys(skinDependencies);

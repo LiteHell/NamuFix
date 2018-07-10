@@ -22,6 +22,7 @@
 // @require     https://cdn.rawgit.com/wkpark/jsdifflib/dc19d085db5ae71cdff990aac8351607fee4fd01/difflib.js
 // @require     https://cdn.rawgit.com/wkpark/jsdifflib/dc19d085db5ae71cdff990aac8351607fee4fd01/diffview.js
 // @require     https://cdn.rawgit.com/LiteHell/NamuFix/d6bcc377c563c2745af0b8078ce5dc97f2c19910/namuapi.js
+// @require     https://cdn.rawgit.com/LiteHell/NamuFix/84ae4261d243e9d50c79916db6f83587454467eb/skinDependency.js
 // @require     https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.19.3/moment-with-locales.min.js
 // @require     https://cdnjs.cloudflare.com/ajax/libs/moment-timezone/0.5.14/moment-timezone-with-data.min.js
 // @require     https://cdnjs.cloudflare.com/ajax/libs/async/2.6.0/async.min.js
@@ -644,6 +645,8 @@ try {
         });
       }
 
+      let skinDependency = getSkinDependency(new RegExp(`(${getSkinSupports().join('|')})`, 'i').exec(document.body.className)[1].toLowerCase());
+
       // 문서/역사/편집 페이지 등에서 버튼 추가 함수
       let addArticleButton = skinDependency.addArticleButton;
 
@@ -755,8 +758,8 @@ try {
           SET.emphasizeResesWhenMouseover = false;
         await SET.save();
       }
-
       
+      console.log(skinDependency);
       let addItemToMemberMenu = skinDependency.addItemToMemberMenu;
 
       let vpngateCache = [],
@@ -1115,17 +1118,8 @@ try {
 
       async function mainFunc() {
         // 환경 감지
-        let skinDependency;
         var ENV = {};
         ENV.skinName = /(senkawa|Liberty|buma|vector)/i.exec(document.body.className)[1].toLowerCase();
-        skinDependency = getSkinDependency(ENV.skinName);
-        if (skinDependency === null) {
-          let warnWin = TooSimplePopup();
-          warnWin.title("지원하지 않는 스킨");
-          warnWin.content(el => el.innerHTML = "해당 스킨은 지원되지 않습니다.<br>현재 지원되는 스킨은 " + getSkinSupports().join(",") + "입니다. (추후 업데이트로 변동 가능함)");
-          warnWin.button('닫기', warnWin.close);
-          return;
-        }
         ENV.IsSSL = /^https/.test(location.href);
         ENV.IsEditing = location.pathname.toLowerCase().indexOf('/edit/') == 0;
         ENV.Discussing = location.pathname.toLowerCase().indexOf('/thread/') == 0;
@@ -1153,12 +1147,12 @@ try {
         if (document.querySelector("input[name=section]"))
           ENV.section = document.querySelector("input[name=section]").value;
         ENV.docTitle = (function () {
-          let title = document.querySelector('.wiki-article h1.title > a') | document.querySelector('.wiki-article h1.title') | document.querySelector('h1.title') | document.querySelector('.title h1');
+          let title = document.querySelector('.wiki-article h1.title > a') || document.querySelector('.wiki-article h1.title') || document.querySelector('h1.title') || document.querySelector('.title h1');
           return title ? title.textContent.trim() : decodeURIComponent(/^\/[a-zA-Z_]+\/(.+)/.exec(location.pathname)[1]);
         })();
         if (ENV.Discussing) {
           ENV.topicNo = /^\/thread\/([^#]+)/.exec(location.pathname)[1];
-          ENV.topicTitle = document.querySelector('.wiki-article h2:first-child').innerHTML.trim();
+          ENV.topicTitle = document.querySelector('.wiki-article h2.wiki-heading').innerHTML.trim();
         }
         if (ENV.IsDiff) {
           //ENV.docTitle = /diff\/(.+?)\?/.exec(location.href)[1];
@@ -2498,7 +2492,7 @@ try {
           }
           // 리다이렉트로 왔을 시 그 라디이렉트 문서 편집/삭제 링크 추가
           if (document.querySelector('.wiki-article .alert.alert-info') && document.querySelector('.wiki-article .alert.alert-info').innerHTML.indexOf('에서 넘어옴') != -1) {
-            var redirectAlert = document.querySelector('article .alert.alert-info, .Liberty .wiki-article .alert.alert-info');
+            var redirectAlert = document.querySelector('.wiki-article .alert.alert-info');
             var origDocuName = decodeURIComponent(/\/w\/(.+?)\?noredirect=1/.exec(redirectAlert.querySelector('a.document').href)[1]);
             var editUrl = '/edit/' + origDocuName;
             var deleteUrl = '/delete/' + origDocuName;
