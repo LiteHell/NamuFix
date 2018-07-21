@@ -3860,12 +3860,6 @@ try {
               })
             }
           }
-          if (ENV.IsDocument && ENV.docTitle.indexOf('사용자:') == 0) {
-            addArticleButton("기여내역", function () {
-              var userName = ENV.docTitle.substring(4);
-              location.href = "/contribution/" + (validateIP(userName) ? "ip/" : "author/") + userName + "/document";
-            })
-          }
         }
       }
 
@@ -3910,9 +3904,9 @@ try {
             <input type="radio" name="ipInfoDefaultOrg" data-setname="ipInfoDefaultOrg" data-setvalue="KISAISP">KISA WHOIS 결과에서 IP 보유 기관명<br>
             <input type="radio" name="ipInfoDefaultOrg" data-setname="ipInfoDefaultOrg" data-setvalue="KISAuserOrISP">KISA WHOIS 결과에서 IP 보유 기관명 혹은 IP 이용 기관명<br>
             </div>
-            <h2>동시요청제한</h2>
+            <h2>동시 요청 제한</h2>
             <div class="settings-paragraph">
-            관리작업시의 동시요청제한 : 
+            관리작업시의 동시 요청 제한 : 
             <input type="number" data-setname="adminReqLimit"></input><br>
             이미지 업로드시의 동시 요청 제한 : 
             <input type="number" data-setname="fileUploadReqLimit"></input><br>
@@ -3937,7 +3931,7 @@ try {
             </div>
             <h2>아이덴티콘 라이브러리</h2>
             <div class="settings-paragraph">
-            <p>참고 : NamuFix에서 특정 사용자의 이메일주소를 조회할 수 없기에 Gravatar, Gravatar(monsterid)는 해당 사용자의 그라바타와 다르게 나옴.</p>
+            <p>참고 : NamuFix에서 특정 사용자의 이메일 주소를 조회할 수 없기에 Gravatar, Gravatar(monsterid)는 해당 사용자의 그라바타와 다르게 나옴.</p>
             <input type="radio" name="identiconLibrary" data-setname="identiconLibrary" data-setvalue="identicon">stewartlord/identicon.js (GitHub스타일의 아이덴티콘)<br>
             <input type="radio" name="identiconLibrary" data-setname="identiconLibrary" data-setvalue="jdenticon">jdenticon (원을 포함하는 여러 도형과 다양한 색으로 이루어진 아이덴티콘)<br>
             <input type="radio" name="identiconLibrary" data-setname="identiconLibrary" data-setvalue="gravatar">Gravatar (Gravatar에서 생성되는 기하학적 패턴 기반의 아이덴티콘)<br>
@@ -4123,7 +4117,7 @@ try {
       addItemToMemberMenu('KISA WHOIS', function (evt) {
         evt.preventDefault();
 
-        whoisPopup(prompt('조회할 IP주소를 입력하세요.'));
+        whoisPopup(prompt('조회할 IP 주소를 입력하세요.'));
       })
 
       if (SET.addBatchBlockMenu) {
