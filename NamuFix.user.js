@@ -11,7 +11,7 @@
 // @author      LiteHell
 // @downloadURL https://namufix.wikimasonry.org/latest.js
 // @require     https://greasemonkey.github.io/gm4-polyfill/gm4-polyfill.js
-// @require     https://cdn.rawgit.com/LiteHell/NamuFix/5326c9aada134f65bba171d12f5ca5d042fd4fca/korCountryNames.js
+// @require     https://cdn.rawgit.com/LiteHell/NamuFix/c990023aab341ea253f70e5e727b45cecfcb1270/data/korCountryNames.js
 // @require     https://cdn.rawgit.com/LiteHell/NamuFix/0ea78119c377402a10bbdfc33365c5195ce7fccc/FlexiColorPicker.js
 // @require     https://cdn.rawgit.com/Caligatio/jsSHA/v2.3.1/src/sha.js
 // @require     https://cdn.rawgit.com/zenozeng/color-hash/v1.0.3/dist/color-hash.js
@@ -21,11 +21,16 @@
 // @require     https://cdn.rawgit.com/LiteHell/TooSimplePopupLib/7f2a8a81f11f980c1dfa6b5b2213cd38b8bbde3c/TooSimplePopupLib.js
 // @require     https://cdn.rawgit.com/wkpark/jsdifflib/dc19d085db5ae71cdff990aac8351607fee4fd01/difflib.js
 // @require     https://cdn.rawgit.com/wkpark/jsdifflib/dc19d085db5ae71cdff990aac8351607fee4fd01/diffview.js
-// @require     https://cdn.rawgit.com/LiteHell/NamuFix/cdc72d2ad0ffab4fa3ba85088ff9c5a13916e2ca/namuapi.js
+// @require     https://cdn.rawgit.com/LiteHell/NamuFix/c990023aab341ea253f70e5e727b45cecfcb1270/src/engCountryNames.js
 // @require     https://cdn.rawgit.com/LiteHell/NamuFix/cdc72d2ad0ffab4fa3ba85088ff9c5a13916e2ca/skinDependency.js
 // @require     https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.19.3/moment-with-locales.min.js
 // @require     https://cdnjs.cloudflare.com/ajax/libs/moment-timezone/0.5.14/moment-timezone-with-data.min.js
 // @require     https://cdnjs.cloudflare.com/ajax/libs/async/2.6.0/async.min.js
+// @require     https://cdn.rawgit.com/LiteHell/NamuFix/c990023aab341ea253f70e5e727b45cecfcb1270/src/flagUtils.js
+// @require     https://cdn.rawgit.com/LiteHell/NamuFix/c990023aab341ea253f70e5e727b45cecfcb1270/src/hashUtils.js
+// @require     https://cdn.rawgit.com/LiteHell/NamuFix/c990023aab341ea253f70e5e727b45cecfcb1270/src/NFStorage.js
+// @require     https://cdn.rawgit.com/LiteHell/NamuFix/c990023aab341ea253f70e5e727b45cecfcb1270/src/utils.js
+// @require     https://cdn.rawgit.com/LiteHell/NamuFix/c990023aab341ea253f70e5e727b45cecfcb1270/src/whoisIpUtils.js
 // @connect     cdn.rawgit.com
 // @connect     cdnjs.cloudflare.com
 // @connect     jsdelivr.net
@@ -90,6 +95,10 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 
 try {
+  let {getFlagIcon} = flagUtils;
+  let {SHA512, SHA1, SHA256} = hashUtils;
+  let {GM_addStyle,nOu,encodeHTMLComponent,validateIP, formatDateTime, formatTimespan, insertCSS, enterTimespanPopup} = utils;
+  let {getIpInfo, getIpWhois, getVPNGateIPList, checkVPNGateIP, whoisPopup} = whoisIpUtils;
   let SET = new NFStorage();
   function batchBlockFunction(evt) {
     evt.preventDefault();
