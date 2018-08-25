@@ -7,7 +7,7 @@
 // @include     https://www.alphawiki.org/*
 // @include     https://theseed.io/*
 // @include     https://board.namu.wiki/*
-// @version     180710.1
+// @version     180826.1
 // @author      LiteHell
 // @downloadURL https://namufix.wikimasonry.org/latest.js
 // @require     https://greasemonkey.github.io/gm4-polyfill/gm4-polyfill.js
