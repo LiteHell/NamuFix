@@ -1,5 +1,5 @@
 function utils() {
-    this.GM_addStyle = (text) => {
+    this.NF_addStyle = (text) => {
         var style = document.createElement("style");
         style.innerHTML = text;
         document.head.appendChild(style);

@@ -106,9 +106,9 @@ namuapi.searchBlockHistory = function (options, callback) {
         onload: function (res) {
             var parser = new DOMParser();
             var doc = parser.parseFromString(res.responseText, "text/html");
-            if (doc.querySelector('article ul.wiki-list > li') == null)
+            if (doc.querySelector('ul.wiki-list > li') == null)
                 return callback([]);
-            var logs = doc.querySelectorAll('article ul.wiki-list > li');
+            var logs = doc.querySelectorAll('ul.wiki-list > li');
             var result = [];
             // get first entry only
             for (var i = 0; i < logs.length; i++) {
@@ -129,8 +129,8 @@ namuapi.searchBlockHistory = function (options, callback) {
                 else if (entry.type == "사용자 권한 설정") entry.type = "grant";
                 result.push(entry);
             }
-            let nextButton = doc.querySelector('article .btn-group .btn.btn-secondary:nth-child(2)'),
-                prevButton = doc.querySelector('article .btn-group .btn.btn-secondary:nth-child(1)');
+            let nextButton = doc.querySelector('.wiki-article .btn-group .btn.btn-secondary:nth-child(2)'),
+                prevButton = doc.querySelector('.wiki-article .btn-group .btn.btn-secondary:nth-child(1)');
             if (/[&?]from=([0-9]+)/.test(nextButton.href)) {
                 result.nextResultPageFrom = /[&?]from=([0-9]+)/.exec(nextButton.href)[1];
             }
