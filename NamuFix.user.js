@@ -11,8 +11,6 @@
 // @author      LiteHell
 // @downloadURL https://namufix.wikimasonry.org/latest.js
 // @require     https://greasemonkey.github.io/gm4-polyfill/gm4-polyfill.js
-// @require     https://cdn.rawgit.com/LiteHell/NamuFix/ea4f7a59ce6c1429f41ab8d036939327777badb3/data/korCountryNames.js
-// @require     https://cdn.rawgit.com/LiteHell/NamuFix/ea4f7a59ce6c1429f41ab8d036939327777badb3/FlexiColorPicker.js
 // @require     https://cdn.rawgit.com/Caligatio/jsSHA/v2.3.1/src/sha.js
 // @require     https://cdn.rawgit.com/zenozeng/color-hash/v1.0.3/dist/color-hash.js
 // @require     https://cdn.rawgit.com/ben-liang/pnglib/91a91b7f840fdf19ef34a32df8051f2178957293/pnglib.js
@@ -21,16 +19,19 @@
 // @require     https://cdn.rawgit.com/LiteHell/TooSimplePopupLib/7f2a8a81f11f980c1dfa6b5b2213cd38b8bbde3c/TooSimplePopupLib.js
 // @require     https://cdn.rawgit.com/wkpark/jsdifflib/dc19d085db5ae71cdff990aac8351607fee4fd01/difflib.js
 // @require     https://cdn.rawgit.com/wkpark/jsdifflib/dc19d085db5ae71cdff990aac8351607fee4fd01/diffview.js
-// @require     https://cdn.rawgit.com/LiteHell/NamuFix/ea4f7a59ce6c1429f41ab8d036939327777badb3/src/engCountryNames.js
-// @require     https://cdn.rawgit.com/LiteHell/NamuFix/ea4f7a59ce6c1429f41ab8d036939327777badb3/skinDependency.js
 // @require     https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.19.3/moment-with-locales.min.js
 // @require     https://cdnjs.cloudflare.com/ajax/libs/moment-timezone/0.5.14/moment-timezone-with-data.min.js
-// @require     https://cdnjs.cloudflare.com/ajax/libs/async/2.6.0/async.min.js
+// @require     https://cdn.jsdelivr.net/npm/async@2.6.1/dist/async.min.js
+// @require     https://cdn.rawgit.com/LiteHell/NamuFix/ea4f7a59ce6c1429f41ab8d036939327777badb3/data/korCountryNames.js
+// @require     https://cdn.rawgit.com/LiteHell/NamuFix/ea4f7a59ce6c1429f41ab8d036939327777badb3/FlexiColorPicker.js
+// @require     https://cdn.rawgit.com/LiteHell/NamuFix/ea4f7a59ce6c1429f41ab8d036939327777badb3/skinDependency.js
+// @require     https://cdn.rawgit.com/LiteHell/NamuFix/ea4f7a59ce6c1429f41ab8d036939327777badb3/src/engCountryNames.js
 // @require     https://cdn.rawgit.com/LiteHell/NamuFix/ea4f7a59ce6c1429f41ab8d036939327777badb3/src/flagUtils.js
 // @require     https://cdn.rawgit.com/LiteHell/NamuFix/ea4f7a59ce6c1429f41ab8d036939327777badb3/src/hashUtils.js
 // @require     https://cdn.rawgit.com/LiteHell/NamuFix/ea4f7a59ce6c1429f41ab8d036939327777badb3/src/NFStorage.js
 // @require     https://cdn.rawgit.com/LiteHell/NamuFix/ea4f7a59ce6c1429f41ab8d036939327777badb3/src/utils.js
 // @require     https://cdn.rawgit.com/LiteHell/NamuFix/ea4f7a59ce6c1429f41ab8d036939327777badb3/src/whoisIpUtils.js
+// @require     https://cdn.rawgit.com/LiteHell/NamuFix/ea4f7a59ce6c1429f41ab8d036939327777badb3/src/namuapi.js
 // @connect     cdn.rawgit.com
 // @connect     cdnjs.cloudflare.com
 // @connect     jsdelivr.net
@@ -95,10 +96,10 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 
 try {
-  let {getFlagIcon} = flagUtils;
-  let {SHA512, SHA1, SHA256} = hashUtils;
-  let {GM_addStyle,nOu,encodeHTMLComponent,validateIP, formatDateTime, formatTimespan, insertCSS, enterTimespanPopup} = utils;
-  let {getIpInfo, getIpWhois, getVPNGateIPList, checkVPNGateIP, whoisPopup} = whoisIpUtils;
+  let {getFlagIcon} = new flagUtils();
+  let {SHA512, SHA1, SHA256} = new hashUtils();
+  let {GM_addStyle,nOu,encodeHTMLComponent,validateIP, formatDateTime, formatTimespan, insertCSS, enterTimespanPopup} = new utils();
+  let {getIpInfo, getIpWhois, getVPNGateIPList, checkVPNGateIP, whoisPopup} = new whoisIpUtils();
   let SET = new NFStorage();
   function batchBlockFunction(evt) {
     evt.preventDefault();
@@ -269,8 +270,13 @@ try {
             success: []
           };
           let datas = JSON.parse(JSON.stringify(_datas));
+          console.log(SET.adminReqLimit);
           async.eachLimit(datas, SET.adminReqLimit, (data, callback) => {
+            console.log('a');
             namuapi[data.handlerName](data.parameter, (err, target) => {
+              console.log('b');
+              console.log(err);
+              console.log(target);
               if (err) {
                 result.errors.push({
                   target: data.parameter,
@@ -514,8 +520,6 @@ try {
         document.head.appendChild(scriptElement);
       }
 
-      var SET = new NFStorage();
-
       async function INITSET() { // Storage INIT
         await SET.load();
         if (nOu(SET.tempsaves))
@@ -597,7 +601,6 @@ try {
         await SET.save();
       }
 
-      console.log(skinDependency);
       let addItemToMemberMenu = skinDependency.addItemToMemberMenu;
 
       function makeTabs() {

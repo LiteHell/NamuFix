@@ -50,7 +50,7 @@ namuapi.theseedRequest = function (options) {
 namuapi.resolveRecaptcha = function (callback) {
     GM.xmlHttpRequest({
         method: 'GET',
-        url: `https://${wikihost}/check`,
+        url: `https://${wikihost}/`,
         onload: function (res) {
             var siteKey = /["']sitekey["']: ["']([^"']+)["']/.exec(res.responseText)[1];
             var captchaWin = TooSimplePopup();
