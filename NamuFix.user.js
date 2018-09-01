@@ -7,7 +7,7 @@
 // @include     https://www.alphawiki.org/*
 // @include     https://theseed.io/*
 // @include     https://board.namu.wiki/*
-// @version     180826.0
+// @version     180902.0
 // @author      LiteHell
 // @downloadURL https://namufix.wikimasonry.org/latest.js
 // @require     https://greasemonkey.github.io/gm4-polyfill/gm4-polyfill.js
@@ -377,7 +377,7 @@ if (location.host === 'board.namu.wiki') {
       let times = document.querySelectorAll('.read_header > .meta > .time, .fbMeta .time');
       let origTimezone = "UTC" // America/Asuncion 아님.
       for (let i = 0; i < times.length; i++) {
-        let t = moment.tz(times[i].textContenㄴt.trim(), "YYYY.MM.DD HH:mm", origTimezone);
+        let t = moment.tz(times[i].textContent.trim(), "YYYY.MM.DD HH:mm", origTimezone);
         times[i].textContent = t.tz(moment.tz.guess()).format("YYYY.MM.DD HH:mm z")
       }
       if (times.length !== 0)
