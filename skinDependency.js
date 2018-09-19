@@ -69,7 +69,7 @@ let skinDependencies = {
     "liberty": {
         addArticleButton: (text, onclick) => {
             var aTag = document.createElement("a");
-            aTag.className = "btn btn-secondary";
+            aTag.className = "btn btn-secondary tools-btn";
             aTag.setAttribute("role", "button");
             aTag.innerHTML = text;
             aTag.href = "#";
