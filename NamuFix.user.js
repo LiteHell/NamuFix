@@ -22,6 +22,7 @@
 // @require     https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.19.3/moment-with-locales.min.js
 // @require     https://cdnjs.cloudflare.com/ajax/libs/moment-timezone/0.5.14/moment-timezone-with-data.min.js
 // @require     https://cdn.jsdelivr.net/npm/async@2.6.1/dist/async.min.js
+// @require     https://cdn.rawgit.com/mathiasbynens/he/v1.1.1/he.js
 // @require     https://cdn.rawgit.com/LiteHell/NamuFix/9275cd12496e2e5d5b7d7ab410d52c8fe682112c/data/korCountryNames.js
 // @require     https://cdn.rawgit.com/LiteHell/NamuFix/9275cd12496e2e5d5b7d7ab410d52c8fe682112c/FlexiColorPicker.js
 // @require     https://cdn.rawgit.com/LiteHell/NamuFix/9275cd12496e2e5d5b7d7ab410d52c8fe682112c/skinDependency.js
@@ -106,6 +107,7 @@ let {
   nOu,
   NF_addStyle,
   encodeHTMLComponent,
+  decodeHTMLComponent,
   validateIP,
   formatDateTime,
   formatTimespan,
@@ -3133,12 +3135,43 @@ if (location.host === 'board.namu.wiki') {
           for (var i = 0; i < rows.length; i++) {
             var row = rows[i];
             if (row.querySelector('a')) {
-              var documentName = row.querySelector('a').getAttribute('href');
+              let documentLink = row.querySelector('a').getAttribute('href'), documentRev = 1;
+              if (row.querySelector('a[href^="/diff/"]')) {
+                let = diffLink = row.querySelector('a[href^="/diff/"]').getAttribute('href');
+                documentRev = parseInt(/\??rev=([0-9]+)/.exec(diffLink)[1]);
+              }
+              var documentName = decodeURIComponent(/\/w\/(.+)/.exec(documentLink)[1]);
               documentNameBefore = documentName;
               var contributedBytes = row.querySelector('span.f_r > span').innerHTML;
               var negativeContribution = /^\-[0-9]+/.test(contributedBytes);
               if (/^\+[0-9]+/.test(contributedBytes)) contributedBytes = contributedBytes.substring(contributedBytes.indexOf('+'));
               contributedBytes = Number(contributedBytes);
+
+              // 긴급차단 링크
+              if(SET.addQuickBlockLink) {
+                let userIdPattern = /^\/contribution\/(?:author|ip)\/(.+?)\/(?:document|discuss)/;
+                let userId = userIdPattern.exec(location.pathname)[1];
+                let quickBlockLink = document.createElement("a");
+                quickBlockLink.href = "#";
+                quickBlockLink.innerHTML=" [차단]";
+                console.log(SET.quickBlockReasonTemplate_history);
+                quickBlockLink.addEventListener("click", (evt) => {
+                  evt.preventDefault();
+                  quickBlockPopup({
+                    author: {
+                      name: userId,
+                      isIP: validateIP(userId)
+                    },
+                    defaultDuration: SET.quickBlockDefaultDuration,
+                    defaultReason: SET.quickBlockReasonTemplate_history.replace(/\$\{host\}/g, location.host)
+                      .replace(/\$\{revisionNo\}/g, "r" + documentRev)
+                      .replace(/\$\{docName\}/g, documentName)
+                  });
+                })
+                row.querySelector('td').insertBefore(quickBlockLink, row.querySelector('a[href^="/discuss/"]').nextSibling)
+              }
+
+              // 통계
               if (documents.indexOf(documentName) == -1) documents.push(documentName);
               contCount++;
               if (negativeContribution)

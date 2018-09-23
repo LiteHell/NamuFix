@@ -10,14 +10,11 @@ function utils() {
 
     // HTML 이스케이프 함수
     this.encodeHTMLComponent = (text) => {
-        var result = text;
-        // http://www.w3schools.com/php/func_string_htmlspecialchars.asp 참고함.
-        result = result.replace(/&/gmi, "&amp;");
-        result = result.replace(/</gmi, "&lt;");
-        result = result.replace(/>/gmi, "&gt;");
-        result = result.replace(/'/gmi, "&#039;");
-        result = result.replace(/"/gmi, "&quot;");
-        return result;
+        return he.encode(String(text), {useNamedReferences: true});
+    }
+
+    this.decodeHTMLComponent = (text) => {
+        return he.decode(String(text));
     }
 
     this.validateIP = (ip) => {
