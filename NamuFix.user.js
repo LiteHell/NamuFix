@@ -3005,10 +3005,13 @@ if (location.host === 'board.namu.wiki') {
               if (!SET.addQuickBlockLink)
                 ipInfo.querySelector('.nf-quickblock-row').style.display = 'none';
 
-              function displayIsBlocked(mask, tbody) {
+              function prepareIsBlockedDisplay(mask, tbody) {
                 let row = document.createElement("tr");
-                row.innerHTML = "<td>IP차단기록 (" + mask + ")</td><td class=\"nf_isipblocked\">조회중입니다...</td>";
+                row.innerHTML = "<td>IP차단기록 (" + mask + ")</td><td class=\"nf_isipblocked mask-" + /([0-9]+)/.exec(mask)[1] + "\">조회중입니다...</td>";
                 tbody.appendChild(row);
+              }
+              function displayIsBlocked(mask, tbody) {
+                let displayHolder = tbody.querySelector(".nf_isipblocked.mask-" + /([0-9]+)/.exec(mask)[1]);
                 namuapi.searchBlockHistory({
                   query: ip + mask,
                   isAuthor: false
@@ -3017,22 +3020,23 @@ if (location.host === 'board.namu.wiki') {
                     return v.blocked === ip + mask;
                   });
                   if (filtered.length == 0) {
-                    return row.querySelector('.nf_isipblocked').innerHTML = "차단기록 없음.";
+                    return displayHolder.innerHTML = "차단기록 없음.";
                   }
                   var actType = filtered[0].type;
                   if (actType == "blockIP") {
-                    row.querySelector('.nf_isipblocked').innerHTML = filtered[0].blocker + '에 의해 ' + (filtered[0].duration || '') + ' <span style="color:red">차단됨.</span> (일시 : ' + formatDateTime(filtered[0].at) + ', 이유 : ' + filtered[0].reason + ')';
+                    displayHolder.innerHTML = filtered[0].blocker + '에 의해 ' + (filtered[0].duration || '') + ' <span style="color:red">차단됨.</span> (일시 : ' + formatDateTime(filtered[0].at) + ', 이유 : ' + filtered[0].reason + ')';
                   } else if (actType == "unblockIP") {
-                    row.querySelector('.nf_isipblocked').innerHTML = filtered[0].blocker + '에 의해 ' + (filtered[0].duration || '') + ' <span style="color:green">차단이 해제됨.</span> (일시 : ' + formatDateTime(filtered[0].at) + ')';
+                    displayHolder.innerHTML = filtered[0].blocker + '에 의해 ' + (filtered[0].duration || '') + ' <span style="color:green">차단이 해제됨.</span> (일시 : ' + formatDateTime(filtered[0].at) + ')';
                   } else {
-                    row.querySelector('.nf_isipblocked').innerHTML = "??? 기록 검색중 오류가 발생함.";
+                    displayHolder.innerHTML = "??? 기록 검색중 오류가 발생함.";
                   }
                 });
               }
               getIpWhois(ip, (whoisRes) => {
                 ipInfo.querySelector('.nf_ipblockchecking').parentNode.removeChild(ipInfo.querySelector('.nf_ipblockchecking'));
                 if (!whoisRes.success || whoisRes.raw) {
-                  displayIsBlocked('/32', ipInfo.querySelector('tbody'))
+                  prepareIsBlockedDisplay('/32', ipInfo.querySelector('tbody'));
+                  displayIsBlocked('/32', ipInfo.querySelector('tbody'));
                 } else {
                   let prefixes = [];
                   if (whoisRes.result.korean.ISP && whoisRes.result.korean.ISP.netinfo && whoisRes.result.korean.ISP.netinfo.prefix)
@@ -3043,6 +3047,7 @@ if (location.host === 'board.namu.wiki') {
                   if (!prefixes.includes('/32')) prefixes.push('/32');
                   let delay = 0;
                   for (let prefix of prefixes) {
+                    prepareIsBlockedDisplay(prefix, ipInfo.querySelector('tbody'));
                     setTimeout(() => {
                       displayIsBlocked(prefix, ipInfo.querySelector('tbody'));
                     }, (delay++) * SET.ipBlockHistoryCheckDelay + 1);
