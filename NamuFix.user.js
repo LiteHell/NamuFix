@@ -372,6 +372,15 @@ function batchBlockFunction(evt) {
 if (location.host === 'board.namu.wiki') {
   async function runBoardFix() {
     await SET.load();
+    // 이미지 업로드 함수
+    function uploadXEImage(file, mid, name) {
+      let formData = new FormData();
+      formData.append('Filename', 'emoti.png')
+      formData.append('')
+      GM.xmlHttpRequest({
+        url: 'https://board.namu.wiki'
+      })
+    }
     // 시간대 자동 변경
     if (SET.noLocaltimeOnNamuBoard !== false) {
       let times = document.querySelectorAll('.read_header > .meta > .time, .fbMeta .time');
@@ -450,7 +459,7 @@ if (location.host === 'board.namu.wiki') {
     }
     // 일괄 차단 메뉴추가
     if (SET.addBatchBlockMenu) {
-      insertCSS("https://cdn.rawgit.com/LiteHell/TooSimplePopupLib/edad912e28eeacdc3fd8b6e6b7ac5cafc46d95b6/TooSimplePopupLib.css");
+      await insertCSS("https://cdn.rawgit.com/LiteHell/TooSimplePopupLib/edad912e28eeacdc3fd8b6e6b7ac5cafc46d95b6/TooSimplePopupLib.css");
       let menu = document.querySelector('nav#navbar #main-navbar ul.nav.navbar-nav');
       let item = document.createElement('li');
       item.innerHTML = '<a href="#">일괄 차단</a>';
@@ -465,9 +474,9 @@ if (location.host === 'board.namu.wiki') {
     if (location.hostname == 'no-ssl.namu.wiki')
       location.hostname = 'namu.wiki';
 
-    insertCSS("https://cdn.rawgit.com/LiteHell/NamuFix/284db44ac1d89ff0cbd1155c3372db38be3bc140/NamuFix.css");
-    insertCSS("https://cdn.rawgit.com/LiteHell/TooSimplePopupLib/edad912e28eeacdc3fd8b6e6b7ac5cafc46d95b6/TooSimplePopupLib.css");
-    insertCSS("https://cdn.rawgit.com/wkpark/jsdifflib/dc19d085db5ae71cdff990aac8351607fee4fd01/diffview.css");
+    await insertCSS("https://cdn.rawgit.com/LiteHell/NamuFix/284db44ac1d89ff0cbd1155c3372db38be3bc140/NamuFix.css");
+    await insertCSS("https://cdn.rawgit.com/LiteHell/TooSimplePopupLib/edad912e28eeacdc3fd8b6e6b7ac5cafc46d95b6/TooSimplePopupLib.css");
+    await insertCSS("https://cdn.rawgit.com/wkpark/jsdifflib/dc19d085db5ae71cdff990aac8351607fee4fd01/diffview.css");
     console.log('[NamuFix] CSS 삽입됨.');
 
     // 업데이트 확인

@@ -71,14 +71,18 @@ function utils() {
 
     this.insertCSS = (url) => {
         // 나무위키 CSP 빡세서 getResourceUrl 쓰면 보안 오류남.
-        GM.xmlHttpRequest({
-            method: 'GET',
-            url: url,
-            onload: (res) => {
-                let styleTag = document.createElement("style");
-                styleTag.innerHTML = res.responseText;
-                document.head.appendChild(styleTag);
-            }
+        return new Promise((resolve, reject) => {
+            GM.xmlHttpRequest({
+                method: 'GET',
+                url: url,
+                onload: (res) => {
+                    let styleTag = document.createElement("style");
+                    styleTag.innerHTML = res.responseText;
+                    document.head.appendChild(styleTag);
+                    resolve();
+                },
+                onerror: reject
+            });
         });
     };
 
