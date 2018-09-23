@@ -22,15 +22,16 @@
 // @require     https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.19.3/moment-with-locales.min.js
 // @require     https://cdnjs.cloudflare.com/ajax/libs/moment-timezone/0.5.14/moment-timezone-with-data.min.js
 // @require     https://cdn.jsdelivr.net/npm/async@2.6.1/dist/async.min.js
-// @require     https://cdn.rawgit.com/LiteHell/NamuFix/de842b0d5ba3f3edb4ed325cce08a934a4859176/data/korCountryNames.js
-// @require     https://cdn.rawgit.com/LiteHell/NamuFix/de842b0d5ba3f3edb4ed325cce08a934a4859176/FlexiColorPicker.js
-// @require     https://cdn.rawgit.com/LiteHell/NamuFix/de842b0d5ba3f3edb4ed325cce08a934a4859176/skinDependency.js
-// @require     https://cdn.rawgit.com/LiteHell/NamuFix/de842b0d5ba3f3edb4ed325cce08a934a4859176/src/flagUtils.js
-// @require     https://cdn.rawgit.com/LiteHell/NamuFix/de842b0d5ba3f3edb4ed325cce08a934a4859176/src/hashUtils.js
-// @require     https://cdn.rawgit.com/LiteHell/NamuFix/de842b0d5ba3f3edb4ed325cce08a934a4859176/src/NFStorage.js
-// @require     https://cdn.rawgit.com/LiteHell/NamuFix/de842b0d5ba3f3edb4ed325cce08a934a4859176/src/utils.js
-// @require     https://cdn.rawgit.com/LiteHell/NamuFix/de842b0d5ba3f3edb4ed325cce08a934a4859176/src/whoisIpUtils.js
-// @require     https://cdn.rawgit.com/LiteHell/NamuFix/de842b0d5ba3f3edb4ed325cce08a934a4859176/src/namuapi.js
+// @require     https://cdn.rawgit.com/LiteHell/NamuFix/9275cd12496e2e5d5b7d7ab410d52c8fe682112c/data/korCountryNames.js
+// @require     https://cdn.rawgit.com/LiteHell/NamuFix/9275cd12496e2e5d5b7d7ab410d52c8fe682112c/FlexiColorPicker.js
+// @require     https://cdn.rawgit.com/LiteHell/NamuFix/9275cd12496e2e5d5b7d7ab410d52c8fe682112c/skinDependency.js
+// @require     https://cdn.rawgit.com/LiteHell/NamuFix/9275cd12496e2e5d5b7d7ab410d52c8fe682112c/src/flagUtils.js
+// @require     https://cdn.rawgit.com/LiteHell/NamuFix/9275cd12496e2e5d5b7d7ab410d52c8fe682112c/src/hashUtils.js
+// @require     https://cdn.rawgit.com/LiteHell/NamuFix/9275cd12496e2e5d5b7d7ab410d52c8fe682112c/src/NFStorage.js
+// @require     https://cdn.rawgit.com/LiteHell/NamuFix/9275cd12496e2e5d5b7d7ab410d52c8fe682112c/src/utils.js
+// @require     https://cdn.rawgit.com/LiteHell/NamuFix/9275cd12496e2e5d5b7d7ab410d52c8fe682112c/src/whoisIpUtils.js
+// @require     https://cdn.rawgit.com/LiteHell/NamuFix/9275cd12496e2e5d5b7d7ab410d52c8fe682112c/src/namuapi.js
+// @require     https://cdn.rawgit.com/LiteHell/NamuFix/9275cd12496e2e5d5b7d7ab410d52c8fe682112c/src/boardArchivers.js
 // @connect     cdn.rawgit.com
 // @connect     cdnjs.cloudflare.com
 // @connect     jsdelivr.net
@@ -43,6 +44,7 @@
 // @connect     www.vpngate.net
 // @connect     namufix.wikimasonry.org
 // @connect     phpgongbu.ga
+// @connect     namuwiki.ml
 // @connect     twitter.com
 // @connect     facebook.com
 // @connect     www.facebook.com
@@ -400,25 +402,16 @@ if (location.host === 'board.namu.wiki') {
       archiveLink.href = "#";
       archiveLink.target = "_blank";
       archiveLink.textContent = "아카이브";
-      let clickHandler = (evt) => {
+      let clickHandler = async (evt) => {
         evt.preventDefault();
         archiveLink.textContent = "(진행중)";
         archiveLink.removeAttribute("href");
         archiveLink.removeEventListener("click", clickHandler);
-        GM.xmlHttpRequest({
-          method: 'POST',
-          url: 'https://phpgongbu.ga/archive/',
-          headers: {
-            "Content-Type": "application/x-www-form-urlencoded",
-            "User-Agent": `Mozilla/5.0 (compatible; NamuFix/${GM.info.script.version}`
-          },
-          data: `board_num=${documentId}`,
-          onload: (res) => {
-            GM.openInTab(res.finalUrl);
-            archiveLink.textContent = "아카이브됨";
-            archiveLink.href = res.finalUrl;
-          }
-        });
+        let archiveFunction = (new BoardArchiver(GM.info.script.version))[SET.defaultBoardArchiver];
+        let archiveUrl = await archiveFunction(documentId);
+        GM.openInTab(archiveUrl);
+        archiveLink.textContent = "아카이브됨";
+        archiveLink.href = archiveUrl;
       };
       archiveLink.addEventListener("click", clickHandler);
       extraMenuLink.parentNode.insertBefore(archiveLink, extraMenuLink.nextSibling);
@@ -625,6 +618,8 @@ if (location.host === 'board.namu.wiki') {
         SET.identiconLibrary = 'jdenticon'; // jdenticon, identicon, gravatar, gravatar-monster
       if (nOu(SET.emphasizeResesWhenMouseover))
         SET.emphasizeResesWhenMouseover = false;
+      if (nOu(SET.defaultBoardArchiver))
+        SET.defaultBoardArchiver = 'namuwikiml';
       await SET.save();
     }
 
@@ -3590,6 +3585,12 @@ if (location.host === 'board.namu.wiki') {
             <div class="settings-paragraph">
             <p>상용구와 상용구는 ,로 구분하며 상용구 이름과 상용구 내용은 :로 구분합니다. (예시: <em>처리중:처리중입니다,기각:기각합니다</em>)</p>
             <input type="text" data-setname="commentMacros"></input>
+            </div>
+            <h2>게시판 아카이브 사이트</h2>
+            <div class="settings-paragraph">
+            <p>게시글 아카이브에 이용할 사이트를 선택할 수 있습니다.</p>
+            <input type="radio" name="defaultBoardArchiver" data-setname="defaultBoardArchiver" data-setvalue="namuwikiml">namuwiki.ml (kiwitree 운영)</input><br>
+            <input type="radio" name="defaultBoardArchiver" data-setname="defaultBoardArchiver" data-setvalue="phpgongbu">phpgongbu.ga (amind 운영)</input>
             </div>
             </div>
             <h1>기타</h1>

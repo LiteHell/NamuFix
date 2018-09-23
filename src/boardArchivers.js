@@ -1,10 +1,5 @@
-function BoardArchiver(nfVersion) { // GM.info.script.version
+function BoardArchiver(nfVersion) {
     this.phpgongbu = (documentId) => {
-        /*
-        GM.openInTab(res.finalUrl);
-        archiveLink.textContent = "아카이브됨";
-        archiveLink.href = res.finalUrl;
-        */
         return new Promise((resolve, reject) => {
             GM.xmlHttpRequest({
                 method: 'POST',
