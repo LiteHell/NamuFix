@@ -3083,7 +3083,7 @@ if (location.host === 'board.namu.wiki') {
           userInfo.innerHTML = '<div style="border: 1px black solid; padding: 2px;" class="nf_blockhistory">차단 기록 조회중...</div>'
           insertBeforeTable(userInfo);
           namuapi.searchBlockHistory({
-            query: userId,
+            query: '"' + userId + '"',
             isAuthor: false
           }, function (result) {
             var filtered = result.filter(function (v) {
