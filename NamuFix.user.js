@@ -578,8 +578,6 @@ if (location.host === 'board.namu.wiki') {
         SET.loadUnvisibleReses = false;
       if (nOu(SET.ipInfoDefaultOrg))
         SET.ipInfoDefaultOrg = "ipinfo.io"; //ipinfo.io, KISAISP, KISAuser, KISAuserOrISP
-      if (nOu(SET.addAdminLinksForLiberty))
-        SET.addAdminLinksForLiberty = false;
       if (nOu(SET.autoTempsaveSpan))
         SET.autoTempsaveSpan = 1000 * 60 * 5; // 5분
       if (nOu(SET.addBatchBlockMenu))
@@ -3260,8 +3258,8 @@ if (location.host === 'board.namu.wiki') {
         <tbody>
         <tr><td>총 발언 수</td><td>${totalTalks}</td></tr>
         <tr><td>참여한 토론 수</td><td>${discussCount}</td></tr>
-        <tr><td>한 토론당 평균 발언 수</td><td>${avgTalks}</td></tr>
-        <tr><td>한 토론당 발언 수 표준편차</td><td>${standardDeviation(Talks)}</td></tr>
+        <tr><td>한 토론 당 평균 발언 수</td><td>${avgTalks}</td></tr>
+        <tr><td>한 토론 당 발언 수 표준편차</td><td>${standardDeviation(Talks)}</td></tr>
         <tr><td>시간대별 기여/활동 횟수 분포(토론)</td><td><a href="#NothingToLink" id="punch">여기를 눌러 확인</a></td></tr>
         </tbody>
         </table>`;
@@ -3328,7 +3326,7 @@ if (location.host === 'board.namu.wiki') {
           newExpireInput.setAttribute("class", "form-control");
           newExpireInput.setAttribute("name", "expire");
           var explain = document.createElement("p");
-          explain.innerText = "차단기간은 초 단위로 입력해야 하며, 영구차단시에는 0을, 사용자 차단에서 차단 해제시에는 -1을 입력하시면 됩니다.";
+          explain.innerText = "차단기간은 초 단위로 입력해야 하며, 무기한 차단 시에는 0을, 사용자 차단에서 차단 해제 시에는 -1을 입력하시면 됩니다.";
           var enterEasilyLink = document.createElement("a");
           enterEasilyLink.innerText = "차단기간 간편하게 입력하기";
           enterEasilyLink.href = "#";
@@ -3451,7 +3449,7 @@ if (location.host === 'board.namu.wiki') {
               evt.preventDefault();
               quickBlockPopup({
                 author: author,
-                defaultReason: '긴급차단 - 반달리즘',
+                defaultReason: '긴급차단 - 문서 훼손',
                 defaultDuration: SET.quickBlockDefaultDuration
               });
             })
@@ -3461,12 +3459,6 @@ if (location.host === 'board.namu.wiki') {
       }
 
       if (ENV.skinName == "liberty") {
-        if (SET.addAdminLinksForLiberty) {
-          // 관리자 링크 추가
-          document.querySelector('nav.navbar ul.nav li.nav-item.dropdown .dropdown-menu').innerHTML += '<div class="dropdown-divider"></div>' +
-            '<a class="dropdown-item" href="/admin/suspend_account">계정 차단</a>' +
-            '<a class="dropdown-item" href="/admin/ipacl">IP 차단</a>' +
-            '<a class="dropdown-item" href="/admin/grant">권한 부여</a>';
           if (ENV.IsDocument) {
             addArticleButton("ACL", function () {
               location.href = "/acl/" + ENV.docTitle;
@@ -3591,7 +3583,6 @@ if (location.host === 'board.namu.wiki') {
             <div class="settings-paragraph">
             <h2>편의기능</h2>
             <div class="settings-paragraph">
-            <input type="checkbox" name="addAdminLinksForLiberty" data-setname="addAdminLinksForLiberty" data-as-boolean>Liberty 스킨에 관리자 링크 추가하기</input><br>
             <input type="checkbox" name="addBatchBlockMenu" data-setname="addBatchBlockMenu" data-as-boolean>일괄 차단 메뉴 추가</input><br>
             <input type="checkbox" name="addQuickBlockLink" data-setname="addQuickBlockLink" data-as-boolean>빠른 차단 링크 추가</input><br>
             토론중 빠른차단 기능에서의 차단사유 템플릿 : <input type="text" data-setname="quickBlockReasonTemplate_discuss" style="width: 500px; max-width: 75vw;"></input><br>
