@@ -3,8 +3,6 @@
 // @namespace   http://litehell.info/
 // @description 나무위키 등 더시드 사용 위키의 편집 인터페이스 등을 개선합니다.
 // @include     https://namu.wiki/*
-// @include     https://alphawiki.org/*
-// @include     https://www.alphawiki.org/*
 // @include     https://theseed.io/*
 // @include     https://board.namu.wiki/*
 // @version     180923.0
