@@ -3026,7 +3026,7 @@ if (location.host === 'board.namu.wiki') {
                   if (actType == "blockIP") {
                     displayHolder.innerHTML = filtered[0].blocker + '에 의해 ' + (filtered[0].duration || '') + ' <span style="color:red">차단됨.</span> (일시 : ' + formatDateTime(filtered[0].at) + ', 이유 : ' + filtered[0].reason + ')';
                   } else if (actType == "unblockIP") {
-                    displayHolder.innerHTML = filtered[0].blocker + '에 의해 ' + (filtered[0].duration || '') + ' <span style="color:green">차단이 해제됨.</span> (일시 : ' + formatDateTime(filtered[0].at) + ')';
+                    displayHolder.innerHTML = filtered[0].blocker + '에 의해 ' + (filtered[0].duration || '') + ' <span style="color:green">차단이 해제됨.</span> (일시 : ' + formatDateTime(filtered[0].at) + ', 이유 : ' + filtered[0].reason + ')';
                   } else {
                     displayHolder.innerHTML = "??? 기록 검색중 오류가 발생함.";
                   }
@@ -3099,7 +3099,7 @@ if (location.host === 'board.namu.wiki') {
               if (actType == "blockUser") {
                 userInfo.querySelector(i == 0 ? '.nf_blockhistory' : '.nf_blockhistory_rest').innerHTML += '<p>' + filteredItem.blocker + '에 의해 ' + (filteredItem.duration || '') + ' <span style="color:red">차단됨.</span> (일시 : ' + formatDateTime(filteredItem.at) + ', 이유 : ' + filteredItem.reason + ')' + '</p>';
               } else if (actType == "unblockUser") {
-                userInfo.querySelector(i == 0 ? '.nf_blockhistory' : '.nf_blockhistory_rest').innerHTML += '<p>' + filteredItem.blocker + '에 의해 ' + (filteredItem.duration || '') + ' <span style="color:green">차단이 해제됨.</span> (일시 : ' + formatDateTime(filteredItem.at) + ')' + '</p>';
+                userInfo.querySelector(i == 0 ? '.nf_blockhistory' : '.nf_blockhistory_rest').innerHTML += '<p>' + filteredItem.blocker + '에 의해 ' + (filteredItem.duration || '') + ' <span style="color:green">차단이 해제됨.</span> (일시 : ' + formatDateTime(filteredItem.at) + ', 이유 : ' + filteredItem.reason + ')' + '</p>';
               }
               if (i == 0) {
                 userInfo.querySelector('.nf_blockhistory').innerHTML += '<a href="#" id="nf_more_blockhistory">[차단기록 더 보기]</a><div class="nf_blockhistory_rest" style="display: none;"></div>'
