@@ -5,6 +5,7 @@
 // @include     https://namu.wiki/*
 // @include     https://theseed.io/*
 // @include     https://board.namu.wiki/*
+//@include https://r18.wiki/*
 // @version     181219.0
 // @author      LiteHell
 // @downloadURL https://namufix.wikimasonry.org/latest.js
