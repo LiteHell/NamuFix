@@ -571,6 +571,9 @@ if (location.host === 'board.namu.wiki') {
       if (nOu(SET.identiconLibrary)) SET.identiconLibrary = 'jdenticon'; // jdenticon, identicon, gravatar, gravatar-monster
       if (nOu(SET.emphasizeResesWhenMouseover)) SET.emphasizeResesWhenMouseover = false;
       if (nOu(SET.defaultBoardArchiver)) SET.defaultBoardArchiver = 'namuwikiml';
+      if (nOu(SET.fastRevert)) SET.fastRevert = false;
+      if (nOu(SET.askFastRevertLog)) SET.askFastRevertLog = false;
+      if (nOu(SET.fastRevertDefaultLog)) SET.fastRevertDefaultLog = '반달 복구';
       await SET.save();
    }
    let addItemToMemberMenu = skinDependency.addItemToMemberMenu;
@@ -3282,10 +3285,10 @@ if (location.host === 'board.namu.wiki') {
          })
          var historyRows = document.querySelectorAll('.wiki-article .wiki-list li');
          for (let historyRow of [].slice.call(historyRows)) {
+            let revisionNo = historyRow.querySelector('strong')
+               .textContent.trim();
             // 긴급차단
             if (SET.addQuickBlockLink) {
-               let revisionNo = historyRow.querySelector('strong')
-                  .textContent.trim();
                let temp = historyRow.querySelector('span')
                   .innerHTML.trim();
                historyRow.querySelector('span')
@@ -3353,6 +3356,30 @@ if (location.host === 'board.namu.wiki') {
                   }
                   italicTag.innerHTML = italicTag.innerHTML.replace(pattern.exec(italicTag.innerHTML)[0], newAclText);
                }
+            }
+            // 빠른 되돌리기
+            if (SET.fastRevert) {
+               let revertLink = historyRow.querySelector('a[href^="/revert/"]');
+               let wikiUrl = 'https://namu.wiki/w/' + encodeURIComponent(ENV.docTitle);
+               revertLink.addEventListener('click', function (evt) {
+                  evt.preventDefault();
+                  let log = SET.fastRevertDefaultLog || '';
+                  if (SET.askFastRevertLog) {
+                     log = prompt('되돌리기 사유를 입력하세요.', SET.fastRevertDefaultLog);
+                  }
+                  namuapi.tryRevert({
+                        rev: revisionNo.substring(1),
+                        docname: ENV.docTitle,
+                        user: ENV.UserName,
+                        log: log
+                     })
+                     .then((success) => {
+                        location.href = wikiUrl;
+                     })
+                     .catch((message) => {
+                        location.href = evt.target.href;
+                     });
+               });
             }
          }
       } else if (ENV.IsRecentChanges) {
@@ -3514,6 +3541,13 @@ if (location.host === 'board.namu.wiki') {
             <div class="settings-paragraph">
             <p>편집중 자동저장 간격을 설정합니다. 0 이하의 값으로 설정할 시 자동으로 이루어지지 않으며 이 경우 단축키나 메뉴를 이용해 수동으로 저장해야 합니다.</p>
             <input type="number" name="autoTempsaveSpan" data-setname="autoTempsaveSpan"></input>ms (1000ms = 1s)
+            </div>
+            <h2>빠른 되돌리기</h2>
+            <div class="settings-paragraph">
+            <p>빠른 되돌리기 기능을 활성화하면 되돌리기 페이지가 뜨지 않고 즉시 되돌리기됩니다. 실패시 되돌리기 페이지가 표시됩니다. 설정을 통해 사유를 입력받을 수도 있습니다.</p>
+            <input type="checkbox" name="fastRevert" data-setname="fastRevert" data-as-boolean>빠른 되돌리기 사용</input><br>
+            <input type="checkbox" name="askFastRevertLog" data-setname="askFastRevertLog" data-as-boolean>빠른 되돌리기시 사유 묻기</input><br>
+            빠른 되돌리기 사유 기본값 : <input type="text" data-setname="fastRevertDefaultLog"></input>
             </div>
             <h2>이미지 업로드시 파일이름 유지</h2>
             <div class="settings-paragraph">
