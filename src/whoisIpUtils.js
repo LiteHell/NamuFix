@@ -131,23 +131,23 @@ function whoisIpUtils() {
                     } else {
                         getFlagIcon(whoisObj.countryCode.toLowerCase()).then(function (flagIconData) {
                             resultContainer.innerHTML = '<style>.whois-subheader {background: #9D75D9; color: white; text-align: center;} table.whois tr, table.whois td{border: 1px #9D75D9 solid; border-collapse: collapse;} table.whois td {padding: 5px;} table.whois caption { caption-side: top; }</style>' + '<table class="whois"><caption>쿼리 정보</caption>' + '<thead><th>이름</th><th>내용</th></tr></thead>' + '<tbody>' + '<tr><td>쿼리</td><td>' + whoisObj.query + '</td></tr>' + '<tr><td>쿼리 유형</td><td>' + whoisObj.queryType + '</td></tr>' + '<tr><td>레지스트리</td><td>' + whoisObj.registry + '</td></tr>' + '<tr><td>등록 국가</td><td><img style="height: 1em;" src="' + flagIconData + '">' + korCountryNames[whoisObj.countryCode.toUpperCase()] + '</td></tr>' + '</tbody></table>';
+                            resultContainer.appendChild(makeTable(whoisObj.items.filter(v => IsObjectSubsetOf({
+                                language: 'korean',
+                                infoOf: 'isp'
+                            }, v)), "IP 주소 보유기관 정보 (국문)"));
+                            resultContainer.appendChild(makeTable(whoisObj.items.filter(v => IsObjectSubsetOf({
+                                language: 'korean',
+                                infoOf: 'user'
+                            }, v)), "IP 주소 이용기관 정보 (국문)"));
+                            resultContainer.appendChild(makeTable(whoisObj.items.filter(v => IsObjectSubsetOf({
+                                language: 'english',
+                                infoOf: 'isp'
+                            }, v)), "IP 주소 보유기관 정보 (영문)"));
+                            resultContainer.appendChild(makeTable(whoisObj.items.filter(v => IsObjectSubsetOf({
+                                language: 'english',
+                                infoOf: 'user'
+                            }, v)), "IP 주소 이용기관 정보 (영문)"));
                         });
-                        resultContainer.appendChild(makeTable(whoisObj.items.filter(v => IsObjectSubsetOf({
-                            language: 'korean',
-                            infoOf: 'isp'
-                        }, v)), "IP 주소 보유기관 정보 (국문)"));
-                        resultContainer.appendChild(makeTable(whoisObj.items.filter(v => IsObjectSubsetOf({
-                            language: 'korean',
-                            infoOf: 'user'
-                        }, v)), "IP 주소 이용기관 정보 (국문)"));
-                        resultContainer.appendChild(makeTable(whoisObj.items.filter(v => IsObjectSubsetOf({
-                            language: 'english',
-                            infoOf: 'isp'
-                        }, v)), "IP 주소 보유기관 정보 (영문)"));
-                        resultContainer.appendChild(makeTable(whoisObj.items.filter(v => IsObjectSubsetOf({
-                            language: 'english',
-                            infoOf: 'user'
-                        }, v)), "IP 주소 이용기관 정보 (영문)"));
                     }
                 } else if (result.success && result.raw) {
                     container.innerHTML = '<p>NamuFix 서버에서 다음과 같은 WHOIS 결과를 얻었습니다.</p><textarea readonly style="width: 50vw; height: 600px; max-height: 80vh;"></textarea>';
