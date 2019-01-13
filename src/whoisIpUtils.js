@@ -109,8 +109,8 @@ function whoisIpUtils() {
                     let resultContainer = container.querySelector('.whois-content');
 
                     function makeTable(items, caption) {
-                        if (items.length === 0) return;
                         let table = document.createElement('table');
+                        if (items.length === 0) return table;
                         table.className = "whois";
                         table.innerHTML += '<caption>' + encodeHTMLComponent(caption) + '</caption>';
                         table.innerHTML += '<thead><tr><th>이름</th><th>내용</th></tr></thead>';
@@ -134,7 +134,7 @@ function whoisIpUtils() {
                         });
                         resultContainer.appendChild(makeTable(whoisObj.items.filter(v => IsObjectSubsetOf({
                             language: 'korean',
-                            infoOf: 'ISP'
+                            infoOf: 'isp'
                         }, v)), "IP 주소 보유기관 정보 (국문)"));
                         resultContainer.appendChild(makeTable(whoisObj.items.filter(v => IsObjectSubsetOf({
                             language: 'korean',

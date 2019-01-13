@@ -3,7 +3,7 @@ function flagUtils() {
   var flagIconDictionary = {};
 
   this.getFlagIcon = (countryCode) => {
-    return new Promise((reject, resolve) => {
+    return new Promise((resolve, reject) => {
       if (flagIconDictionary[countryCode])
         return resolve(flagIconDictionary[countryCode]);
       GM.xmlHttpRequest({
