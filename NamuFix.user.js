@@ -2647,33 +2647,32 @@ if (location.host === 'board.namu.wiki') {
             message.nfHeadspan.appendChild(span);
             span.innerHTML = "[(IP 확인중: IP정보 조회중)]";
             // get ip info
-            getIpInfo(message.author.name, function (resObj) {
+            getIpInfo(message.author.name, async function (resObj) {
                if (resObj !== null) {
-                  var country = resObj.country;
-                  var countryName = korCountryNames[country.toUpperCase()] || country;
-                  var isp = resObj.org;
-                  getFlagIcon(country.toLowerCase(), async function (data) {
-                     let whoisResult = SET.checkWhoisNetTypeOnDiscuss ? await (new Promise((resolve, reject) => {
-                        getIpWhois(message.author.name, whoisRes => resolve(whoisRes));
-                     })) : null;
-                     let whoisNetType = false;
-                     if (whoisResult && whoisResult.success && !whoisResult.raw) {
-                        whoisNetType = (whoisResult.result.items.filter(v => v.name === 'netType') || {value:null}).value;
-                     }
-                     span.innerHTML = `[<img src="${data}" style="height: 0.9rem;" title="${countryName}"></img> ${isp}${await checkVPNGateIP(message.author.name) ? " (VPNGATE)" : ""}]${whoisNetType ? "<span style=\"color: darkred;\">[" + whoisNetType + "]</span>" : ""}<a href="#" class="get-whois">[WHOIS]</a>`;
-                     span.querySelector('a.get-whois')
-                        .addEventListener('click', function (evt) {
-                           evt.preventDefault();
-                           whoisPopup(message.author.name);
-                        });
-                  });
+                  let country = resObj.country;
+                  let countryName = korCountryNames[country.toUpperCase()] || country;
+                  let isp = resObj.org;
+                  let flagIconData = await getFlagIcon(country.toLowerCase());
+                  let whoisResult = SET.checkWhoisNetTypeOnDiscuss ? await (new Promise((resolve, reject) => {
+                     getIpWhois(message.author.name, whoisRes => resolve(whoisRes));
+                  })) : null;
+                  let whoisNetType = false;
+                  if (whoisResult && whoisResult.success && !whoisResult.raw) {
+                     whoisNetType = (whoisResult.result.items.filter(v => v.name === 'netType') || {value:null}).value;
+                  }
+                  span.innerHTML = `[<img src="${flagIconData}" style="height: 0.9rem;" title="${countryName}"></img> ${isp}${await checkVPNGateIP(message.author.name) ? " (VPNGATE)" : ""}]${whoisNetType ? "<span style=\"color: darkred;\">[" + whoisNetType + "]</span>" : ""}<a href="#" class="get-whois">[WHOIS]</a>`;
+                  span.querySelector('a.get-whois')
+                     .addEventListener('click', function (evt) {
+                        evt.preventDefault();
+                        whoisPopup(message.author.name);
+                     });
                } else {
                   span.innerHTML = "[IP조회실패]<a href=\"#\" class=\"get-whois\">[WHOIS]</a>"
                   span.querySelector('a.get-whois')
                      .addEventListener('click', function (evt) {
                         evt.preventDefault();
                         whoisPopup(message.author.name);
-                     })
+                     });
                }
             });
          }
@@ -2870,7 +2869,7 @@ if (location.host === 'board.namu.wiki') {
                var country = resObj.country;
                var countryName = korCountryNames[country.toUpperCase()] || country.toUpperCase();
                var isp = resObj.org;
-               getFlagIcon(country.toLowerCase(), async function (countryIcon) {
+               getFlagIcon(country.toLowerCase()).then(async function (countryIcon) {
                   ipInfo.innerHTML = `<table class="contInfo">
               <tbody>
               <tr><td>국가</td><td><img src=\"${countryIcon}\" style=\"height: 0.9rem;\"></img> ${countryName}</td></tr>
