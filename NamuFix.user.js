@@ -3365,18 +3365,20 @@ if (location.host === 'board.namu.wiki') {
                   if (SET.askFastRevertLog) {
                      log = prompt('되돌리기 사유를 입력하세요.', SET.fastRevertDefaultLog);
                   }
-                  namuapi.tryRevert({
-                        rev: revisionNo.substring(1),
-                        docname: ENV.docTitle,
-                        user: ENV.UserName,
-                        log: log
-                     })
-                     .then((success) => {
-                        location.href = wikiUrl;
-                     })
-                     .catch((message) => {
-                        location.href = evt.target.href;
-                     });
+                  if (log != null) {
+                     namuapi.tryRevert({
+                           rev: revisionNo.substring(1),
+                           docname: ENV.docTitle,
+                           user: ENV.UserName,
+                           log: log
+                        })
+                        .then((success) => {
+                           location.href = wikiUrl;
+                        })
+                        .catch((message) => {
+                           location.href = evt.target.href;
+                        });
+                     }
                });
             }
          }
