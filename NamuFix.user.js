@@ -5,7 +5,7 @@
 // @include     https://namu.wiki/*
 // @include     https://theseed.io/*
 // @include     https://board.namu.wiki/*
-// @version     190101.0
+// @version     190114.0
 // @author      LiteHell
 // @downloadURL https://namufix.wikimasonry.org/latest.js
 // @require     https://greasemonkey.github.io/gm4-polyfill/gm4-polyfill.js
@@ -2658,8 +2658,7 @@ if (location.host === 'board.namu.wiki') {
                      })) : null;
                      let whoisNetType = false;
                      if (whoisResult && whoisResult.success && !whoisResult.raw) {
-                        if (whoisResult.result.korean.ISP && whoisResult.result.korean.ISP.netinfo && whoisResult.result.korean.ISP.netinfo.netType) whoisNetType = whoisResult.result.korean.ISP.netinfo.netType
-                        else if (whoisResult.result.korean.user && whoisResult.result.korean.user.netinfo && whoisResult.result.korean.user.netinfo.netType) whoisNetType = whoisResult.result.korean.user.netinfo.netType
+                        whoisNetType = (whoisResult.result.items.filter(v => v.name === 'netType') || {value:null}).value;
                      }
                      span.innerHTML = `[<img src="${data}" style="height: 0.9rem;" title="${countryName}"></img> ${isp}${await checkVPNGateIP(message.author.name) ? " (VPNGATE)" : ""}]${whoisNetType ? "<span style=\"color: darkred;\">[" + whoisNetType + "]</span>" : ""}<a href="#" class="get-whois">[WHOIS]</a>`;
                      span.querySelector('a.get-whois')
@@ -2942,10 +2941,10 @@ if (location.host === 'board.namu.wiki') {
                         displayIsBlocked('/32', ipInfo.querySelector('tbody'));
                      } else {
                         let prefixes = [];
-                        if (whoisRes.result.korean.ISP && whoisRes.result.korean.ISP.netinfo && whoisRes.result.korean.ISP.netinfo.prefix) prefixes = prefixes.concat(whoisRes.result.korean.ISP.netinfo.prefix.split('+'));
-                        if (whoisRes.result.korean.user && whoisRes.result.korean.user.netinfo && whoisRes.result.korean.user.netinfo.prefix) prefixes = prefixes.concat(whoisRes.result.korean.user.netinfo.prefix.split('+'));
-                        prefixes = prefixes.filter((v, i, s) => s.indexOf(v) === i); // https://stackoverflow.com/a/14438954
-                        if (!prefixes.includes('/32')) prefixes.push('/32');
+                        for(let i of whoisRes.result.items.filter(v => v.name === 'prefix').map(v => v.value.split('+')))
+                           prefixes = prefixes.concat(i);
+                        prefixes = new Set(prefixes); // https://stackoverflow.com/a/14438954
+                        if (!prefixes.has('/32')) prefixes.add('/32');
                         let delay = 0;
                         for (let prefix of prefixes) {
                            prepareIsBlockedDisplay(prefix, ipInfo.querySelector('tbody'));
