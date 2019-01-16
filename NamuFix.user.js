@@ -2647,7 +2647,7 @@ if (location.host === 'board.namu.wiki') {
             message.nfHeadspan.appendChild(span);
             span.innerHTML = "[(IP 확인중: IP정보 조회중)]";
             // get ip info
-            getIpInfo(message.author.name, async function (resObj) {
+            getIpInfo(message.author.name, SET.ipInfoDefaultOrg, async function (resObj) {
                if (resObj !== null) {
                   let country = resObj.country;
                   let countryName = korCountryNames[country.toUpperCase()] || country;
@@ -2865,7 +2865,7 @@ if (location.host === 'board.namu.wiki') {
             var ipInfo = document.createElement("p");
             ipInfo.innerHTML = '<div style="border: 1px black solid; padding: 2px;">IP 관련 정보를 조회중입니다. 잠시만 기다려주세요.</div>'
             insertBeforeTable(ipInfo);
-            getIpInfo(ip, function (resObj) {
+            getIpInfo(ip, SET.ipInfoDefaultOrg, function (resObj) {
                var country = resObj.country;
                var countryName = korCountryNames[country.toUpperCase()] || country.toUpperCase();
                var isp = resObj.org;

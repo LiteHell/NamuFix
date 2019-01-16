@@ -8,7 +8,7 @@ function IsObjectSubsetOf(a, b) {
 
 function whoisIpUtils() {
     let ipDictionary = {};
-    this.getIpInfo = (ip, cb) => {
+    this.getIpInfo = (ip, org, cb) => {
         if (ipDictionary[ip]) return cb(ipDictionary[ip]);
         GM.xmlHttpRequest({
             method: "GET",
@@ -19,7 +19,7 @@ function whoisIpUtils() {
                     if (/^AS[0-9]+ /.test(resObj.org)) {
                         resObj.org = resObj.org.replace(/^AS[0-9]+ /, '');
                     }
-                    if (SET.ipInfoDefaultOrg != 'ipinfo.io') {
+                    if (org != 'ipinfo.io') {
                         getIpWhois(ip, function (whoisRes) {
                             if (!whoisRes.success || whoisRes.raw) {
                                 ipDictionary[ip] = resObj;
@@ -38,11 +38,11 @@ function whoisIpUtils() {
                                     infoName: 'netinfo',
                                     name: 'orgName'
                                 }, v))[0] || {value: null}).value;
-                            if (SET.ipInfoDefaultOrg === 'KISAuser' && koreanUser) {
+                            if (org === 'KISAuser' && koreanUser) {
                                 resObj.org = koreanUser;
-                            } else if (SET.ipInfoDefaultOrg === 'KISAISP' && koreanISP) {
+                            } else if (org === 'KISAISP' && koreanISP) {
                                 resObj.org = koreanISP;
-                            } else if (SET.ipInfoDefaultOrg === 'KISAuserOrISP' && (koreanUser || koreanISP)) {
+                            } else if (org === 'KISAuserOrISP' && (koreanUser || koreanISP)) {
                                 resObj.org = koreanUser ? koreanUser : koreanISP;
                             }
                             ipDictionary[ip] = resObj;
