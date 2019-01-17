@@ -574,6 +574,7 @@ if (location.host === 'board.namu.wiki') {
       if (nOu(SET.fastRevert)) SET.fastRevert = false;
       if (nOu(SET.askFastRevertLog)) SET.askFastRevertLog = false;
       if (nOu(SET.fastRevertDefaultLog)) SET.fastRevertDefaultLog = '반달 복구';
+      if (nOu(SET.lookupIqsOnKisaWhois)) SET.lookupIqsOnKisaWhois = false;
       await SET.save();
    }
    let addItemToMemberMenu = skinDependency.addItemToMemberMenu;
@@ -899,6 +900,12 @@ if (location.host === 'board.namu.wiki') {
       elm.click();
    }
    await INITSET();
+
+   if (SET.lookupIqsOnKisaWhois) {
+      let originalWhoisPopup = whoisPopup;
+      whoisPopup = function (ip, opts) { originalWhoisPopup(ip, opts ? opts : {iqs: true}); };
+   }
+
    console.log("[NamuFix] 설정 초기화 완료");
    if (SET.umiCookie.trim()
       .length !== 0) {
@@ -3462,6 +3469,11 @@ if (location.host === 'board.namu.wiki') {
             IP이용자의 기여목록에서 차단기록 검색 딜레이 : 
             <input type="number" data-setname="ipBlockHistoryCheckDelay"></input>ms (1000ms=1초)
             <br><strong>경고 : 너무 높게 설정하면 reCAPTCHA가 뜹니다.</strong>
+            </div>
+            <h2>IP Quality Score 이용</h2>
+            <div class="settings-paragraph">
+            KISA WHOIS 조회시 IP Quality Score 웹사이트에서 fraud score등의 추가적인 정보를 조회합니다.<br><strong>모바일여부, 기기 모델명, 기기 브랜드, 운영체제, 브라우저 등 기기와 관련된 정보는 참고하지 마십시오.</strong><br>
+            <input type="checkbox" name="lookupIqsOnKisaWhois" data-setname="lookupIqsOnKisaWhois" data-as-boolean> IP Quality Score 이용</input>
             </div>
             <h2>umi 쿠키</h2>
             <div class="settings-paragraph">
