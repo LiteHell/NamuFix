@@ -566,7 +566,7 @@ if (location.host === 'board.namu.wiki') {
       if (nOu(SET.addSnsShareButton)) SET.addSnsShareButton = false;
       if (nOu(SET.commentMacros)) SET.commentMacros = '';
       if (nOu(SET.ipBlockHistoryCheckDelay)) SET.ipBlockHistoryCheckDelay = 500;
-      if (nOu(SET.identiconLibrary)) SET.identiconLibrary = 'jdenticon'; // jdenticon, identicon, gravatar, gravatar-monster
+      if (nOu(SET.identiconLibrary)) SET.identiconLibrary = 'jdenticon'; // jdenticon, identicon, gravatar, robohash
       if (nOu(SET.emphasizeResesWhenMouseover)) SET.emphasizeResesWhenMouseover = false;
       if (nOu(SET.defaultBoardArchiver)) SET.defaultBoardArchiver = 'namuwikiml';
       if (nOu(SET.fastRevert)) SET.fastRevert = false;
@@ -574,6 +574,7 @@ if (location.host === 'board.namu.wiki') {
       if (nOu(SET.fastRevertDefaultLog)) SET.fastRevertDefaultLog = '반달 복구';
       if (nOu(SET.lookupIqsOnKisaWhois)) SET.lookupIqsOnKisaWhois = false;
       if (nOu(SET.hideHiddenResBody)) SET.hideHiddenResBody = false;
+      if (nOu(SET.robohashSet)) SET.robohashSet = 'any';
       await SET.save();
    }
    let addItemToMemberMenu = skinDependency.addItemToMemberMenu;
@@ -2619,8 +2620,8 @@ if (location.host === 'board.namu.wiki') {
                   case 'gravatar':
                      identiconDictionary[n] = "https://secure.gravatar.com/avatar/" + n.substring(0, 32) + "?s=64&d=identicon"
                      break;
-                  case 'gravatar-monster':
-                     identiconDictionary[n] = "https://secure.gravatar.com/avatar/" + n.substring(0, 32) + "?s=64&d=monsterid"
+                  case 'robohash':
+                     identiconDictionary[n] = "https://robohash.org/" + n + ".png?size=64x64&set=" + SET.robohashSet + "&bgset=bg1"
                      break;
                   case 'identicon':
                      identiconDictionary[n] = "data:image/svg+xml;base64," + new Identicon(n, {
@@ -3500,7 +3501,12 @@ if (location.host === 'board.namu.wiki') {
             <input type="radio" name="identiconLibrary" data-setname="identiconLibrary" data-setvalue="identicon">stewartlord/identicon.js (GitHub스타일의 아이덴티콘)<br>
             <input type="radio" name="identiconLibrary" data-setname="identiconLibrary" data-setvalue="jdenticon">jdenticon (원을 포함하는 여러 도형과 다양한 색으로 이루어진 아이덴티콘)<br>
             <input type="radio" name="identiconLibrary" data-setname="identiconLibrary" data-setvalue="gravatar">Gravatar (Gravatar에서 생성되는 기하학적 패턴 기반의 아이덴티콘)<br>
-            <input type="radio" name="identiconLibrary" data-setname="identiconLibrary" data-setvalue="gravatar-monster">Gravatar(monsterid) (Gravatar에서 생성되는 <del style="color: gray;">존나 못생긴</del> 몬스터)
+            <input type="radio" name="identiconLibrary" data-setname="identiconLibrary" data-setvalue="robohash">RoboHash
+            &nbsp;(<input type="radio" name="robohashSet" data-setname="robohashSet" data-setvalue="set1">로봇</input>
+            &nbsp;<input type="radio" name="robohashSet" data-setname="robohashSet" data-setvalue="set2">몬스터</input>
+            &nbsp;<input type="radio" name="robohashSet" data-setname="robohashSet" data-setvalue="set3">로봇 머리</input>
+            &nbsp;<input type="radio" name="robohashSet" data-setname="robohashSet" data-setvalue="set4">고양이</input>
+            &nbsp;<input type="radio" name="robohashSet" data-setname="robohashSet" data-setvalue="any">랜덤</input>)
             </div>
             <h2>토론에서 익명 기여자 IP주소 조회</h2>
             <div class="settings-paragraph">
