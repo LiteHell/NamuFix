@@ -68,7 +68,8 @@ function whoisIpUtils() {
         if (arguments.length === 2) [ip, cb] = Array.from(arguments);
         else if (arguments.length === 3) [ip, opts, cb] = Array.from(arguments);
         let reqIqs = opts ? opts.iqs || false : false;
-        if (whoisDictionary[ip]) return cb(whoisDictionary[ip]);
+        let cacheKey = ip + "_" + (reqIqs ? "_iqs" : "_niqs");
+        if (whoisDictionary[cacheKey]) return cb(whoisDictionary[cacheKey]);
         GM.xmlHttpRequest({
             method: "GET",
             url: `http://namufix.wikimasonry.org/whois/ip/${ip}?with_ip_quality_score=${reqIqs ? "1" : "0"}`,
@@ -77,7 +78,7 @@ function whoisIpUtils() {
             },
             onload: function (res) {
                 var resObj = JSON.parse(res.responseText);
-                whoisDictionary[ip] = resObj;
+                whoisDictionary[cacheKey] = resObj;
                 cb(resObj);
             }
         });
