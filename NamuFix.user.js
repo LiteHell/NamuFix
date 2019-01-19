@@ -2621,7 +2621,7 @@ if (location.host === 'board.namu.wiki') {
                      identiconDictionary[n] = "https://secure.gravatar.com/avatar/" + n.substring(0, 32) + "?s=64&d=identicon"
                      break;
                   case 'robohash':
-                     identiconDictionary[n] = "https://robohash.org/" + n + ".png?size=64x64&set=" + SET.robohashSet + "&bgset=bg1"
+                     identiconDictionary[n] = "https://robohash.org/" + n.substring(0, 16) + ".png?size=64x64&set=" + SET.robohashSet + "&bgset=bg1"
                      break;
                   case 'identicon':
                      identiconDictionary[n] = "data:image/svg+xml;base64," + new Identicon(n, {
