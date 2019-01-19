@@ -541,8 +541,6 @@ if (location.host === 'board.namu.wiki') {
       if (nOu(SET.discussIdentiSaturation)) SET.discussIdentiSaturation = 0.5;
       if (nOu(SET.favorites)) SET.favorites = [];
       if (nOu(SET.customIdenticons)) SET.customIdenticons = {};
-      if (nOu(SET.hideDeletedWhenDiscussing)) SET.hideDeletedWhenDiscussing = 0;
-      else if (typeof SET.hideDeletedWhenDiscussing !== "Number") SET.hideDeletedWhenDiscussing = Number(SET.hideDeletedWhenDiscussing);
       if (nOu(SET.discussAnchorPreviewType)) SET.discussAnchorPreviewType = 1; // 0 : None, 1 : mouseover, 2 : quote
       else SET.discussAnchorPreviewType = Number(SET.discussAnchorPreviewType);
       if (nOu(SET.removeNFQuotesInAnchorPreview)) SET.removeNFQuotesInAnchorPreview = false;
@@ -575,6 +573,7 @@ if (location.host === 'board.namu.wiki') {
       if (nOu(SET.askFastRevertLog)) SET.askFastRevertLog = false;
       if (nOu(SET.fastRevertDefaultLog)) SET.fastRevertDefaultLog = '반달 복구';
       if (nOu(SET.lookupIqsOnKisaWhois)) SET.lookupIqsOnKisaWhois = false;
+      if (nOu(SET.hideHiddenResBody)) SET.hideHiddenResBody = false;
       await SET.save();
    }
    let addItemToMemberMenu = skinDependency.addItemToMemberMenu;
@@ -2390,13 +2389,18 @@ if (location.host === 'board.namu.wiki') {
             }
             setTimeout(doLoadUnvisibleReses, 600);
          }
+
+         // 블라인드된 쓰레드 부분숨기기
+         if (SET.hideHiddenResBody) {
+            NF_addStyle('.r-hidden-body {display: none;}');
+         }
+
          // 아이덴티콘 설정들과 변수들
          var isIcon = SET.discussIdenti == 'icon';
          var isThreadicLike = SET.discussIdenti == 'headBg';
          var isIdenticon = SET.discussIdenti == 'identicon';
          var colorDictionary = {},
             identiconDictionary = {};
-         // TO-DO : Rewrite Loop codes
          // #[0-9]+ 엥커 미리보기
          function mouseoverPreview(message) {
             var anchors = [].slice.call(message.bodyElement.querySelectorAll('.wiki-link-internal:not([data-nf-title-processed])'));
@@ -3503,6 +3507,11 @@ if (location.host === 'board.namu.wiki') {
             <p>VPNGate 여부, 통신사, 국가이미지를 IP 주소 옆에 표시합니다. 요청 수가 많을 시 실패할 수 도 있습니다.</p>
             <input type="checkbox" name="lookupIPonDiscuss" data-setname="lookupIPonDiscuss" data-as-boolean>토론시 익명 기여자 IP 주소 조회</input><br>
             <input type="checkbox" name="checkWhoisNetTypeOnDiscuss" data-setname="checkWhoisNetTypeOnDiscuss" data-as-boolean>네트워크 유형도 함께 조회 (단 한국 IP만 가능)</input>
+            </div>
+            <h2>토론에서 블라인드된 쓰레드 부분숨기기</h2>
+            <div class="settings-paragraph">
+            <p>토론에서 블라인드된 쓰레드의 내용부분을 숨깁니다.</p>
+            <input type="checkbox" name="hideHiddenResBody" data-setname="hideHiddenResBody" data-as-boolean>토론에서 블라인드된 쓰레드 부분 숨기기</input>
             </div>
             <h2>토론에서 보여지지 않은 쓰레도 불러오기</h2>
             <div class="settings-paragraph">
