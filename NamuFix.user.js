@@ -1086,7 +1086,7 @@ if (location.host === 'board.namu.wiki') {
             var TextProc = createTextProcessor(txtarea);
             // Some Basic MarkUp Functions
             function FontSizeChanger(isIncrease) {
-               var pattern = /^{{{\+([1-5]) (.+?)}}}$/;
+               var pattern = /^{{{([\+-][1-5]) (.+?)}}}$/;
                var t, s = TextProc.selectionStart();
                if (TextProc.selectionTest(pattern)) {
                   var t = TextProc.selectionText();
@@ -1094,11 +1094,14 @@ if (location.host === 'board.namu.wiki') {
                   var innerText = t.replace(pattern, '$2');
                   if (isIncrease) fontSize++;
                   else fontSize--;
+                  if (fontSize == 0)
+                     fontSize = isIncrease ? 1 : -1;
                   if (5 < fontSize) fontSize = 5;
-                  if (fontSize < 1) fontSize = 1;
-                  t = '{{{+' + fontSize + ' ' + innerText + '}}}';
+                  if (fontSize < -5) fontSize = -5;
+                  if (fontSize > 0) fontSize = '+' + fontSize;
+                  t = '{{{' + fontSize + ' ' + innerText + '}}}';
                } else {
-                  t = '{{{+1 ' + TextProc.selectionText() + '}}}';
+                  t = '{{{' + (isIncrease ? '+1' : '-1') + ' ' + TextProc.selectionText() + '}}}';
                }
                TextProc.selectionText(t);
                TextProc.select(s, s + t.length);
