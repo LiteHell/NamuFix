@@ -21,7 +21,7 @@
 // @require     https://cdnjs.cloudflare.com/ajax/libs/moment-timezone/0.5.14/moment-timezone-with-data.min.js
 // @require     https://cdn.jsdelivr.net/npm/async@2.6.1/dist/async.min.js
 // @require     https://cdn.rawgit.com/mathiasbynens/he/v1.1.1/he.js
-// @require     https://cdn.rawgit.com/LiteHell/NamuFix/cd1111f0543bc893cf8c80e8d61930a47a3fb44e/data/korCountryNames.js
+// @require     https://cdn.rawgit.com/LiteHell/NamuFix/cd1111f0543bc893cf8c80e8d61f930a47a3fb44e/data/korCountryNames.js
 // @require     https://cdn.rawgit.com/LiteHell/NamuFix/cd1111f0543bc893cf8c80e8d61930a47a3fb44e/FlexiColorPicker.js
 // @require     https://cdn.rawgit.com/LiteHell/NamuFix/cd1111f0543bc893cf8c80e8d61930a47a3fb44e/skinDependency.js
 // @require     https://cdn.rawgit.com/LiteHell/NamuFix/cd1111f0543bc893cf8c80e8d61930a47a3fb44e/src/flagUtils.js
@@ -2407,7 +2407,7 @@ if (location.host === 'board.namu.wiki') {
             identiconDictionary = {};
          // #[0-9]+ 엥커 미리보기
          function mouseoverPreview(message) {
-            var anchors = [].slice.call(message.bodyElement.querySelectorAll('.wiki-link-internal:not([data-nf-title-processed])'));
+            var anchors = [].slice.call(message.bodyElement.querySelectorAll('.wiki-self-link:not([data-nf-title-processed])'));
             for (var i = 0; i < anchors.length; i++) {
                var anchor = anchors[i];
                if (!/^#[0-9]+$/.test(anchor.getAttribute('href'))) {
@@ -2467,7 +2467,7 @@ if (location.host === 'board.namu.wiki') {
          }
 
          function previewAsQuote(message) {
-            var anchors = [].slice.call(message.bodyElement.querySelectorAll('.wiki-link-internal:not([data-nf-title-processed])'));
+            var anchors = [].slice.call(message.bodyElement.querySelectorAll('.wiki-self-link:not([data-nf-title-processed])'));
             for (var i = 0; i < anchors.length; i++) {
                var anchor = anchors[i];
                if (!/^#[0-9]+$/.test(anchor.getAttribute('href'))) {
