@@ -21,7 +21,7 @@
 // @require     https://cdnjs.cloudflare.com/ajax/libs/moment-timezone/0.5.14/moment-timezone-with-data.min.js
 // @require     https://cdn.jsdelivr.net/npm/async@2.6.1/dist/async.min.js
 // @require     https://cdn.rawgit.com/mathiasbynens/he/v1.1.1/he.js
-// @require     https://cdn.rawgit.com/LiteHell/NamuFix/cd1111f0543bc893cf8c80e8d61f930a47a3fb44e/data/korCountryNames.js
+// @require     https://cdn.rawgit.com/LiteHell/NamuFix/cd1111f0543bc893cf8c80e8d61930a47a3fb44e/data/korCountryNames.js
 // @require     https://cdn.rawgit.com/LiteHell/NamuFix/cd1111f0543bc893cf8c80e8d61930a47a3fb44e/FlexiColorPicker.js
 // @require     https://cdn.rawgit.com/LiteHell/NamuFix/cd1111f0543bc893cf8c80e8d61930a47a3fb44e/skinDependency.js
 // @require     https://cdn.rawgit.com/LiteHell/NamuFix/cd1111f0543bc893cf8c80e8d61930a47a3fb44e/src/flagUtils.js
