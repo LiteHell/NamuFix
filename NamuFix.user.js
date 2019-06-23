@@ -575,6 +575,8 @@ if (location.host === 'board.namu.wiki') {
       if (nOu(SET.lookupIqsOnKisaWhois)) SET.lookupIqsOnKisaWhois = false;
       if (nOu(SET.hideHiddenResBody)) SET.hideHiddenResBody = false;
       if (nOu(SET.robohashSet)) SET.robohashSet = 'any';
+      if (nOu(SET.addBatchBlindButton)) SET.addBatchBlindButton = false;
+      if (nOu(SET.slientBlind)) SET.slientBlind = false;
       await SET.save();
    }
    let addItemToMemberMenu = skinDependency.addItemToMemberMenu;
@@ -2341,13 +2343,59 @@ if (location.host === 'board.namu.wiki') {
          }
       }
       if (ENV.Discussing) {
+         // refreshThread, doLoadUnvisibleReses에서 쓰이는 공통로직
+         function insertNfFormatTimeScript() {
+            var scriptTag = document.createElement("script");
+                  scriptTag.innerHTML = 'function nfformattime(){$("time[data-nf-format-this]").each(function(){var format = $(this).attr("data-format");var time = $(this).attr("datetime");$(this).text(formatDate(new Date(time), format));});}';
+                  document.body.appendChild(scriptTag);
+         }
+         insertNfFormatTimeScript();
+         // 일부 쓰레드를 다시 불러오는 함수 (일부 함수에서 쓰임)
+         function refreshThreads(numbers, callback) { 
+            console.log(numbers);
+            numbers = numbers.sort();
+            if (numbers.length == 0) return callback(null);
+            let reqId = numbers[0];
+            namuapi.theseedRequest({
+               method: "GET",
+               url: "https://" + location.host + "/thread/" + ENV.topicNo + "/" + reqId,
+               onload: function (res) {
+                  console.log('[NamuFix] 특징 레스를 다시 불러오기 위해 레스 응답 받음, 시작 번호는 ' + reqId);
+                  var parser = new DOMParser();
+                  var doc = parser.parseFromString(res.responseText, "text/html");
+                  var timeTags = doc.querySelectorAll('time');
+                  var resTags = doc.querySelectorAll('.res-wrapper');
+                  for (var i = 0; i < timeTags.length; i++) timeTags[i].dataset.nfFormatThis = "true";
+                  for (var i = 0; i < resTags.length; i++) {
+                     var resTag = resTags[i];
+                     let targetId = parseInt(resTag.dataset.id);
+                     if (!numbers.map(i => parseInt(i)).includes(targetId))
+                        continue;
+                     console.log(targetId);
+                     numbers.splice(numbers.indexOf(targetId), 1);
+                     var targetTag = document.querySelector('#res-container .res-wrapper[data-id="' + targetId + '"]');
+                     if (targetTag == null) continue;
+                     targetTag.parentNode.insertBefore(resTag, targetTag.nextSibling);
+                     targetTag.parentNode.removeChild(targetTag);
+                  }
+                  var scriptTagId = 'nf-temp-s' + Date.now() + reqId;
+                  var scriptTag = document.createElement('script');
+                  scriptTag.id = scriptTagId;
+                  scriptTag.innerHTML = 'nfformattime(); var thisTag = document.querySelector("#' + scriptTagId + '"); thisTag.parentNode.removeChild(thisTag);';
+                  document.body.appendChild(scriptTag);
+                  if (numbers.length == 0) {
+                     console.log('[NamuFix] 특정 레스들을 모두 불러옴!');
+                     callback(null);
+                  } else {
+                     return refreshThreads(numbers, callback);
+                  }
+               }
+            });
+         }
          // 보여지지 않은 쓰레드도 불러오기
          let unvisibleResesAllLoaded = false;
          if (SET.loadUnvisibleReses) {
             function doLoadUnvisibleReses() {
-               var scriptTag = document.createElement("script");
-               scriptTag.innerHTML = 'function nfformattime(){$("time[data-nf-format-this]").each(function(){var format = $(this).attr("data-format");var time = $(this).attr("datetime");$(this).text(formatDate(new Date(time), format));});}';
-               document.body.appendChild(scriptTag);
                var allUnlockedReses = document.querySelectorAll('#res-container div.res-loading[data-locked="false"]');
                for (var i = 0; i < allUnlockedReses.length; i++) {
                   allUnlockedReses[i].setAttribute('data-locked', 'true');
@@ -2740,6 +2788,86 @@ if (location.host === 'board.namu.wiki') {
             });
          }
 
+         function batchDiscussBlind(message) {
+            function btnHandler(act) {
+               return function (e) {
+                  e.preventDefault();
+                  let checks = [...document.querySelectorAll('input.nf-batch-blind-checkbox')];
+                  let numbers = checks.filter(i => i.checked).map(i => parseInt(i.value));
+                  let urls = numbers.map(i => `/admin/thread/${ENV.topicNo}/${i}/${act}`);
+                  // popup
+                  let win = TooSimplePopup();
+                  win.title('일괄 블라인드중');
+                  let progress;
+                  win.content(container => {
+                     container.innerHTML = `${urls.length}개의 쓰레드를 블라인드${act == 'show' ? ' 해제' : ''}하고 있습니다.<br><progress></progress>`;
+                     progress = container.querySelector('progress');
+                  });
+                  progress.max = urls.length;
+                  progress.value = 0;
+                  async.eachLimit(urls, SET.adminReqLimit, (i, cb) => {
+                     namuapi.theseedRequest({
+                        url: i,
+                        method: "GET",
+                        onload: function () {
+                           progress.value++;
+                           cb(null);
+                        }
+                     });
+                  }, err => {
+                     progress.value = progress.max;
+                     win.content(container => container.innerHTML = '완료. 일부 스레드를 다시 불러오는 중....');
+                     setTimeout(() => {
+                        refreshThreads(numbers, () => {
+                           win.close();
+                        });
+                     }, 50);
+                  });
+               };
+            }
+            // Checkbox
+            let checkBox = document.createElement('input');
+            checkBox.name = 'nf-batch-blind-checkinput';
+            checkBox.className = 'nf-batch-blind-checkbox';
+            checkBox.type = 'checkbox';
+            checkBox.value = message.no;
+            message.nfLeftHeadspan.appendChild(checkBox);
+            // Blind Button
+            let batchBlindBtn = document.createElement('a');
+            batchBlindBtn.className = 'btn btn-danger btn-sm';
+            batchBlindBtn.href = '#';
+            batchBlindBtn.addEventListener('click', btnHandler('hide'));
+            batchBlindBtn.textContent = '[NAMUFIX] 일괄 블라인드';
+            // Unblind Button
+            let batchUnblindBtn = document.createElement('a');
+            batchUnblindBtn.className = 'btn btn-danger btn-sm';
+            batchUnblindBtn.href = '#';
+            batchUnblindBtn.addEventListener('click', btnHandler('show'));
+            batchUnblindBtn.textContent = '[NAMUFIX] 일괄 블라인드 해제'
+            // Button Group
+            let btnGroup = document.createElement('div');
+            btnGroup.className = 'btn-group';
+            btnGroup.appendChild(batchBlindBtn);
+            btnGroup.appendChild(batchUnblindBtn);
+            message.nfCombo.appendChild(btnGroup);
+         }
+
+         function makeBlindSlient(message) {
+            let blindBtn = message.element.querySelector('.combo.admin-menu > a.btn.btn-danger');
+            if(!blindBtn)
+               return;
+            blindBtn.addEventListener('click', e => {
+               e.preventDefault();
+               namuapi.theseedRequest({
+                  url: e.target.href,
+                  method: "GET",
+                  onload: function () {
+                     setTimeout(() => refreshThreads([message.no], () => {}), 50);
+                  }
+               });
+            })
+         }
+
          function deserializeResDom(resElement) {
             let userLink = resElement.querySelector('.r-head > a'),
                anchor = resElement.querySelector('.r-head .num > a');
@@ -2766,6 +2894,18 @@ if (location.host === 'board.namu.wiki') {
                   delete this.nfHeadspan;
                   return this.nfHeadspan = headspan;
                },
+               get nfLeftHeadspan() {
+                  let headspan = resElement.querySelector('.nf-headinfo-left')
+                  if (!headspan) {
+                     headspan = document.createElement("span");
+                     headspan.className = "nf-headinfo-left";
+                     //userLink.parentNode.insertBefore(headspan, userLink);
+                     resElement.querySelector('.num').parentNode.insertBefore(headspan, resElement.querySelector('.num'));
+                     headspan.style.marginRight = "0.3rem";
+                  }
+                  delete this.nfLeftHeadspan;
+                  return this.nfLeftHeadspan = headspan;
+               },
                get nfRightHeadSpan() {
                   let rightHeadSpan = resElement.querySelector('.nf-headinfo-right')
                   if (!rightHeadSpan) {
@@ -2777,6 +2917,23 @@ if (location.host === 'board.namu.wiki') {
                   }
                   delete this.nfRightHeadSpan;
                   return this.nfRightHeadSpan = rightHeadSpan;
+               },
+               get nfCombo() {
+                  let adminCombo = resElement.querySelector('.combo.admin-menu');
+                  if(!adminCombo) {
+                     let newCombo = document.createElement("div");
+                     newCombo.setAttribute("class", "combo admin-menu");
+                     resElement.querySelector('.res').appendChild(newCombo);
+                     adminCombo = newCombo;
+                  }
+                  let nfComboArea = adminCombo.querySelector('.nf-combo-area');
+                  if (!nfComboArea) {
+                     nfComboArea = document.createElement('span');
+                     nfComboArea.className = 'nf-combo-area';
+                     adminCombo.appendChild(nfComboArea);
+                  }
+                  delete this.nfCombo;
+                  return this.nfCombo = nfComboArea;
                }
             }
          }
@@ -2789,6 +2946,8 @@ if (location.host === 'board.namu.wiki') {
             if (SET.addQuickBlockLink) handles.quickBlock = quickBlockLoop
             if (SET.lookupIPonDiscuss) handles.checkIp = checkIP;
             if (SET.emphasizeResesWhenMouseover) handles.emphasizeReses = emphasizeWhenMouseoverLoop;
+            if (SET.addBatchBlindButton) handles.batchblind = batchDiscussBlind;
+            if (SET.slientBlind) handles.slientblind = makeBlindSlient;
             let messages = document.querySelectorAll('.res-wrapper:not(.res-loading) > .res:not([nf-looped])');
             let tmpcnt = 0; //fordebug
             for (let i of messages)
@@ -3563,6 +3722,14 @@ if (location.host === 'board.namu.wiki') {
             역사페이지 빠른차단 기능에서의 차단사유 템플릿 : <input type="text" data-setname="quickBlockReasonTemplate_history" style="width: 500px; max-width: 75vw;"></input><br>
             <strong>참고:</strong> 문서명(\${docName})은 URL 인코딩이 되지 않고 리버전 번호(\${revisionNo})는 r로 시작하기 때문에 주소형태의 차단사유 템플릿을 쓰는 것을 권장하지 않습니다.)<br>
             빠른차단 기능에서의 차단기간 기본값(초) : <input type="text" data-setname="quickBlockDefaultDuration"></input>
+            </div>
+            <h2>토론에서의 관리 편리성</h2>
+            <div class="settings-paragraph">
+            <input type="checkbox" name="addBatchBlindButton" data-setname="addBatchBlindButton" data-as-boolean>일괄 블라인드 버튼 추가</input><br>
+            <input type="checkbox" name="slientBlind" data-setname="slientBlind" data-as-boolean>새로고침 없는 블라인드</input><br>
+            일괄 블라인드 버튼을 누르면 체크된(설정 활성화시 체크박스가 생깁니다) 메세지들이 블라인드됩니다. 블라인드 해제 버튼은 체크된 메세지들의 블라인드를 해제합니다.<br>
+            새로고침 없는 블라인드를 누르면 기존 블라인드 버튼(<em>[ADMIN]</em>으로 시작하는 버튼)을 누를 시 새로고침을 하지 않습니다.<br>
+            <strong>[경고] 위 두 기능들은 버그가 있을 수 있습니다.</strong>
             </div>
             </div>
             <h1>편집 편의성</h1>
