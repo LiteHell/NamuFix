@@ -461,6 +461,28 @@ if (location.host === 'board.namu.wiki') {
          firstMenu.parentNode.insertBefore(item, firstMenu);
          firstMenu.parentNode.removeChild(firstMenu);
       }
+      // 닉네임/IP주소 기여목록 링크
+      if (SET.userContribLinkOnBoard) {
+         let authors = [...document.querySelectorAll('.feedback .fbList .fbMeta .author span, .board .board_read .read_header .meta .name, .board_list tr td.author a')];
+         authors.forEach(i => {
+            let username = i.textContent.trim(),
+                link = `https://namu.wiki/contribution/${validateIP(username) ? 'ip' : 'author'}/${username}/document`;
+            if(i.tagName == 'A') {
+               i.href = link;
+               i.target = '_blank';
+               i.removeAttribute('onclick');
+            } else {
+               let anchor = document.createElement('a');
+               anchor.href = link;
+               anchor.style.textDecoration = 'none';
+               anchor.style.color = 'black';
+               anchor.target = '_blank';
+               anchor.textContent = username;
+               i.innerHTML = '';
+               i.appendChild(anchor);
+            }
+         });
+      }
    }
    runBoardFix();
 } else(async function (SET) {
@@ -577,6 +599,7 @@ if (location.host === 'board.namu.wiki') {
       if (nOu(SET.robohashSet)) SET.robohashSet = 'any';
       if (nOu(SET.addBatchBlindButton)) SET.addBatchBlindButton = false;
       if (nOu(SET.slientBlind)) SET.slientBlind = false;
+      if (nOu(SET.userContribLinkOnBoard)) SET.userContribLinkOnBoard = true;
       await SET.save();
    }
    let addItemToMemberMenu = skinDependency.addItemToMemberMenu;
@@ -3769,6 +3792,10 @@ if (location.host === 'board.namu.wiki') {
             <input type="radio" name="defaultBoardArchiver" data-setname="defaultBoardArchiver" data-setvalue="namuwikiml">namuwiki.ml (kiwitree 운영)</input><br>
             <input type="radio" name="defaultBoardArchiver" data-setname="defaultBoardArchiver" data-setvalue="phpgongbu">phpgongbu.ga (amind 운영)</input>
             </div>
+            <h2>기여내역 링크화</h2>
+            <div class="settings-paragraph">
+            <input type="checkbox" name="userContribLinkOnBoard" data-setname="userContribLinkOnBoard" data-as-boolean>게시글 목록내 작성자명, 게시글 작성자명, 댓글 작성자명을 기여내역 링크로 바꿉니다.</input>
+            <p>게시글 목록내 작성자명, 게시글을 볼 때 게시글 상단의 작성자명, 댓글에서 댓글 작성자명을 그 사람의 기여내역 링크로 바꿉니다. 디자인의 변화는 없습니다.</p>
             </div>
             <h1>기타</h1>
             <div class="settings-paragraph">
