@@ -960,6 +960,7 @@ if (location.host === 'board.namu.wiki') {
       ENV.IsLoggedIn = skinDependency.IsLoggedIn;
       ENV.IsSearch = location.pathname.indexOf('/search/') == 0;
       ENV.IsEditingRequest = /^\/edit_request\/([0-9]+)\/edit/.test(location.pathname);
+      ENV.IsEditRequest = /^\/edit_request\/([0-9]+)$/.test(location.pathname);
       ENV.IsWritingRequest = /^\/new_edit_request\/.+/.test(location.pathname);
       ENV.IsIPACL = /^\/admin\/ipacl/.test(location.pathname);
       ENV.IsBoardIPACL = /^\/admin\/boardipacl/.test(location.pathname);
@@ -967,6 +968,7 @@ if (location.host === 'board.namu.wiki') {
       ENV.IsBoardSuspendAccount = /^\/admin\/suspend_account/.test(location.pathname);
       ENV.IsBlockHistory = /^\/BlockHistory/.test(location.pathname);
       ENV.IsRecentChanges = location.pathname.indexOf('/RecentChanges') == 0;
+      if (ENV.IsEditRequest) ENV.EditRequestAuthor = document.querySelector('.wiki-article h3 > a').textContent.trim();
       if (location.pathname.indexOf('/edit_request') == 0) ENV.EditRequestNo = /^\/edit_request\/([0-9]+)/.exec(location.pathname);
       if (ENV.IsLoggedIn) {
          ENV.UserName = skinDependency.UserName;
@@ -3603,6 +3605,26 @@ if (location.host === 'board.namu.wiki') {
                row.querySelector('td:first-child')
                   .insertBefore(quickBlockAnchor, row.querySelector('td:first-child span'));
             }
+         }
+      }
+      if (ENV.IsEditRequest) {
+         if (SET.addQuickBlockLink) {
+            let quickBlockBtn = document.createElement('a');
+            quickBlockBtn.className = 'btn btn-danger btn-lg';
+            quickBlockBtn.href = '#';
+            quickBlockBtn.textContent = 'Block';
+            quickBlockBtn.addEventListener('click', e => {
+               e.preventDefault();
+               quickBlockPopup({
+                  author: {
+                     name: ENV.EditRequestAuthor,
+                     isIP: validateIP(ENV.EditRequestAuthor)
+                  },
+                  defaultDuration: SET.quickBlockDefaultDuration,
+                  defaultReason: location.href
+               })
+            });
+            document.querySelector('.wiki-article .card .card-block').appendChild(quickBlockBtn);
          }
       }
       if (ENV.skinName == "liberty") {
