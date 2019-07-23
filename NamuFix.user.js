@@ -968,6 +968,7 @@ if (location.host === 'board.namu.wiki') {
       ENV.IsBoardSuspendAccount = /^\/admin\/suspend_account/.test(location.pathname);
       ENV.IsBlockHistory = /^\/BlockHistory/.test(location.pathname);
       ENV.IsRecentChanges = location.pathname.indexOf('/RecentChanges') == 0;
+      ENV.IsRecentDiscuss = location.pathname.indexOf('/RecentDiscuss') == 0;
       if (ENV.IsEditRequest) ENV.EditRequestAuthor = document.querySelector('.wiki-article h3 > a').textContent.trim();
       if (location.pathname.indexOf('/edit_request') == 0) ENV.EditRequestNo = /^\/edit_request\/([0-9]+)/.exec(location.pathname);
       if (ENV.IsLoggedIn) {
@@ -3584,31 +3585,6 @@ if (location.host === 'board.namu.wiki') {
                         });
                      }
                });
-            }
-         }
-      } else if (ENV.IsRecentChanges) {
-         let changeRows = document.querySelectorAll('article table.table tbody tr');
-         for (let row of changeRows) {
-            if (!row.querySelector('a')) continue; // 편집 코멘트 필요없음.
-            let author = {
-               name: row.querySelector('td:nth-child(2) a')
-                  .textContent.trim()
-            }
-            author.isIP = validateIP(author.name);
-            if (SET.addQuickBlockLink) {
-               let quickBlockAnchor = document.createElement("a");
-               quickBlockAnchor.textContent = " [차단] "
-               quickBlockAnchor.href = "#";
-               quickBlockAnchor.addEventListener('click', (evt) => {
-                  evt.preventDefault();
-                  quickBlockPopup({
-                     author: author,
-                     defaultReason: '긴급차단 - 문서 훼손',
-                     defaultDuration: SET.quickBlockDefaultDuration
-                  });
-               })
-               row.querySelector('td:first-child')
-                  .insertBefore(quickBlockAnchor, row.querySelector('td:first-child span'));
             }
          }
       }
