@@ -3245,7 +3245,7 @@ if (location.host === 'board.namu.wiki') {
                      .getAttribute('href'),
                      documentRev = 1;
                   if (row.querySelector('a[href^="/diff/"]')) {
-                     let = diffLink = row.querySelector('a[href^="/diff/"]')
+                     let diffLink = row.querySelector('a[href^="/diff/"]')
                         .getAttribute('href');
                      documentRev = parseInt(/\??rev=([0-9]+)/.exec(diffLink)[1]);
                   }
@@ -3256,6 +3256,7 @@ if (location.host === 'board.namu.wiki') {
                   var negativeContribution = /^\-[0-9]+/.test(contributedBytes);
                   if (/^\+[0-9]+/.test(contributedBytes)) contributedBytes = contributedBytes.substring(contributedBytes.indexOf('+'));
                   contributedBytes = Number(contributedBytes);
+                  row.dataset.docnameAndRev = JSON.stringify({documentName, documentRev});
                   // 긴급차단 링크
                   if (SET.addQuickBlockLink) {
                      let userIdPattern = /^\/contribution\/(?:author|ip)\/(.+?)\/(?:document|discuss)/;
@@ -3266,6 +3267,10 @@ if (location.host === 'board.namu.wiki') {
                      console.log(SET.quickBlockReasonTemplate_history);
                      quickBlockLink.addEventListener("click", (evt) => {
                         evt.preventDefault();
+                        let parent = evt.target;
+                        while(!parent.dataset.docnameAndRev)
+                           parent = parent.parentNode;
+                        let {documentRev, documentName} = JSON.parse(parent.dataset.docnameAndRev);
                         quickBlockPopup({
                            author: {
                               name: userId,
