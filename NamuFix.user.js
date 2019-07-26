@@ -119,7 +119,7 @@ let {
 } = new whoisIpUtils();
 let SET = new NFStorage();
 
-function batchBlockFunction(evt) {
+function batchBlockFunction(evt, opts) {
    evt.preventDefault();
    var win = TooSimplePopup();
    win.title('계정/IP 일괄 차단');
@@ -367,6 +367,11 @@ function batchBlockFunction(evt) {
             waitingWin.close();
          }
       });
+
+      if (opts) {
+         if (opts.blockees)
+            con.querySelector('textarea').value = opts.blockees.join('\n');
+      }
    });
 }
 if (location.host === 'board.namu.wiki') {
@@ -600,6 +605,8 @@ if (location.host === 'board.namu.wiki') {
       if (nOu(SET.addBatchBlindButton)) SET.addBatchBlindButton = false;
       if (nOu(SET.slientBlind)) SET.slientBlind = false;
       if (nOu(SET.userContribLinkOnBoard)) SET.userContribLinkOnBoard = true;
+      if (nOu(SET.addEditRequestCloseMenu)) SET.addEditRequestCloseMenu = false;
+      if (nOu(SET.defaultEditRequestCloseReason)) SET.defaultEditRequestCloseReason = '반달';
       await SET.save();
    }
    let addItemToMemberMenu = skinDependency.addItemToMemberMenu;
@@ -937,6 +944,121 @@ if (location.host === 'board.namu.wiki') {
       document.cookie = 'umi=' + SET.umiCookie + ";path=/;domain=namu.wiki";
       console.log("[NamuFix] umi 쿠키 설정 완료");
    }
+   function editRequestBlockPopup(getENV) {
+      return function() {
+         let ENV = getENV();
+         let win = TooSimplePopup(), getSelectedEditReqs, getCloseInfo;
+         let refreshEditReqs = () => {
+            namuapi.getOpenEditRequests(editReqs => {
+               win.content(container => {
+                  container.querySelector('.editreqs tbody').innerHTML = '';
+                  for(let i = 0; i < editReqs.length; i++) {
+                     let editReq = editReqs[i];
+                     let row = document.createElement('tr');
+                     row.innerHTML = `
+                        <td><input type="checkbox" class="editreq_sel"></input></td>
+                        <td><input type="radio" class="editreq_sel_help_a" name="editreq_sel_help_a"></input></td>
+                        <td><input type="radio" class="editreq_sel_help_b" name="editreq_sel_help_b"></input></td>
+                        <td><a href="${encodeHTMLComponent('/edit_request/' + editReq.no)}" target="_blank">${editReq.no}</a></td>
+                        <td>${editReq.docName}</td>
+                     `
+                     row.dataset.editReq = JSON.stringify(editReq);
+                     [...row.querySelectorAll('.editreq_sel_help_a, .editreq_sel_help_b')].forEach(v => v.addEventListener('click', evt => {
+                        let a = [...container.querySelectorAll('.editreq_sel_help_a')].filter(i => i.checked)[0] || null,
+                           b = [...container.querySelectorAll('.editreq_sel_help_b')].filter(i => i.checked)[0] || null;
+                        if(a === null || b === null)
+                           return;
+                        let indexA = [...container.querySelector('table tbody').childNodes].indexOf(a.parentNode.parentNode),
+                           indexB = [...container.querySelector('table tbody').childNodes].indexOf(b.parentNode.parentNode);
+                        if (indexA > indexB) {
+                           let tmp = indexA;
+                           indexA = indexB;
+                           indexB = tmp;
+                        }
+                        for(let i = indexA; i <= indexB; i++) {
+                           let editReqRow = container.querySelectorAll('table tbody tr')[i];
+                           editReqRow.querySelector('.editreq_sel').checked = true;
+                        }
+                        a.checked = false;
+                        b.checked = false;
+                     }));
+                     container.querySelector('.editreqs tbody').appendChild(row);
+                  }
+               });
+            });
+         };
+         win.title('편집요청 일괄 닫기 도구');
+         win.content(container => {
+            container.innerHTML = `
+            닫기 사유 : <input class="closeReason" type="input"></input><br>
+            <input class="doBlock" type="checkbox"></input>편집 요청을 닫은 후 일괄 차단 창 표시 (편집 요청 작성자들이 자동입력됩니다)<br>
+            ※ 참고 : 닫기 버튼은 창을 닫는 버튼입니다.<br>
+            <br>
+            <table class="table editreqs">
+            <thead>
+            <tr>
+            <td colspan="3">선택</td>
+            <td>번호</td>
+            <td>문서 제목</td>
+            </tr>
+            <tbody>
+            </tbody>
+            </thead>
+            </table>
+            `
+            container.querySelector('.closeReason').value = SET.defaultEditRequestCloseReason;
+            container.querySelector('.enterEasily', evt => {
+               evt.preventDefault();
+               enterTimespanPopup(span => {
+                  if (span !== null)
+                     container.querySelector('.blockDuration').value = span;
+               })
+            });
+            getSelectedEditReqs = () => {
+               return [...container.querySelectorAll('.editreq_sel')].filter(i => i.checked).map(i => JSON.parse(i.parentNode.parentNode.dataset.editReq));
+            };
+            getCloseInfo = () => {
+               return {
+                  closeReason : container.querySelector('.closeReason').value,
+                  doBlock: container.querySelector('.doBlock').checked
+               };
+            }
+            refreshEditReqs();
+         });
+         win.button('닫기', win.close);
+         win.button('선택한 요청 닫기', () => {
+            let editReqs = getSelectedEditReqs(), {closeReason, doBlock} = getCloseInfo(), authors = [];
+            let waitingWin = TooSimplePopup();
+            waitingWin.title('진행중');
+            waitingWin.content(el => el.innerHTML = '진행중입니다.');
+            async.eachLimit(editReqs, SET.adminReqLimit, (i, cb) => {
+               namuapi.closeEditRequest(i.no, 
+                  {
+                     reason:closeReason, 
+                     identifier: (ENV.IsLoggedIn ? "m" : "i") + ":" + ENV.UserName
+                  }, (err, author) => {
+                     if (err)
+                        cb(err);
+                     else {
+                        authors.push(author);
+                        cb(null);
+                     }
+                  });
+            }, err => {
+               if (err) {
+                  waitingWin.content(el => el.textContent = `편집 요청을 닫는 중 오류가 발생했습니다: ${err}`);
+                  waitingWin.button('닫기', waitingWin.close);
+               } else {
+                  waitingWin.close();
+                  if (doBlock)
+                     batchBlockFunction(new Event('blah'), {blockees: authors.filter((v, i, a) => a.indexOf(v) === i)});
+               }
+               refreshEditReqs();
+            });
+         });
+         win.button('새로고침', refreshEditReqs);
+      }
+   }
    async function mainFunc() {
       // 환경 감지
       var ENV = {};
@@ -1004,6 +1126,7 @@ if (location.host === 'board.namu.wiki') {
             ENV.IPAddress = ip;
          }
       });
+      editRequestBlockPopup = editRequestBlockPopup(() => ENV);
       if (ENV.IsEditing || ENV.Discussing || ENV.IsEditingRequest || ENV.IsWritingRequest) {
          if (document.querySelector("textarea") !== null && !document.querySelector("textarea")
             .hasAttribute("readonly")) {
@@ -3782,6 +3905,13 @@ if (location.host === 'board.namu.wiki') {
             새로고침 없는 블라인드를 누르면 기존 블라인드 버튼(<em>[ADMIN]</em>으로 시작하는 버튼)을 누를 시 새로고침을 하지 않습니다.<br>
             <strong>[경고] 위 두 기능들은 버그가 있을 수 있습니다.</strong>
             </div>
+            <h2>편집요청 일괄 닫기 메뉴</h2>
+            <div class="settings-paragraph">
+            <input type="checkbox" name="addEditRequestCloseMenu" data-setname="addEditRequestCloseMenu" data-as-boolean></input>편집요청 일괄 닫기 메뉴 추가<br>
+            편집 요청 닫기 사유 기본값 : <input type="text" name="defaultEditRequestCloseReason" data-setname="defaultEditRequestCloseReason"></input><br>
+            편집요청 일괄 닫기 메뉴를 추가합니다.<br>
+            사용 방법 : 닫을 편집요청들을 체크박스로 선택하고 <strong>선택한 요청 닫기</strong> 버튼을 눌러 닫으시면 됩니다. 체크박스 옆에 라디오 두개는 선택을 도와주는 목적으로, 역사 페이지의 그것을 떠올리며 직접 써보시면 바로 이해하실 수 있습니다.
+            </div>
             </div>
             <h1>편집 편의성</h1>
             <div class="settings-paragraph">
@@ -3932,6 +4062,11 @@ if (location.host === 'board.namu.wiki') {
    }
    listenPJAX(mainFunc);
    await mainFunc();
+   if (SET.addEditRequestCloseMenu)
+      addItemToMemberMenu('편집요청 일괄 닫기', function (evt) {
+         evt.preventDefault();
+         editRequestBlockPopup();
+      })
    if (GM.info.scriptHandler === "Greasemonkey" && GM.info.version.startsWith("4.") && !SET.ignoreGM4Warning) {
       var win = TooSimplePopup();
       win.title('Greasemonkey 4와의 호환성 안내');

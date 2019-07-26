@@ -265,4 +265,46 @@ namuapi.blockAccount = function (data, callback) {
       }
    })
 };
+namuapi.getOpenEditRequests = function (callback) {
+   namuapi.theseedRequest({
+      method: 'GET',
+      url: 'https://' + wikihost + '/RecentDiscuss?logtype=open_editrequest',
+      onload: function (res) {
+         let parser = new DOMParser();
+         let doc = parser.parseFromString(res.responseText, "text/html");
+         let rows = [...doc.querySelectorAll('.wiki-article table tbody tr')];
+         callback(rows.map(i => {
+            let anchors = [...i.querySelectorAll('a')];
+            return {
+               no: /\/edit_request\/([0-9]+)/.exec(anchors[0].getAttribute('href'))[1],
+               docName: anchors[1].textContent.trim()
+            }
+         }));
+      }
+   })
+};
+namuapi.closeEditRequest = function(no, options, callback) {
+   var query = new FormData();
+   query.append('close_reason', options.reason);
+   query.append('identifier', options.identifier);
+   namuapi.theseedRequest({
+      method: 'POST',
+      url: `https://${wikihost}/edit_request/${no}/close`,
+      headers: {
+         "Referer": `https://${wikihost}/edit_request/${no}`
+      },
+      data: query,
+      onload: function (res) {
+         let parser = new DOMParser();
+         let doc = parser.parseFromString(res.responseText, "text/html");
+         let editReqAuthor = doc.querySelector('.wiki-article h3 > a');
+         if (editReqAuthor) {
+            editReqAuthor = editReqAuthor.textContent.trim();
+            callback(null, editReqAuthor);
+         } else {
+            callback(doc.querySelector('.wiki-article h2').textContent.trim());
+         }
+      }
+   });
+}
 window.namuapi = namuapi;
