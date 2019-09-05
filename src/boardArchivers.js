@@ -3,12 +3,12 @@ function BoardArchiver(nfVersion) {
         return new Promise((resolve, reject) => {
             GM.xmlHttpRequest({
                 method: 'POST',
-                url: 'https://phpgongbu.ga/archive/',
+                url: 'https://namuwiki.ml/archive/',
                 headers: {
                     "Content-Type": "application/x-www-form-urlencoded",
                     "User-Agent": `Mozilla/5.0 (compatible; NamuFix/${nfVersion})`
                 },
-                data: `board_num=${documentId}`,
+                data: `archive_type=board&document_srl=${documentId}`,
                 onload: (res) => {
                     resolve(res.finalUrl);
                 },
