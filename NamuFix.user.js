@@ -3948,7 +3948,6 @@ if (location.host === 'board.namu.wiki') {
             <div class="settings-paragraph">
             <p>게시글 아카이브에 이용할 사이트를 선택할 수 있습니다.</p>
             <input type="radio" name="defaultBoardArchiver" data-setname="defaultBoardArchiver" data-setvalue="namuwikiml">namuwiki.ml (kiwitree 운영)</input><br>
-            <input type="radio" name="defaultBoardArchiver" data-setname="defaultBoardArchiver" data-setvalue="phpgongbu">phpgongbu.ga (amind 운영)</input>
             </div>
             <h2>기여내역 링크화</h2>
             <div class="settings-paragraph">
