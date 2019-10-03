@@ -9,29 +9,29 @@
 // @author      LiteHell
 // @downloadURL https://namufix.wikimasonry.org/latest.js
 // @require     https://greasemonkey.github.io/gm4-polyfill/gm4-polyfill.js
-// @require     https://cdn.rawgit.com/Caligatio/jsSHA/v2.3.1/src/sha.js
-// @require     https://cdn.rawgit.com/zenozeng/color-hash/v1.0.3/dist/color-hash.js
-// @require     https://cdn.rawgit.com/ben-liang/pnglib/91a91b7f840fdf19ef34a32df8051f2178957293/pnglib.js
-// @require     https://cdn.rawgit.com/stewartlord/identicon.js/7c4b4efdb7e2aba458eba14b24ba14e8e2bcdb2a/identicon.js
+// @require     https://rawcdn.githack.com/Caligatio/jsSHA/v2.3.1/src/sha.js
+// @require     https://rawcdn.githack.com/zenozeng/color-hash/v1.0.3/dist/color-hash.js
+// @require     https://rawcdn.githack.com/ben-liang/pnglib/91a91b7f840fdf19ef34a32df8051f2178957293/pnglib.js
+// @require     https://rawcdn.githack.com/stewartlord/identicon.js/7c4b4efdb7e2aba458eba14b24ba14e8e2bcdb2a/identicon.js
 // @require     https://cdn.jsdelivr.net/npm/jdenticon@1.8.0
-// @require     https://cdn.rawgit.com/LiteHell/TooSimplePopupLib/7f2a8a81f11f980c1dfa6b5b2213cd38b8bbde3c/TooSimplePopupLib.js
-// @require     https://cdn.rawgit.com/wkpark/jsdifflib/dc19d085db5ae71cdff990aac8351607fee4fd01/difflib.js
-// @require     https://cdn.rawgit.com/wkpark/jsdifflib/dc19d085db5ae71cdff990aac8351607fee4fd01/diffview.js
+// @require     https://rawcdn.githack.com/LiteHell/TooSimplePopupLib/7f2a8a81f11f980c1dfa6b5b2213cd38b8bbde3c/TooSimplePopupLib.js
+// @require     https://rawcdn.githack.com/wkpark/jsdifflib/dc19d085db5ae71cdff990aac8351607fee4fd01/difflib.js
+// @require     https://rawcdn.githack.com/wkpark/jsdifflib/dc19d085db5ae71cdff990aac8351607fee4fd01/diffview.js
 // @require     https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.19.3/moment-with-locales.min.js
 // @require     https://cdnjs.cloudflare.com/ajax/libs/moment-timezone/0.5.14/moment-timezone-with-data.min.js
 // @require     https://cdn.jsdelivr.net/npm/async@2.6.1/dist/async.min.js
-// @require     https://cdn.rawgit.com/mathiasbynens/he/v1.1.1/he.js
-// @require     https://cdn.rawgit.com/LiteHell/NamuFix/f55ab32d98c69e89949200a6b485524ae28401da/data/korCountryNames.js
-// @require     https://cdn.rawgit.com/LiteHell/NamuFix/f55ab32d98c69e89949200a6b485524ae28401da/FlexiColorPicker.js
-// @require     https://cdn.rawgit.com/LiteHell/NamuFix/f55ab32d98c69e89949200a6b485524ae28401da/skinDependency.js
-// @require     https://cdn.rawgit.com/LiteHell/NamuFix/f55ab32d98c69e89949200a6b485524ae28401da/src/flagUtils.js
-// @require     https://cdn.rawgit.com/LiteHell/NamuFix/f55ab32d98c69e89949200a6b485524ae28401da/src/hashUtils.js
-// @require     https://cdn.rawgit.com/LiteHell/NamuFix/f55ab32d98c69e89949200a6b485524ae28401da/src/NFStorage.js
-// @require     https://cdn.rawgit.com/LiteHell/NamuFix/f55ab32d98c69e89949200a6b485524ae28401da/src/utils.js
-// @require     https://cdn.rawgit.com/LiteHell/NamuFix/f55ab32d98c69e89949200a6b485524ae28401da/src/whoisIpUtils.js
-// @require     https://cdn.rawgit.com/LiteHell/NamuFix/f55ab32d98c69e89949200a6b485524ae28401da/src/namuapi.js
-// @require     https://cdn.rawgit.com/LiteHell/NamuFix/f55ab32d98c69e89949200a6b485524ae28401da/src/boardArchivers.js
-// @connect     cdn.rawgit.com
+// @require     https://rawcdn.githack.com/mathiasbynens/he/v1.1.1/he.js
+// @require     https://rawcdn.githack.com/LiteHell/NamuFix/f55ab32d98c69e89949200a6b485524ae28401da/data/korCountryNames.js
+// @require     https://rawcdn.githack.com/LiteHell/NamuFix/f55ab32d98c69e89949200a6b485524ae28401da/FlexiColorPicker.js
+// @require     https://rawcdn.githack.com/LiteHell/NamuFix/f55ab32d98c69e89949200a6b485524ae28401da/skinDependency.js
+// @require     https://rawcdn.githack.com/LiteHell/NamuFix/f55ab32d98c69e89949200a6b485524ae28401da/src/flagUtils.js
+// @require     https://rawcdn.githack.com/LiteHell/NamuFix/f55ab32d98c69e89949200a6b485524ae28401da/src/hashUtils.js
+// @require     https://rawcdn.githack.com/LiteHell/NamuFix/f55ab32d98c69e89949200a6b485524ae28401da/src/NFStorage.js
+// @require     https://rawcdn.githack.com/LiteHell/NamuFix/f55ab32d98c69e89949200a6b485524ae28401da/src/utils.js
+// @require     https://rawcdn.githack.com/LiteHell/NamuFix/f55ab32d98c69e89949200a6b485524ae28401da/src/whoisIpUtils.js
+// @require     https://rawcdn.githack.com/LiteHell/NamuFix/f55ab32d98c69e89949200a6b485524ae28401da/src/namuapi.js
+// @require     https://rawcdn.githack.com/LiteHell/NamuFix/f55ab32d98c69e89949200a6b485524ae28401da/src/boardArchivers.js
+// @connect     rawcdn.githack.com
 // @connect     cdnjs.cloudflare.com
 // @connect     jsdelivr.net
 // @connect     api.github.com
@@ -456,7 +456,7 @@ if (location.host === 'board.namu.wiki') {
       }
       // 일괄 차단 메뉴추가
       if (SET.addBatchBlockMenu) {
-         await insertCSS("https://cdn.rawgit.com/LiteHell/TooSimplePopupLib/edad912e28eeacdc3fd8b6e6b7ac5cafc46d95b6/TooSimplePopupLib.css");
+         await insertCSS("https://rawcdn.githack.com/LiteHell/TooSimplePopupLib/edad912e28eeacdc3fd8b6e6b7ac5cafc46d95b6/TooSimplePopupLib.css");
          let item = document.createElement('li');
          item.innerHTML = '<a href="#">일괄 차단</a>';
          item.querySelector('a')
@@ -493,9 +493,9 @@ if (location.host === 'board.namu.wiki') {
 } else(async function (SET) {
    console.log(`[NamuFix] 현재 버전 : ${GM.info.script.version}`);
    if (location.hostname == 'no-ssl.namu.wiki') location.hostname = 'namu.wiki';
-   await insertCSS("https://cdn.rawgit.com/LiteHell/NamuFix/284db44ac1d89ff0cbd1155c3372db38be3bc140/NamuFix.css");
-   await insertCSS("https://cdn.rawgit.com/LiteHell/TooSimplePopupLib/edad912e28eeacdc3fd8b6e6b7ac5cafc46d95b6/TooSimplePopupLib.css");
-   await insertCSS("https://cdn.rawgit.com/wkpark/jsdifflib/dc19d085db5ae71cdff990aac8351607fee4fd01/diffview.css");
+   await insertCSS("https://rawcdn.githack.com/LiteHell/NamuFix/284db44ac1d89ff0cbd1155c3372db38be3bc140/NamuFix.css");
+   await insertCSS("https://rawcdn.githack.com/LiteHell/TooSimplePopupLib/edad912e28eeacdc3fd8b6e6b7ac5cafc46d95b6/TooSimplePopupLib.css");
+   await insertCSS("https://rawcdn.githack.com/wkpark/jsdifflib/dc19d085db5ae71cdff990aac8351607fee4fd01/diffview.css");
    console.log('[NamuFix] CSS 삽입됨.');
    // 업데이트 확인
    GM.xmlHttpRequest({
