@@ -1541,6 +1541,7 @@ if (location.host === 'board.namu.wiki') {
                         if (hasError) {
                            let win = TooSimplePopup();
                            win.title('이미지 업로드 오류');
+                           win.button('닫기', win.close);
                            win.content(el => {
                               el.innerHTML = '<p>오류들이 발생했습니다.</p><ul></ul>';
                               for (let i of results.filter(v => !v.success)) {
@@ -1551,7 +1552,6 @@ if (location.host === 'board.namu.wiki') {
                                     .appendChild(li);
                               }
                            })
-                           win.button('닫기', win.close);
                         }
                      })
                   }
