@@ -1,5 +1,7 @@
 # NamuFix
-**Deprecated**
+<span style="font-size: 5em;">**Deprecated**</span>
+
+<span style="font-size: 3em;">**NO LONGER SUPPORTED!**</span>
 
 나무위키의 사용을 편하게 해주는 확장 프로그램입니다. 현재 유지보수할 계획이 없습니다.
 
